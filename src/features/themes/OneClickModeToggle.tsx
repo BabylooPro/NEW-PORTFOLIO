@@ -6,6 +6,16 @@ import { Moon, Sun } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { createPortal } from "react-dom";
+
+// FUNCTION TO RENDER TOOLTIP CONTENT IN A PORTAL
+const PortalTooltipContent = ({
+	children,
+	...props
+}: React.PropsWithChildren<React.ComponentProps<typeof TooltipContent>>) => {
+	if (typeof window === "undefined") return null;
+	return createPortal(<TooltipContent {...props}>{children}</TooltipContent>, document.body);
+};
 
 export function OneClickModeToggle() {
 	const { setTheme, theme, systemTheme } = useTheme();
@@ -43,7 +53,8 @@ export function OneClickModeToggle() {
 							size="icon"
 							onClick={() => setTheme(effectiveTheme === "dark" ? "light" : "dark")}
 						>
-							<TooltipContent side="bottom">Switch Theme</TooltipContent>
+							{/* RENDER TOOLTIPCONTENT INSIDE A PORTAL */}
+							<PortalTooltipContent side="bottom">Switch Theme</PortalTooltipContent>
 							<AnimatePresence mode="wait">
 								{effectiveTheme === "dark" ? (
 									<motion.div
