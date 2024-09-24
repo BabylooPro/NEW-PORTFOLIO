@@ -23,6 +23,21 @@ export default function Header() {
 	const [isScrolling, setIsScrolling] = useState(false);
 	const [isAtTop, setIsAtTop] = useState(true);
 	const [isClient, setIsClient] = useState(false);
+	const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+	// FETCH GITHUB PROFILE PICTURE
+	useEffect(() => {
+		const fetchGitHubAvatar = async () => {
+			try {
+				const response = await fetch("https://api.github.com/users/babyloopro");
+				const data = await response.json();
+				setAvatarUrl(data.avatar_url); // SET AVATAR URL FROM GITHUB API
+			} catch (error) {
+				console.error("Failed to fetch GitHub avatar", error);
+			}
+		};
+		fetchGitHubAvatar();
+	}, []);
 
 	// EFFECT TO SET ISCLIENT TO TRUE
 	useEffect(() => {
@@ -62,7 +77,7 @@ export default function Header() {
 			initial={{ opacity: 1 }}
 			animate={{ opacity: isScrolling ? 0.5 : 1 }}
 			transition={{ duration: 0.3 }}
-			className={`overflow-hidden sticky z-50 flex items-center justify-center p-6 max-w-5xl mx-auto shadow-2xl rounded-2xl bg-neutral-300/30 dark:bg-neutral-900/70 backdrop-blur-lg transition-all duration-300 ${
+			className={`overflow-hidden sticky z-50 flex items-center justify-center p-6 w-2/4 max-w-5xl mx-auto shadow-2xl rounded-2xl bg-neutral-300/30 dark:bg-neutral-900/70 backdrop-blur-lg transition-all duration-300 ${
 				isScrolling ? "top-0" : isAtTop ? "top-10" : "top-10"
 			}`}
 		>
@@ -79,7 +94,7 @@ export default function Header() {
 						transition={{ type: "spring", stiffness: 300, damping: 10 }}
 					>
 						<Avatar className="w-14 h-14">
-							<AvatarImage src="/assets/myFace.png" alt="Profile Image" />
+							<AvatarImage src={avatarUrl ?? ""} alt="Profile Image" />
 							<AvatarFallback>MR</AvatarFallback>
 						</Avatar>
 					</motion.div>
