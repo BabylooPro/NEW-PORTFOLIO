@@ -7,6 +7,7 @@ import SkillSection from "@/features/landing/SkillSection";
 export default function Home() {
 	return (
 		<div className="flex flex-col gap-4">
+			<div className="h-16 max-sm:h-12" />
 			<Header />
 			<HeroSection />
 			<ExperienceSection />

@@ -24,6 +24,7 @@ export default function Header() {
 	const [isAtTop, setIsAtTop] = useState(true);
 	const [isClient, setIsClient] = useState(false);
 	const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+	const [isSmallScreen, setIsSmallScreen] = useState(false);
 
 	// FETCH GITHUB PROFILE PICTURE
 	useEffect(() => {
@@ -39,9 +40,16 @@ export default function Header() {
 		fetchGitHubAvatar();
 	}, []);
 
-	// EFFECT TO SET ISCLIENT TO TRUE
+	// EFFECT TO SET ISCLIENT TO TRUE AND HANDLE SCREEN SIZE
 	useEffect(() => {
 		setIsClient(true);
+
+		const handleResize = () => {
+			setIsSmallScreen(window.innerWidth < 640); // DETECT IF SCREEN IS SMALLER THAN 640PX
+		};
+
+		handleResize(); // Set initial screen size
+		window.addEventListener("resize", handleResize);
 
 		// VARIABLE TO STORE SCROLL TIMEOUT
 		let scrollTimeout: NodeJS.Timeout;
@@ -50,7 +58,7 @@ export default function Header() {
 		const handleScroll = () => {
 			if (window.scrollY > 0) {
 				setIsAtTop(false); // SET FALSE IF NOT AT TOP OF PAGE
-				setIsScrolling(true); // SET TRUE IF NOT AT TOP OF PAGE
+				setIsScrolling(true); // SET TRUE IF SCROLLING
 
 				clearTimeout(scrollTimeout); // CLEAR SCROLL TIMEOUT IF PRESENT
 
@@ -68,23 +76,24 @@ export default function Header() {
 
 		return () => {
 			window.removeEventListener("scroll", handleScroll);
+			window.removeEventListener("resize", handleResize);
 			clearTimeout(scrollTimeout);
 		};
 	}, []);
 
 	return (
 		<motion.header
-			initial={{ opacity: 1 }}
-			animate={{ opacity: isScrolling ? 0.5 : 1 }}
-			transition={{ duration: 0.3 }}
-			className={`overflow-hidden sticky z-50 flex items-center justify-center p-6 w-2/4 max-w-5xl mx-auto shadow-2xl rounded-2xl bg-neutral-300/30 dark:bg-neutral-900/70 backdrop-blur-lg transition-all duration-300 ${
-				isScrolling ? "top-0" : isAtTop ? "top-10" : "top-10"
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			transition={{ duration: 1 }}
+			className={`overflow-hidden sticky z-50 flex items-center justify-center p-4 sm:p-6 max-xl:w-3/4 w-full max-w-5xl mx-auto shadow-2xl rounded-lg sm:rounded-2xl bg-neutral-300/30 dark:bg-neutral-900/70 backdrop-blur-lg transition-all duration-300 ${
+				isScrolling ? "top-0" : isAtTop ? "top-6 sm:top-10" : "top-6 sm:top-10"
 			}`}
 		>
-			<div className="flex flex-col items-center space-y-4">
+			<div className="flex flex-col items-center space-y-2 sm:space-y-4">
 				{/* PROFILE & DESCRIPTION */}
 				<motion.div
-					className="flex items-center space-x-4"
+					className="flex items-center space-x-2 sm:space-x-4"
 					initial={{ opacity: 0, x: -50 }}
 					animate={{ opacity: 1, x: 0 }}
 					transition={{ duration: 0.5, delay: 0.2 }}
@@ -93,13 +102,13 @@ export default function Header() {
 						whileHover={{ scale: 1.1 }}
 						transition={{ type: "spring", stiffness: 300, damping: 10 }}
 					>
-						<Avatar className="w-14 h-14">
+						<Avatar className="w-10 h-10 sm:w-14 sm:h-14">
 							<AvatarImage src={avatarUrl ?? ""} alt="Profile Image" />
 							<AvatarFallback>MR</AvatarFallback>
 						</Avatar>
 					</motion.div>
 					<div className="text-left">
-						<h1 className="text-xl font-semibold">Max Remy</h1>
+						<h1 className="text-lg sm:text-xl font-semibold">Max Remy</h1>
 						{/* FullStack Developer for mobile, FullStack Developer | Software Engineer for other sizes */}
 						<motion.p
 							className="text-neutral-500 sm:hidden"
@@ -121,7 +130,13 @@ export default function Header() {
 				</motion.div>
 
 				{/* SEPARATOR HIDDEN ON MOBILE */}
-				<Separator className="bg-neutral-500 hidden sm:block" />
+				<motion.div
+					initial={{ width: 0, opacity: 0 }}
+					animate={{ width: "100%", opacity: 1 }}
+					transition={{ duration: 0.6, ease: "easeInOut", delay: 0.4 }}
+				>
+					<Separator className="bg-neutral-500 hidden sm:block" />
+				</motion.div>
 
 				{/* SOCIAL LINKS HIDDEN ON MOBILE */}
 				<motion.div
@@ -143,7 +158,7 @@ export default function Header() {
 									whileTap={{ scale: 0.9 }}
 									transition={{ type: "spring", stiffness: 400, damping: 10 }}
 								>
-									<Github size={28} />
+									<Github size={isSmallScreen ? 24 : 28} />
 								</motion.a>
 							</TooltipTrigger>
 							<PortalTooltipContent side="bottom">
@@ -163,7 +178,7 @@ export default function Header() {
 									whileTap={{ scale: 0.9 }}
 									transition={{ type: "spring", stiffness: 400, damping: 10 }}
 								>
-									<Linkedin size={28} />
+									<Linkedin size={isSmallScreen ? 24 : 28} />
 								</motion.a>
 							</TooltipTrigger>
 							<PortalTooltipContent side="bottom">
@@ -183,7 +198,7 @@ export default function Header() {
 									whileTap={{ scale: 0.9 }}
 									transition={{ type: "spring", stiffness: 400, damping: 10 }}
 								>
-									<Twitter size={28} />
+									<Twitter size={isSmallScreen ? 24 : 28} />
 								</motion.a>
 							</TooltipTrigger>
 							<PortalTooltipContent side="bottom">
@@ -196,7 +211,7 @@ export default function Header() {
 
 			{/* CHANGE THEME */}
 			{isClient && (
-				<div className="absolute right-5 top-5">
+				<div className="absolute right-4 sm:right-5 top-4 sm:top-5">
 					<OneClickModeToggle />
 				</div>
 			)}
