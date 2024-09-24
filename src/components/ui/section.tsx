@@ -54,7 +54,7 @@ export const Section = (props: SectionProps) => {
 			<section id={props.id} className={cn(props.sectionClassName)} ref={ref}>
 				<div
 					className={cn(
-						"flex flex-col justify-center px-20 py-10 max-md:px-5 max-md:py-5",
+						"flex flex-col justify-center px-[500px] py-[100px] max-md:px-5 max-md:py-5",
 						props.className
 					)}
 				>
@@ -79,7 +79,7 @@ export const Section = (props: SectionProps) => {
 		>
 			<div
 				className={cn(
-					"flex flex-col justify-center px-80 py-20 max-md:px-5 max-md:py-5",
+					"flex flex-col justify-center px-[500px] py-[50px] max-md:px-5 max-md:py-5",
 					props.className
 				)}
 			>
