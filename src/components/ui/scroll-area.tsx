@@ -21,7 +21,6 @@ const ScrollArea = React.forwardRef<
 				(e.deltaY < 0 && scrollTop === 0) ||
 				(e.deltaY > 0 && scrollTop + clientHeight >= scrollHeight)
 			) {
-				e.preventDefault();
 				target.parentElement?.scrollBy({
 					top: e.deltaY,
 					behavior: "smooth",
