@@ -1,44 +1,68 @@
 "use client";
 
-import { useRef } from "react";
+import * as React from "react";
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
 import { cn } from "@/lib/utils";
-import React from "react";
+
+type ScrollAreaRef = {
+	scrollToTop: () => void;
+	scrollToBottom: () => void;
+	checkScrollPosition: () => { isAtTop: boolean; isAtBottom: boolean };
+};
 
 const ScrollArea = React.forwardRef<
-	React.ElementRef<typeof ScrollAreaPrimitive.Root>,
-	React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root>
->(({ className, children, ...props }, ref) => {
-	const viewportRef = useRef(null);
+	ScrollAreaRef,
+	React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root> & {
+		onScrollChange?: (isAtTop: boolean, isAtBottom: boolean) => void;
+	}
+>(({ className, children, onScrollChange, ...props }, ref) => {
+	const viewportRef = React.useRef<HTMLDivElement>(null);
 
-	const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-		const target = e.currentTarget as HTMLDivElement;
-
+	const scrollToTop = () => {
 		if (viewportRef.current) {
-			const { scrollTop, scrollHeight, clientHeight } = target;
-
-			if (
-				(e.deltaY < 0 && scrollTop === 0) ||
-				(e.deltaY > 0 && scrollTop + clientHeight >= scrollHeight)
-			) {
-				target.parentElement?.scrollBy({
-					top: e.deltaY,
-					behavior: "smooth",
-				});
-			}
+			viewportRef.current.scrollTo({
+				top: 0,
+				behavior: "smooth",
+			});
 		}
 	};
 
+	const scrollToBottom = () => {
+		if (viewportRef.current) {
+			viewportRef.current.scrollTo({
+				top: viewportRef.current.scrollHeight,
+				behavior: "smooth",
+			});
+		}
+	};
+
+	const checkScrollPosition = React.useCallback(() => {
+		if (viewportRef.current) {
+			const { scrollTop, scrollHeight, clientHeight } = viewportRef.current;
+			const isAtTop = scrollTop === 0;
+			const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 1;
+			onScrollChange?.(isAtTop, isAtBottom);
+			return { isAtTop, isAtBottom };
+		}
+		return { isAtTop: true, isAtBottom: true };
+	}, [onScrollChange]);
+
+	React.useImperativeHandle(
+		ref,
+		() =>
+			({
+				scrollToTop,
+				scrollToBottom,
+				checkScrollPosition,
+			} as ScrollAreaRef)
+	);
+
 	return (
-		<ScrollAreaPrimitive.Root
-			ref={ref}
-			className={cn("relative overflow-hidden", className)}
-			{...props}
-		>
+		<ScrollAreaPrimitive.Root className={cn("relative overflow-hidden", className)} {...props}>
 			<ScrollAreaPrimitive.Viewport
 				ref={viewportRef}
 				className="h-full w-full rounded-[inherit]"
-				onWheel={handleWheel}
+				onScroll={checkScrollPosition}
 			>
 				{children}
 			</ScrollAreaPrimitive.Viewport>
@@ -70,3 +94,4 @@ const ScrollBar = React.forwardRef<
 ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName;
 
 export { ScrollArea, ScrollBar };
+export type { ScrollAreaRef };
