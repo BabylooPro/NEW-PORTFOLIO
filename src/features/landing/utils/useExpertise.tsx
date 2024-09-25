@@ -2,18 +2,23 @@
 
 import { Section } from "@/components/ui/section";
 import React from "react";
-import { GalleryVerticalEnd, CodeXml } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { CodeXml, Heart, ThumbsDown, ThumbsUp, Star } from "lucide-react";
+import { ScrollArea, ScrollAreaRef } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import "devicon";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import InfoSection from "@/components/ui/info-section";
+import ScrollIndicator from "@/components/ui/scroll-indicator";
 
 interface SkillItem {
 	name: string;
 	icon?: string;
 	description?: string;
+	favorite?: boolean;
+	star?: boolean;
+	like?: boolean;
+	unlike?: boolean;
 }
 
 interface ExperienceItem {
@@ -61,25 +66,40 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 	infoIconSize,
 	infoClassName,
 }) => {
+	const scrollAreaRef = React.useRef<ScrollAreaRef>(null);
+
+	const getRandomDuration = () => Math.random() * 4 + 1; // 1 TO 5 SECONDS
+	const getRandomRotate = () => Math.random() * 20 - 10; // -10 TO 10 DEGREES
+	const getRandomTranslateY = () => Math.random() * 5 - 2.5; // -2.5 TO 2.5 UNITS
+	const getRandomScale = () => Math.random() * 0.2 + 0.8; // 0.8 TO 1.0 SCALE
+
 	return (
 		<TooltipProvider>
 			<Section>
-				{/* TITLE WITH INFO-SECTION */}
-				<h2 className="text-2xl font-bold mb-6 flex items-center">
-					{title}
-					<InfoSection
-						mode={infoMode}
-						tooltipText={infoTooltipText}
-						position={infoPosition}
-						iconSize={infoIconSize}
-						toastTitle={infoToastTitle}
-						toastDescription={infoToastDescription}
-						className={infoClassName}
-					/>
-				</h2>
+				<div className="relative mb-10">
+					{/* TITLE */}
+					<h2 className="text-2xl font-bold flex items-center -mb-5">
+						{title}
+						<InfoSection
+							mode={infoMode}
+							tooltipText={infoTooltipText}
+							position={infoPosition}
+							iconSize={infoIconSize}
+							toastTitle={infoToastTitle}
+							toastDescription={infoToastDescription}
+							className={infoClassName}
+						/>
+					</h2>
 
-				{/* SCROLL AREA */}
-				<ScrollArea className={scrollHeight}>
+					{/* SCROLL INDICATOR */}
+					<ScrollIndicator
+						scrollAreaRef={scrollAreaRef}
+						className="absolute left-1/2 transform -translate-x-1/2"
+						position="top"
+					/>
+				</div>
+
+				<ScrollArea ref={scrollAreaRef} className={scrollHeight}>
 					{/* TIMELINE */}
 					<ol className="m-4 relative border-l border-neutral-400 dark:border-neutral-600">
 						{items.map((item) => (
@@ -165,6 +185,121 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 														<p className="text-base font-normal text-neutral-700 dark:text-neutral-300 cursor-pointer">
 															{skill.name}
 														</p>
+
+														{/* ICON FAVORITE */}
+														{skill.favorite && (
+															<motion.div
+																animate={{
+																	scale: [
+																		getRandomScale(),
+																		getRandomScale() + 0.2,
+																		getRandomScale(),
+																	],
+																	rotate: [
+																		getRandomRotate(),
+																		getRandomRotate() + 20,
+																		getRandomRotate(),
+																	],
+																}}
+																transition={{
+																	duration: getRandomDuration(),
+																	repeat: Infinity,
+																	repeatType: "reverse",
+																}}
+																className="mb-5"
+															>
+																<Heart
+																	className="text-red-900"
+																	size={18}
+																	fill="red"
+																/>
+															</motion.div>
+														)}
+
+														{/* ICON STAR */}
+														{skill.star && (
+															<motion.div
+																animate={{
+																	scale: [
+																		getRandomScale(),
+																		getRandomScale() + 0.2,
+																		getRandomScale(),
+																	],
+																	rotate: [
+																		getRandomRotate(),
+																		getRandomRotate() + 20,
+																		getRandomRotate(),
+																	],
+																}}
+																transition={{
+																	duration: getRandomDuration(),
+																	repeat: Infinity,
+																	repeatType: "reverse",
+																}}
+																className="mb-5"
+															>
+																<Star
+																	className="text-yellow-500"
+																	size={18}
+																	fill="yellow"
+																/>
+															</motion.div>
+														)}
+
+														{/* ICON LIKE */}
+														{skill.like && (
+															<motion.div
+																animate={{
+																	scale: [
+																		getRandomScale(),
+																		getRandomScale() + 0.2,
+																		getRandomScale(),
+																	],
+																	translateY: [
+																		getRandomTranslateY(),
+																		getRandomTranslateY() - 5,
+																		getRandomTranslateY(),
+																	],
+																}}
+																transition={{
+																	duration: getRandomDuration(),
+																	repeat: Infinity,
+																	repeatType: "reverse",
+																}}
+																className="mb-5"
+															>
+																<ThumbsUp
+																	size={18}
+																	className="text-blue-500"
+																/>
+															</motion.div>
+														)}
+
+														{/* ICON UNLIKE */}
+														{skill.unlike && (
+															<motion.div
+																animate={{
+																	scale: [
+																		getRandomScale(),
+																		getRandomScale() + 0.2,
+																		getRandomScale(),
+																	],
+																	translateY: [0, 5, 0],
+																	rotate: [0, -20, 0],
+																}}
+																transition={{
+																	duration: getRandomDuration(),
+																	repeat: Infinity,
+																	repeatType: "reverse",
+																}}
+																className="mb-5"
+															>
+																<ThumbsDown
+																	size={18}
+																	className="text-red-500"
+																/>
+															</motion.div>
+														)}
 													</div>
 												</TooltipTrigger>
 
@@ -182,20 +317,12 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 					</ol>
 				</ScrollArea>
 
-				{/* ANIMATION FOR SCROLL INDICATOR */}
-				<div className="flex justify-center mt-4">
-					<motion.div
-						className="text-neutral-500 dark:text-neutral-400"
-						animate={{ y: [0, 10, 0] }}
-						transition={{
-							duration: 1.5,
-							repeat: Infinity,
-							ease: "easeInOut",
-						}}
-					>
-						<GalleryVerticalEnd />
-					</motion.div>
-				</div>
+				{/* SCROLL INDICATOR */}
+				<ScrollIndicator
+					scrollAreaRef={scrollAreaRef}
+					className="mt-4 mx-auto"
+					position="bottom"
+				/>
 			</Section>
 		</TooltipProvider>
 	);

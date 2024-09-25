@@ -1,18 +1,18 @@
 "use client";
 
-import { Github, ExternalLink, Pin, GalleryVerticalEnd } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Github, ExternalLink, Pin } from "lucide-react";
+import { ScrollArea, ScrollAreaRef } from "@/components/ui/scroll-area";
 import { Section } from "@/components/ui/section";
-import { motion } from "framer-motion";
 import Link from "next/link";
 import InfoSection from "@/components/ui/info-section";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGitHubProjects } from "@/hooks/use-GitHubProjects";
-import { useState, useEffect } from "react";
-
+import { useState, useEffect, useRef } from "react";
+import ScrollIndicator from "@/components/ui/scroll-indicator";
 const SideProjectsSection = () => {
 	const { projects, error, loading } = useGitHubProjects(); // GET PROJECTS FROM GITHUB
 	const [isLoading, setIsLoading] = useState(true);
+	const scrollAreaRef = useRef<ScrollAreaRef>(null);
 
 	// RESET LOADING STATE ON COMPONENT MOUNT (PAGE REFRESH)
 	useEffect(() => {
@@ -25,7 +25,7 @@ const SideProjectsSection = () => {
 	if (error) {
 		return (
 			<Section>
-				<h2 className="text-3xl font-bold mb-6">Error Loading Projects</h2>
+				<h2 className="text-2xl font-bold mb-6">Error Loading Projects</h2>
 				<p className="text-red-500">An error occurred : {error}</p>
 				<ScrollArea className="h-[600px] w-full">
 					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-4">
@@ -42,7 +42,7 @@ const SideProjectsSection = () => {
 	if (loading || isLoading) {
 		return (
 			<Section>
-				<h2 className="text-3xl font-bold mb-6">Public Side Projects</h2>
+				<h2 className="text-2xl font-bold mb-6">Projects</h2>
 				<ScrollArea className="h-[600px] w-full">
 					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-4">
 						{[...Array(6)].map((_, index) => (
@@ -59,13 +59,20 @@ const SideProjectsSection = () => {
 
 	return (
 		<Section>
-			<h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
-				Public Side Projects
-				<InfoSection mode={"tooltip"} />
-			</h2>
+			<div className="relative mb-10">
+				<h2 className="text-2xl font-bold flex items-center gap-2 -mb-5">
+					Projects
+					<InfoSection mode={"tooltip"} />
+				</h2>
+				<ScrollIndicator
+					scrollAreaRef={scrollAreaRef}
+					className="absolute left-1/2 transform -translate-x-1/2"
+					position="top"
+				/>
+			</div>
 
 			{/* SCROLL AREA TO DISPLAY MORE PROJECTS */}
-			<ScrollArea className="h-[550px] w-full">
+			<ScrollArea ref={scrollAreaRef} className="h-[550px] w-full">
 				<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-4">
 					{sortedProjects.map((project) => (
 						<div
@@ -122,20 +129,12 @@ const SideProjectsSection = () => {
 				</div>
 			</ScrollArea>
 
-			{/* ANIMATION FOR SCROLL INDICATOR */}
-			<div className="flex justify-center mt-4">
-				<motion.div
-					className="text-neutral-500 dark:text-neutral-400"
-					animate={{ y: [0, 10, 0] }}
-					transition={{
-						duration: 1.5,
-						repeat: Infinity,
-						ease: "easeInOut",
-					}}
-				>
-					<GalleryVerticalEnd />
-				</motion.div>
-			</div>
+			{/* SCROLL INDICATOR */}
+			<ScrollIndicator
+				scrollAreaRef={scrollAreaRef}
+				className="mt-4 mx-auto"
+				position="bottom"
+			/>
 		</Section>
 	);
 };
