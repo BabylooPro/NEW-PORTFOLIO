@@ -3,6 +3,7 @@ import Footer from "@/features/landing/Footer";
 import Header from "@/features/landing/Header";
 import HeroSection from "@/features/landing/HeroSection";
 import SkillSection from "@/features/landing/SkillSection";
+import SideProjectsSection from "@/features/landing/SideProjectsSection";
 
 export default function Home() {
 	return (
@@ -12,6 +13,7 @@ export default function Home() {
 			<HeroSection />
 			<ExperienceSection />
 			<SkillSection />
+			<SideProjectsSection />
 			<Footer />
 		</div>
 	);
