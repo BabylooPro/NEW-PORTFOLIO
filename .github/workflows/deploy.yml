@@ -26,13 +26,13 @@ jobs:
 
                       git pull origin main
 
-                      npm install --prefix NEW-PORTFOLIO
-                      npm run build --prefix NEW-PORTFOLIO
+                      npm install --prefix .
+                      npm run build --prefix .
 
                       if pm2 list | grep -q "portfolio"; then
                         pm2 restart portfolio --update-env
                       else
-                        pm2 start npm --name "portfolio" -- start --prefix NEW-PORTFOLIO --update-env
+                        pm2 start npm --name "portfolio" -- start --prefix . --update-env
                       fi
 
                       pm2 save
