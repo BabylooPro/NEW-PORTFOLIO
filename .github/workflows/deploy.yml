@@ -13,6 +13,9 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v2
 
+            - name: Set up environment variables
+              run: echo "GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }}" >> $GITHUB_ENV
+
             - name: Deploy to EC2
               uses: appleboy/ssh-action@v0.1.5
               with:
@@ -24,4 +27,11 @@ jobs:
                       git pull origin main
                       npm install
                       npm run build
-                      pm2 restart all
+
+                      if pm2 list | grep -q "portfolio"; then
+                        pm2 restart portfolio
+                      else
+                        pm2 start npm --name "portfolio" -- run start
+                      fi
+
+                      pm2 save
