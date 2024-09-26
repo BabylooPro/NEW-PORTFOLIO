@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./styles/globals.css";
-import { Poppins, Nunito, Quicksand } from "next/font/google";
+import { Poppins } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Providers } from "./providers";
 

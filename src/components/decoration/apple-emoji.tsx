@@ -12,6 +12,7 @@ interface AppleEmojiProps {
 // INFO: CURRENT VERSION SUPPORTS EMOJI v15.1 (Sept 2023)
 
 const AppleEmoji: React.FC<AppleEmojiProps> = ({ emojiShortName, size = 24, className = "" }) => {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const emoji = emojiData.find((e: any) => e.short_name === emojiShortName);
 
 	if (!emoji) {
