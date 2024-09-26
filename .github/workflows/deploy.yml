@@ -19,6 +19,8 @@ jobs:
                   host: ${{ secrets.EC2_HOST }}
                   username: ${{ secrets.EC2_USER }}
                   key: ${{ secrets.EC2_KEY }}
+                  envs: |
+                      GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }}
                   script: |
                       cd NEW-PORTFOLIO
 
@@ -26,16 +28,6 @@ jobs:
 
                       npm install
                       npm run build
-
-                      echo "export GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }}" | sudo tee -a /etc/environment
-                      source /etc/environment
-
-                      if [ -z "$GIT_HUB_ACCESS_TOKEN" ]; then
-                        echo "ENVIRONMENT VARIABLE GIT_HUB_ACCESS_TOKEN IS NOT DEFINED."
-                        exit 1
-                      else
-                        echo "ENVIRONMENT VARIABLE GIT_HUB_ACCESS_TOKEN IS DEFINED."
-                      fi
 
                       if pm2 list | grep -q "portfolio"; then
                         pm2 restart portfolio --update-env
