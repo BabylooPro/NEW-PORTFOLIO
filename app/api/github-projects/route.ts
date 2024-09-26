@@ -9,7 +9,7 @@ export async function GET() {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
-				Authorization: `Bearer ${process.env.GITHUB_ACCESS_TOKEN}`,
+				Authorization: `Bearer ${process.env.GIT_HUB_ACCESS_TOKEN}`,
 			},
 			body: JSON.stringify({
 				query: GITHUB_PROJECTS_QUERY,
