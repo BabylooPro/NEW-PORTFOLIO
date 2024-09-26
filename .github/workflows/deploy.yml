@@ -22,7 +22,7 @@ jobs:
                   envs: |
                       GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }}
                   script: |
-                      cd NEW-PORTFOLIO
+                      cd /home/ubuntu/NEW-PORTFOLIO
 
                       git pull origin main
 
