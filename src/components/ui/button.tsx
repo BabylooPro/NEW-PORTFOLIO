@@ -49,7 +49,7 @@ interface IconProps {
 
 interface IconRefProps {
 	Icon?: never;
-	iconPlacement?: undefined;
+	iconPlacement: undefined;
 }
 
 export interface ButtonProps
