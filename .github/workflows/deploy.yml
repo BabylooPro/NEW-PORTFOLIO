@@ -28,10 +28,13 @@ jobs:
                       npm install
                       npm run build
 
+                      echo "export GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }}" >> ~/.bashrc
+                      source ~/.bashrc
+
                       if pm2 list | grep -q "portfolio"; then
-                        pm2 restart portfolio
+                        pm2 restart portfolio --update-env
                       else
-                        pm2 start npm --name "portfolio" -- run start
+                        pm2 start npm --name "portfolio" -- run start --update-env
                       fi
 
                       pm2 save
