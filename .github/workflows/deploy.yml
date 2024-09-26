@@ -13,9 +13,6 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v2
 
-            - name: Set up environment variables
-              run: echo "GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }}" >> $GITHUB_ENV
-
             - name: Deploy to EC2
               uses: appleboy/ssh-action@v0.1.5
               with:
@@ -24,12 +21,21 @@ jobs:
                   key: ${{ secrets.EC2_KEY }}
                   script: |
                       cd NEW-PORTFOLIO
+
                       git pull origin main
+
                       npm install
                       npm run build
 
-                      echo "export GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }}" >> ~/.bashrc
-                      source ~/.bashrc
+                      echo "export GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }}" | sudo tee -a /etc/environment
+                      source /etc/environment
+
+                      if [ -z "$GIT_HUB_ACCESS_TOKEN" ]; then
+                        echo "ENVIRONMENT VARIABLE GIT_HUB_ACCESS_TOKEN IS NOT DEFINED."
+                        exit 1
+                      else
+                        echo "ENVIRONMENT VARIABLE GIT_HUB_ACCESS_TOKEN IS DEFINED."
+                      fi
 
                       if pm2 list | grep -q "portfolio"; then
                         pm2 restart portfolio --update-env
