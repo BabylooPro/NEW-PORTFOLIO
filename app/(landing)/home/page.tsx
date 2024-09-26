@@ -4,7 +4,7 @@ import Header from "@/features/landing/Header";
 import HeroSection from "@/features/landing/HeroSection";
 import SkillSection from "@/features/landing/SkillSection";
 import SideProjectsSection from "@/features/landing/SideProjectsSection";
-import { ContactSection } from "@/features/landing/ContactSection";
+// import { ContactSection } from "@/features/landing/ContactSection";
 
 export default function Home() {
 	return (
@@ -15,7 +15,7 @@ export default function Home() {
 			<ExperienceSection />
 			<SkillSection />
 			<SideProjectsSection />
-			<ContactSection />
+			{/* <ContactSection /> */} {/* WARN: THIS SECTION IS NOT WORKING YET*/}
 			<Footer />
 		</div>
 	);
