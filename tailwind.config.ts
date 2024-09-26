@@ -56,8 +56,18 @@ const config: Config = {
 				md: "calc(var(--radius) - 2px)",
 				sm: "calc(var(--radius) - 4px)",
 			},
+			keyframes: {
+				shine: {
+					from: { backgroundPosition: "200% 0" },
+					to: { backgroundPosition: "-200% 0" },
+				},
+			},
+			animation: {
+				shine: "shine 8s ease-in-out infinite",
+			},
 		},
 	},
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	plugins: [require("tailwindcss-animate")],
 };
 export default config;
