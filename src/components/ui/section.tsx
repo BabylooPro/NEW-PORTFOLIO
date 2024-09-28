@@ -74,8 +74,9 @@ export const Section = (props: SectionProps) => {
 			animate={isInView ? "visible" : "hidden"}
 			variants={variants}
 			transition={{
-				duration: 0.8,
+				duration: 1,
 				ease: "easeInOut",
+				delay: 0.25,
 			}}
 		>
 			<div
