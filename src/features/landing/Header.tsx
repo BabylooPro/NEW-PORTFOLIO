@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Github, Linkedin, Twitter } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { LayoutGroup, motion } from "framer-motion";
+import { Github, Linkedin, ArrowLeft } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { OneClickModeToggle } from "../themes/OneClickModeToggle";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { createPortal } from "react-dom";
+import { useRouter, usePathname } from "next/navigation";
 
 // FUNCTION TO RENDER TOOLTIP CONTENT IN A PORTAL
 const PortalTooltipContent = ({
@@ -20,11 +21,40 @@ const PortalTooltipContent = ({
 
 // HEADER COMPONENT
 export default function Header() {
+	const router = useRouter();
+	const pathname = usePathname();
 	const [isScrolling, setIsScrolling] = useState(false);
-	const [isAtTop, setIsAtTop] = useState(true);
 	const [isClient, setIsClient] = useState(false);
 	const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 	const [isSmallScreen, setIsSmallScreen] = useState(false);
+	const [isCompact, setIsCompact] = useState(false);
+	const [isHeaderMoved, setIsHeaderMoved] = useState(false);
+
+	const profileRef = useRef(null);
+	const separatorRef = useRef(null);
+	const socialLinksRef = useRef(null);
+
+	const handleBackNavigation = () => {
+		const pathSegments = pathname.split("/").filter((segment) => segment !== "");
+		if (pathSegments.length > 1) {
+			const parentPath = "/" + pathSegments.slice(0, -1).join("/");
+			router.push(parentPath);
+		} else {
+			router.push("/");
+		}
+	};
+
+	const getPreviousPageTitle = () => {
+		const pathSegments = pathname.split("/").filter((segment) => segment !== "");
+		if (pathSegments.length > 1) {
+			// RETURN CAPITALIZED LAST SEGMENT OF PREVIOUS ROUTE
+			return (
+				pathSegments[pathSegments.length - 2].charAt(0).toUpperCase() +
+				pathSegments[pathSegments.length - 2].slice(1)
+			);
+		}
+		return "Home";
+	};
 
 	// FETCH GITHUB PROFILE PICTURE
 	useEffect(() => {
@@ -45,30 +75,34 @@ export default function Header() {
 		setIsClient(true);
 
 		const handleResize = () => {
-			setIsSmallScreen(window.innerWidth < 640); // DETECT IF SCREEN IS SMALLER THAN 640PX
+			const isMobile = window.innerWidth < 640;
+			setIsSmallScreen(isMobile);
+			setIsCompact(false);
 		};
 
-		handleResize(); // Set initial screen size
+		handleResize();
 		window.addEventListener("resize", handleResize);
 
-		// VARIABLE TO STORE SCROLL TIMEOUT
 		let scrollTimeout: NodeJS.Timeout;
 
-		// FUNCTION TO HANDLE SCROLL EVENT
 		const handleScroll = () => {
+			const isMobile = window.innerWidth < 640;
 			if (window.scrollY > 0) {
-				setIsAtTop(false); // SET FALSE IF NOT AT TOP OF PAGE
-				setIsScrolling(true); // SET TRUE IF SCROLLING
+				setIsScrolling(true);
+				setIsHeaderMoved(true);
+				if (!isMobile) {
+					setIsCompact(true);
+				}
 
-				clearTimeout(scrollTimeout); // CLEAR SCROLL TIMEOUT IF PRESENT
+				clearTimeout(scrollTimeout);
 
-				// SET SCROLL TIMEOUT TO RESET SCROLLING
 				scrollTimeout = setTimeout(() => {
 					setIsScrolling(false);
 				}, 150);
 			} else {
-				setIsAtTop(true); // SET TRUE IF AT TOP OF PAGE
-				setIsScrolling(false); // SET FALSE IF AT TOP OF PAGE
+				setIsScrolling(false);
+				setIsHeaderMoved(false);
+				setIsCompact(false);
 			}
 		};
 
@@ -85,129 +119,225 @@ export default function Header() {
 		<motion.header
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
-			transition={{ duration: 1 }}
+			transition={{ duration: 1, ease: "easeInOut", delay: 0.25 }}
+			variants={{
+				hidden: { opacity: 0, y: 50, scale: 0.9 },
+				visible: { opacity: 1, y: 0, scale: 1 },
+			}}
 			className={`overflow-hidden sticky z-50 flex items-center justify-center p-4 sm:p-6 max-xl:w-3/4 w-full max-w-5xl mx-auto shadow-2xl rounded-lg sm:rounded-2xl bg-neutral-300/30 dark:bg-neutral-900/70 backdrop-blur-lg transition-all duration-300 ${
-				isScrolling ? "top-0" : isAtTop ? "top-6 sm:top-10" : "top-6 sm:top-10"
+				isScrolling ? "top-0" : isHeaderMoved ? "top-6 sm:top-10" : "top-6 sm:top-10"
 			}`}
 		>
-			<div className="flex flex-col items-center space-y-2 sm:space-y-4">
-				{/* PROFILE & DESCRIPTION */}
+			{/* BACK BUTTON WITH TOOLTIP - ONLY SHOW IF NOT ON HOME PAGE */}
+			{pathname !== "/" && (
+				<TooltipProvider delayDuration={0}>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<motion.button
+								onClick={handleBackNavigation}
+								className="absolute left-4 sm:left-5 top-4 sm:top-5 text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200"
+								whileHover={{ scale: 1.1 }}
+								whileTap={{ scale: 0.9 }}
+								initial={{ opacity: 0, x: -20 }}
+								animate={{ opacity: 1, x: 0 }}
+								transition={{ duration: 0.3 }}
+							>
+								<ArrowLeft size={24} />
+							</motion.button>
+						</TooltipTrigger>
+						<PortalTooltipContent side="bottom">
+							<span>Back to {getPreviousPageTitle()}</span>
+						</PortalTooltipContent>
+					</Tooltip>
+				</TooltipProvider>
+			)}
+
+			<LayoutGroup>
 				<motion.div
-					className="flex items-center space-x-2 sm:space-x-4"
-					initial={{ opacity: 0, x: -50 }}
-					animate={{ opacity: 1, x: 0 }}
-					transition={{ duration: 0.5, delay: 0.2 }}
+					className={`flex ${
+						isCompact
+							? "flex-row justify-between items-center w-full mx-10"
+							: "flex-col items-center"
+					}`}
+					initial={{ opacity: 1 }}
+					animate={{
+						flexDirection: isCompact ? "row" : "column",
+						justifyContent: isCompact ? "space-between" : "center",
+						alignItems: isCompact ? "center" : "center",
+						width: isCompact ? "100%" : "auto",
+						transition: { duration: 0.5, ease: "easeInOut" },
+					}}
+					layout
 				>
+					{/* PROFILE & DESCRIPTION */}
 					<motion.div
-						whileHover={{ scale: 1.1 }}
-						transition={{ type: "spring", stiffness: 300, damping: 10 }}
+						ref={profileRef}
+						className={`flex items-center justify-center  ${
+							isCompact ? "space-x-2" : "space-x-2 sm:space-x-4"
+						}`}
+						initial={{ opacity: 0, x: isCompact ? -100 : 100 }}
+						animate={{
+							opacity: 1,
+							x: 0,
+							alignSelf: isCompact ? "flex-start" : "center",
+							marginLeft: isCompact ? "1rem" : "0",
+							transition: {
+								duration: 1,
+								ease: "easeInOut",
+								delay: isCompact ? 0 : 1,
+							},
+						}}
+						layout
 					>
-						<Avatar className="w-10 h-10 sm:w-14 sm:h-14">
-							<AvatarImage src={avatarUrl ?? ""} alt="Profile Image" />
-							<AvatarFallback>MR</AvatarFallback>
-						</Avatar>
+						<motion.div
+							whileHover={{ scale: 1.1 }}
+							transition={{ type: "spring", stiffness: 300, damping: 10 }}
+						>
+							<Avatar className="w-10 h-10 sm:w-14 sm:h-14">
+								<AvatarImage src={avatarUrl ?? ""} alt="Profile Image" />
+								<AvatarFallback>MR</AvatarFallback>
+							</Avatar>
+						</motion.div>
+						<div className="text-left">
+							<motion.h1
+								className="text-lg sm:text-xl font-semibold"
+								initial={{ opacity: 0, y: -20 }}
+								animate={{
+									opacity: 1,
+									y: 0,
+									transition: { duration: 0.6, ease: "easeOut" },
+								}}
+							>
+								Max Remy
+							</motion.h1>
+							<motion.p
+								className="text-neutral-500 sm:hidden"
+								initial={{ x: -100, opacity: 0 }}
+								animate={{ x: 0, opacity: 1 }}
+								exit={{ x: -100, opacity: 0 }}
+								transition={{ duration: 0.6, delay: 0.4 }}
+							>
+								FullStack Developer
+							</motion.p>
+							<motion.p
+								className="text-neutral-500 hidden sm:block"
+								initial={{ x: -100, opacity: 0 }}
+								animate={{ x: 0, opacity: 1 }}
+								exit={{ x: -100, opacity: 0 }}
+								transition={{ duration: 0.6, delay: 0.4 }}
+							>
+								FullStack Developer | Software Engineer
+							</motion.p>
+						</div>
 					</motion.div>
-					<div className="text-left">
-						<h1 className="text-lg sm:text-xl font-semibold">Max Remy</h1>
-						{/* FullStack Developer for mobile, FullStack Developer | Software Engineer for other sizes */}
-						<motion.p
-							className="text-neutral-500 sm:hidden"
-							initial={{ x: -100, opacity: 0 }}
-							animate={{ x: 0, opacity: 1 }}
-							transition={{ duration: 0.5, delay: 0.6 }}
+
+					{/* SEPARATOR HIDDEN ON MOBILE */}
+					{!isCompact && (
+						<motion.div
+							ref={separatorRef}
+							initial={{ width: 0, opacity: 0 }}
+							animate={{
+								width: isCompact ? 0 : "100%",
+								opacity: isCompact ? 0 : 1,
+								transition: { duration: 0.7, ease: "easeInOut", delay: 0.6 },
+							}}
+							exit={{ width: 0, opacity: 0 }}
+							className="my-2"
 						>
-							FullStack Developer
-						</motion.p>
-						<motion.p
-							className="text-neutral-500 hidden sm:block"
-							initial={{ x: -100, opacity: 0 }}
-							animate={{ x: 0, opacity: 1 }}
-							transition={{ duration: 0.5, delay: 0.6 }}
-						>
-							FullStack Developer | Software Engineer
-						</motion.p>
-					</div>
+							<Separator className="bg-neutral-500 hidden sm:block" />
+						</motion.div>
+					)}
+
+					{/* SOCIAL LINKS HIDDEN ON MOBILE */}
+					<motion.div
+						ref={socialLinksRef}
+						className={`flex items-center space-x-6  ${
+							isCompact ? "flex justify-end" : "hidden sm:flex"
+						}`}
+						initial={{ opacity: 0, x: isCompact ? 100 : -100 }}
+						animate={{
+							opacity: 1,
+							x: 0,
+							alignSelf: isCompact ? "flex-end" : "center",
+							transition: {
+								duration: 1,
+								ease: "easeInOut",
+								delay: isCompact ? 0 : 1,
+							},
+						}}
+						layout
+					>
+						<TooltipProvider>
+							{/* GITHUB */}
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<motion.a
+										href="https://github.com/babyloopro"
+										target="_blank"
+										rel="noopener noreferrer"
+										className="hover:text-neutral-400 dark:hover:text-neutral-400 text-black dark:text-white transition-colors duration-200"
+										whileHover={{ scale: 1.2, rotate: -10 }}
+										whileTap={{ scale: 0.9 }}
+										transition={{ type: "spring", stiffness: 400, damping: 10 }}
+									>
+										<Github size={isSmallScreen ? 24 : 28} />
+									</motion.a>
+								</TooltipTrigger>
+								<PortalTooltipContent side="bottom">
+									<span>Github</span>
+								</PortalTooltipContent>
+							</Tooltip>
+
+							{/* LINKEDIN */}
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<motion.a
+										href="https://www.linkedin.com/in/maxremydev/"
+										target="_blank"
+										rel="noopener noreferrer"
+										className="hover:text-neutral-400 dark:hover:text-neutral-400 text-black dark:text-white transition-colors duration-200"
+										whileHover={{ scale: 1.2 }}
+										whileTap={{ scale: 0.9 }}
+										transition={{ type: "spring", stiffness: 400, damping: 10 }}
+									>
+										<Linkedin size={isSmallScreen ? 24 : 28} />
+									</motion.a>
+								</TooltipTrigger>
+								<PortalTooltipContent side="bottom">
+									<span>LinkedIn</span>
+								</PortalTooltipContent>
+							</Tooltip>
+
+							{/* X */}
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<motion.a
+										href="https://x.com/babyloopro"
+										target="_blank"
+										rel="noopener noreferrer"
+										className="hover:text-neutral-400 dark:hover:text-neutral-400 text-black dark:text-white transition-colors duration-200"
+										whileHover={{ scale: 1.2, rotate: 10 }}
+										whileTap={{ scale: 0.9 }}
+										transition={{ type: "spring", stiffness: 400, damping: 10 }}
+									>
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											width={30}
+											height={30}
+											className="fill-current"
+										>
+											<path d="m26.37 26-8.795-12.822.015.012L25.52 4h-2.65l-6.46 7.48L11.28 4H4.33l8.211 11.971-.001-.001L3.88 26h2.65l7.182-8.322L19.42 26h6.95zM10.23 6l12.34 18h-2.1L8.12 6h2.11z" />
+										</svg>
+									</motion.a>
+								</TooltipTrigger>
+								<PortalTooltipContent side="bottom">
+									<span>X</span>
+								</PortalTooltipContent>
+							</Tooltip>
+						</TooltipProvider>
+					</motion.div>
 				</motion.div>
-
-				{/* SEPARATOR HIDDEN ON MOBILE */}
-				<motion.div
-					initial={{ width: 0, opacity: 0 }}
-					animate={{ width: "100%", opacity: 1 }}
-					transition={{ duration: 0.6, ease: "easeInOut", delay: 0.4 }}
-				>
-					<Separator className="bg-neutral-500 hidden sm:block" />
-				</motion.div>
-
-				{/* SOCIAL LINKS HIDDEN ON MOBILE */}
-				<motion.div
-					className="flex items-center space-x-6 hidden sm:flex"
-					initial={{ opacity: 0, x: 50 }}
-					animate={{ opacity: 1, x: 0 }}
-					transition={{ duration: 0.5, delay: 0.4 }}
-				>
-					<TooltipProvider>
-						{/* GITHUB */}
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<motion.a
-									href="https://github.com/babyloopro"
-									target="_blank"
-									rel="noopener noreferrer"
-									className="hover:text-neutral-400 dark:hover:text-neutral-400 text-black dark:text-white transition-colors duration-200"
-									whileHover={{ scale: 1.2, rotate: -10 }}
-									whileTap={{ scale: 0.9 }}
-									transition={{ type: "spring", stiffness: 400, damping: 10 }}
-								>
-									<Github size={isSmallScreen ? 24 : 28} />
-								</motion.a>
-							</TooltipTrigger>
-							<PortalTooltipContent side="bottom">
-								<span>Github</span>
-							</PortalTooltipContent>
-						</Tooltip>
-
-						{/* LINKEDIN */}
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<motion.a
-									href="https://www.linkedin.com/in/maxremydev/"
-									target="_blank"
-									rel="noopener noreferrer"
-									className="hover:text-neutral-400 dark:hover:text-neutral-400 text-black dark:text-white transition-colors duration-200"
-									whileHover={{ scale: 1.2 }}
-									whileTap={{ scale: 0.9 }}
-									transition={{ type: "spring", stiffness: 400, damping: 10 }}
-								>
-									<Linkedin size={isSmallScreen ? 24 : 28} />
-								</motion.a>
-							</TooltipTrigger>
-							<PortalTooltipContent side="bottom">
-								<span>LinkedIn</span>
-							</PortalTooltipContent>
-						</Tooltip>
-
-						{/* TWITTER/X */}
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<motion.a
-									href="https://x.com/babyloopro"
-									target="_blank"
-									rel="noopener noreferrer"
-									className="hover:text-neutral-400 dark:hover:text-neutral-400 text-black dark:text-white transition-colors duration-200"
-									whileHover={{ scale: 1.2, rotate: 10 }}
-									whileTap={{ scale: 0.9 }}
-									transition={{ type: "spring", stiffness: 400, damping: 10 }}
-								>
-									<Twitter size={isSmallScreen ? 24 : 28} />
-								</motion.a>
-							</TooltipTrigger>
-							<PortalTooltipContent side="bottom">
-								<span>Twitter/X</span>
-							</PortalTooltipContent>
-						</Tooltip>
-					</TooltipProvider>
-				</motion.div>
-			</div>
+			</LayoutGroup>
 
 			{/* CHANGE THEME */}
 			{isClient && (

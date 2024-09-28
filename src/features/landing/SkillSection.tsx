@@ -11,12 +11,7 @@ const SkillSection: React.FC = () => {
 			items={skills}
 			showCompany={false}
 			showSkills={true}
-			scrollHeight="h-[300px]"
-			infoMode="tooltip"
-			infoTooltipText="Information about the skill"
-			infoPosition="top"
-			infoIconSize={16}
-			infoClassName="ml-2"
+			scrollHeight="h-[355px]"
 		/>
 	);
 };

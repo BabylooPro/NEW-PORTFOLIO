@@ -1,10 +1,18 @@
+import type { Metadata } from "next";
 import ExperienceSection from "@/features/landing/ExperienceSection";
 import Footer from "@/features/landing/Footer";
 import Header from "@/features/landing/Header";
 import HeroSection from "@/features/landing/HeroSection";
 import SkillSection from "@/features/landing/SkillSection";
 import SideProjectsSection from "@/features/landing/SideProjectsSection";
+import WhatIDoSection from "@/features/landing/WhatIDoSection";
+import SocialSection from "@/features/landing/SocialSection";
 // import { ContactSection } from "@/features/landing/ContactSection";
+
+export const metadata: Metadata = {
+	title: "Home",
+	description: "Home",
+};
 
 export default function Home() {
 	return (
@@ -12,9 +20,11 @@ export default function Home() {
 			<div className="h-16 max-sm:h-12" />
 			<Header />
 			<HeroSection />
+			<SocialSection />
 			<ExperienceSection />
 			<SkillSection />
 			<SideProjectsSection />
+			<WhatIDoSection />
 			{/* <ContactSection /> */} {/* WARN: THIS SECTION IS NOT WORKING YET*/}
 			<Footer />
 		</div>

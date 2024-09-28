@@ -12,13 +12,6 @@ const ExperienceSection: React.FC = () => {
 			showCompany={true}
 			showSkills={true}
 			scrollHeight="h-[400px]"
-			infoMode="toast"
-			infoTooltipText="Information about the experience"
-			infoToastTitle="Experience"
-			infoToastDescription="Information about the experience"
-			infoPosition="top"
-			infoIconSize={16}
-			infoClassName="ml-2"
 		/>
 	);
 };

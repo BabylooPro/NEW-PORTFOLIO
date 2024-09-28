@@ -13,7 +13,7 @@ import {
 	FormDescription,
 	FormField,
 } from "@/components/ui/form";
-import InfoSection from "@/components/ui/info-section";
+import ShowInfo from "@/components/ui/show-info";
 import ProgressButton from "@/components/ui/progress-button";
 
 // ZOD SCHEMA FOR VALIDATION
@@ -52,7 +52,10 @@ export const ContactSection = () => {
 		<Section>
 			<h2 className="text-2xl font-bold flex items-center gap-2">
 				Contact
-				<InfoSection mode={"tooltip"} />
+				<ShowInfo
+					title={"Contact"}
+					description={"If you contact me, I will get back to you as soon as possible."}
+				/>
 			</h2>
 			<p className="flex items-center gap-2 text-neutral-500 mb-8">
 				Please fill in the form below to get in touch.

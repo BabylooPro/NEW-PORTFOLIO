@@ -1,12 +1,15 @@
 "use client";
 
 import AppleEmoji from "@/components/decoration/apple-emoji";
+import { Button } from "@/components/ui/button";
 import { Section } from "@/components/ui/section";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export default function HeroSection() {
 	return (
 		<Section>
+			{/* TITLE */}
 			<h1 className="text-5xl font-bold tracking-tight mb-4 flex items-center">
 				Hello,
 				<motion.div
@@ -23,13 +26,23 @@ export default function HeroSection() {
 					<AppleEmoji emojiShortName="wave" size={60} className="ml-2" />
 				</motion.div>
 			</h1>
+
+			{/* DESCRIPTION */}
 			<p className="text-xl">
 				I’m a Developer or Software Engineer, call me what you want, but I’m a “young-old”
 				C# specialist. You could say I’m a FullStack Developer with 9 years of experience. I
 				work on everything that interests me. As a Swiss Freelance Developer, I do a bit of
 				everything: building CLI, RESTful API, web or mobile application, and even DevOps
 				for deployment. <br />
-				<br /> In short, I’m your Swiss army knife for any development needs.
+				<br /> In short, I’m your Swiss Army Knife for any development needs.
+			</p>
+
+			{/* LEARN MORE REDIRECT */}
+			<p className="text-xl">
+				Learn more
+				<Button variant="linkHover1" className="text-xl -ml-3">
+					<Link href="/about">about me.</Link>
+				</Button>
 			</p>
 		</Section>
 	);

@@ -4,22 +4,17 @@ import { Github, ExternalLink, Pin } from "lucide-react";
 import { ScrollArea, ScrollAreaRef } from "@/components/ui/scroll-area";
 import { Section } from "@/components/ui/section";
 import Link from "next/link";
-import InfoSection from "@/components/ui/info-section";
+import ShowInfo from "@/components/ui/show-info";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGitHubProjects } from "@/hooks/use-GitHubProjects";
-import { useState, useEffect, useRef } from "react";
+import { useRef } from "react";
 import ScrollIndicator from "@/components/ui/scroll-indicator";
+import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
+import { motion } from "framer-motion";
+
 const SideProjectsSection = () => {
 	const { projects, error, loading } = useGitHubProjects(); // GET PROJECTS FROM GITHUB
-	const [isLoading, setIsLoading] = useState(true);
 	const scrollAreaRef = useRef<ScrollAreaRef>(null);
-
-	// RESET LOADING STATE ON COMPONENT MOUNT (PAGE REFRESH)
-	useEffect(() => {
-		setIsLoading(true);
-		const timeoutId = setTimeout(() => setIsLoading(false), 1000); // SIMULATE A DELAY BEFORE LOADING CONTENT
-		return () => clearTimeout(timeoutId);
-	}, []);
 
 	// DISPLAY ERROR MESSAGE IF REQUEST FAILS
 	if (error) {
@@ -38,8 +33,8 @@ const SideProjectsSection = () => {
 		);
 	}
 
-	// IF PROJECTS ARE STILL LOADING OR PAGE HAS JUST REFRESHED, DISPLAY SKELETON
-	if (loading || isLoading) {
+	// IF PROJECTS ARE STILL LOADING, DISPLAY SKELETON
+	if (loading) {
 		return (
 			<Section>
 				<h2 className="text-2xl font-bold mb-6">Projects</h2>
@@ -62,7 +57,12 @@ const SideProjectsSection = () => {
 			<div className="relative mb-10">
 				<h2 className="text-2xl font-bold flex items-center gap-2 -mb-5">
 					Projects
-					<InfoSection mode={"tooltip"} />
+					<ShowInfo
+						title={"Projects"}
+						description={
+							"This section displays my projects on GitHub (no private/clients projects)"
+						}
+					/>
 				</h2>
 				<ScrollIndicator
 					scrollAreaRef={scrollAreaRef}
@@ -72,59 +72,65 @@ const SideProjectsSection = () => {
 			</div>
 
 			{/* SCROLL AREA TO DISPLAY MORE PROJECTS */}
-			<ScrollArea ref={scrollAreaRef} className="h-[550px] w-full">
-				<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-4">
+			<ScrollArea ref={scrollAreaRef} className="h-[555px] w-full">
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
 					{sortedProjects.map((project) => (
-						<div
+						<motion.div
 							key={project.name}
-							className="bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-neutral-300 p-6 rounded-xl relative"
+							className="h-full"
+							whileHover={{ scale: 1.03 }}
+							transition={{ type: "spring", stiffness: 300 }}
 						>
-							{/* PIN */}
-							{project.pinned && (
-								<div className="absolute top-2 right-2">
-									<Pin className="size-5 rotate-45 text-yellow-500" />
-								</div>
-							)}
-
-							{/* TITLE */}
-							<h3 className="text-xl font-semibold mb-2">{project.name}</h3>
-
-							{/* DESCRIPTION */}
-							<p className="text-neutral-500 dark:text-neutral-400 mb-4">
-								{project.description}
-							</p>
-
-							{/* LANGUAGE USED */}
-							<p className="text-neutral-600 dark:text-neutral-300 mb-4">
-								Built With : <span className="font-bold">{project.language}</span>
-							</p>
-
-							{/* PROJECT INFOS */}
-							<div className="flex items-center space-x-4">
-								{/* STARS */}
-								<div className="flex items-center space-x-1">
-									<Github className="w-5 h-5 text-neutral-700 dark:text-neutral-300" />
-									<span>{project.stargazers_count}</span>
-								</div>
-
-								{/* FORKS */}
-								<div className="flex items-center space-x-1">
-									<span className="text-neutral-500 dark:text-neutral-400">
-										Forks:
-									</span>
-									<span>{project.forks_count}</span>
-								</div>
-
-								{/* LINK TO PROJECT */}
-								<Link
-									href={project.html_url}
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									<ExternalLink className="w-5 h-5 text-neutral-700 dark:text-neutral-300" />
-								</Link>
-							</div>
-						</div>
+							<Card className="flex flex-col h-[250px] relative">
+								{project.pinned && (
+									<div className="absolute top-2 right-2">
+										<Pin className="size-4 rotate-45 text-yellow-500" />
+									</div>
+								)}
+								<CardHeader className="pb-2">
+									<CardTitle className="text-lg">{project.name}</CardTitle>
+								</CardHeader>
+								<CardContent className="flex-grow py-2">
+									<p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+										{project.description}
+									</p>
+									<p className="text-xs mb-2">
+										Built With:{" "}
+										{project.languages.slice(0, 3).map((lang, index) => (
+											<span key={lang} className="font-semibold">
+												{lang}
+												{index <
+													Math.min(project.languages.length, 3) - 1 &&
+													", "}
+											</span>
+										))}
+									</p>
+								</CardContent>
+								<CardFooter className="flex justify-between items-center pt-2">
+									<div className="flex items-center space-x-4">
+										<div className="flex items-center space-x-1">
+											<Github className="w-4 h-4" />
+											<span className="text-sm">
+												{project.stargazers_count}
+											</span>
+										</div>
+										<div className="flex items-center space-x-1">
+											<span className="text-xs text-muted-foreground">
+												Forks:
+											</span>
+											<span className="text-sm">{project.forks_count}</span>
+										</div>
+									</div>
+									<Link
+										href={project.html_url}
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										<ExternalLink className="w-4 h-4" />
+									</Link>
+								</CardFooter>
+							</Card>
+						</motion.div>
 					))}
 				</div>
 			</ScrollArea>
