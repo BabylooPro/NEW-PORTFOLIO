@@ -3,14 +3,31 @@
 import AppleEmoji from "@/components/decoration/apple-emoji";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/ui/section";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 import Link from "next/link";
+import { PocketKnife } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { useRef } from "react";
 
 export default function HeroSection() {
+	const ref = useRef<HTMLSpanElement>(null);
+	const mouseX = useMotionValue(0);
+	const springX = useSpring(mouseX, { stiffness: 500, damping: 50 });
+
+	const handleMouseMove = (e: React.MouseEvent<HTMLSpanElement>) => {
+		const element = ref.current;
+		if (element) {
+			const rect = element.getBoundingClientRect();
+			const relativeX = e.clientX - rect.left;
+			const centerX = element.offsetWidth / 2;
+			mouseX.set(relativeX - centerX);
+		}
+	};
+
 	return (
-		<Section>
+		<Section className="px-4 md:px-8">
 			{/* TITLE */}
-			<h1 className="text-5xl font-bold tracking-tight mb-4 flex items-center">
+			<h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 flex items-center">
 				Hello,
 				<motion.div
 					initial={{ rotate: 0 }}
@@ -28,19 +45,40 @@ export default function HeroSection() {
 			</h1>
 
 			{/* DESCRIPTION */}
-			<p className="text-xl">
+			<p className="md:text-xl">
 				I’m a Developer or Software Engineer, call me what you want, but I’m a “young-old”
 				C# specialist. You could say I’m a FullStack Developer with 9 years of experience. I
 				work on everything that interests me. As a Swiss Freelance Developer, I do a bit of
 				everything: building CLI, RESTful API, web or mobile application, and even DevOps
-				for deployment. <br />
-				<br /> In short, I’m your Swiss Army Knife for any development needs.
+				for deployment.
 			</p>
 
+			{/* SWISS ARMY KNIFE */}
+			<div className="md:text-xl mt-4">
+				In short, I&apos;m your{" "}
+				<span
+					ref={ref}
+					className="relative inline-block group cursor-pointer"
+					onMouseMove={handleMouseMove}
+					onMouseLeave={() => mouseX.set(0)}
+				>
+					<p>Swiss Army Knife</p>
+					<motion.div
+						className="absolute hidden group-hover:block top-full left-0 md:-top-12 md:left-1/2 z-10 w-full md:w-auto"
+						style={{ x: springX }}
+					>
+						<Card className="p-2 whitespace-nowrap">
+							<PocketKnife size={24} className="text-red-400 flex-shrink-0" />
+						</Card>
+					</motion.div>
+				</span>{" "}
+				for any development needs.
+			</div>
+
 			{/* LEARN MORE REDIRECT */}
-			<p className="text-xl">
+			<p className="text-base md:text-xl mt-4">
 				Learn more
-				<Button variant="linkHover1" className="text-xl -ml-3">
+				<Button variant="linkHover1" className="text-base md:text-xl -ml-3">
 					<Link href="/about">about me.</Link>
 				</Button>
 			</p>
