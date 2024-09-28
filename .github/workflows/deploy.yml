@@ -13,6 +13,17 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v2
 
+            - name: Cache node_modules
+              uses: actions/cache@v2
+              with:
+                  path: node_modules
+                  key: ${{ runner.os }}-node_modules-${{ hashFiles('package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node_modules-
+
+            - name: Install dependencies
+              run: npm insta§ll
+
             - name: Deploy to EC2
               uses: appleboy/ssh-action@v0.1.5
               with:
