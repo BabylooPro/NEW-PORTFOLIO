@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import "devicon";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
-import InfoSection from "@/components/ui/info-section";
+import ShowInfo from "@/components/ui/show-info";
 import ScrollIndicator from "@/components/ui/scroll-indicator";
 
 interface SkillItem {
@@ -36,13 +36,8 @@ interface UseExpertiseProps {
 	showSkills?: boolean;
 	scrollHeight?: string;
 	allColorIcon?: string;
-	infoMode: "tooltip" | "toast";
-	infoTooltipText?: string;
-	infoToastTitle?: string;
-	infoToastDescription?: string;
-	infoPosition?: "top" | "bottom" | "left" | "right";
-	infoIconSize?: number;
-	infoClassName?: string;
+	infoSkills?: string;
+	infoExperiences?: string;
 }
 
 const isExperienceItem = (
@@ -58,13 +53,8 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 	showSkills = true,
 	scrollHeight = "h-[400px]",
 	allColorIcon,
-	infoMode,
-	infoTooltipText,
-	infoToastTitle,
-	infoToastDescription,
-	infoPosition,
-	infoIconSize,
-	infoClassName,
+	infoSkills = "skills",
+	infoExperiences = "experiences",
 }) => {
 	const scrollAreaRef = React.useRef<ScrollAreaRef>(null);
 
@@ -80,14 +70,14 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 					{/* TITLE */}
 					<h2 className="text-2xl font-bold flex items-center -mb-5">
 						{title}
-						<InfoSection
-							mode={infoMode}
-							tooltipText={infoTooltipText}
-							position={infoPosition}
-							iconSize={infoIconSize}
-							toastTitle={infoToastTitle}
-							toastDescription={infoToastDescription}
-							className={infoClassName}
+						<ShowInfo
+							title={title}
+							description={
+								title.toLowerCase().includes("skill")
+									? `Here are some of my ${infoSkills}.`
+									: `Check out my ${infoExperiences} professional.`
+							}
+							className="ml-2"
 						/>
 					</h2>
 

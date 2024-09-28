@@ -23,8 +23,10 @@ export const GITHUB_PROJECTS_QUERY = `
                 totalCount
               }
               url
-              primaryLanguage {
-                name
+              languages(first: 3, orderBy: {field: SIZE, direction: DESC}) {
+                nodes {
+                  name
+                }
               }
             }
           }
@@ -41,8 +43,10 @@ export const GITHUB_PROJECTS_QUERY = `
             totalCount
           }
           url
-          primaryLanguage {
-            name
+          languages(first: 3, orderBy: {field: SIZE, direction: DESC}) {
+            nodes {
+              name
+            }
           }
         }
       }

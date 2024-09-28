@@ -8,6 +8,7 @@ interface GitHubRepo {
 	stargazers_count: number;
 	forks_count: number;
 	pinned?: boolean;
+	languages: string[];
 }
 
 interface PinnedRepo {
@@ -23,6 +24,9 @@ interface PinnedRepo {
 	forks: {
 		totalCount: number;
 	};
+	languages: {
+		nodes: { name: string }[];
+	};
 }
 
 interface AllRepo {
@@ -37,6 +41,9 @@ interface AllRepo {
 	};
 	forks: {
 		totalCount: number;
+	};
+	languages: {
+		nodes: { name: string }[];
 	};
 }
 
@@ -86,6 +93,7 @@ export const useGitHubProjects = () => {
 			language: edge.node.primaryLanguage?.name || "Unknown",
 			stargazers_count: edge.node.stargazers.totalCount,
 			forks_count: edge.node.forks.totalCount,
+			languages: edge.node.languages.nodes.map((lang) => lang.name),
 			pinned: true,
 		})
 	);
@@ -98,6 +106,7 @@ export const useGitHubProjects = () => {
 		language: node.primaryLanguage?.name || "Unknown",
 		stargazers_count: node.stargazers.totalCount,
 		forks_count: node.forks.totalCount,
+		languages: node.languages.nodes.map((lang) => lang.name),
 	}));
 
 	// FILTER REPOS FOR EXCLUDED REPOS
