@@ -10,19 +10,29 @@ const toEmail = "maxremy.dev@gmail.com";
 export async function POST(req: Request) {
 	const { name, email, message } = await req.json();
 
+	// GENERATE A UNIQUE IDENTIFIER FOR ONE SUBMISSION
+	const submissionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+
 	// TRYING TO SEND EMAIL USING RESEND API
 	try {
 		const result = await resend.emails.send({
 			from: fromEmail,
-			to: toEmail,
-			replyTo: email,
-			subject: `New Contact from ${name} in Portfolio`,
+			to: [toEmail, email], // SEND TO BOTH DEV AND VISITOR
+			subject: `New Contact from ${name} in Portfolio (ID: ${submissionId})`,
 			html: `
-				<h1>New Contact Form Submission in Portfolio</h1>
+				<h2>New Contact Form Submission</h2>
+            <br />
 				<p><strong>Name:</strong> ${name}</p>
 				<p><strong>Email:</strong> ${email}</p>
 				<p><strong>Message:</strong> ${message}</p>
-			`,
+				<br />
+				${
+					email === toEmail
+						? ""
+						: "<p style='color: gray; font-size: 0.8em;'>This is a copy of the message sent to the portfolio owner.</p>"
+				}
+            <p style='color: gray; font-size: 0.8em;'><strong>Submission ID:</strong> ${submissionId}</p>
+         `,
 		});
 
 		console.log("RESEND API response:", result);
