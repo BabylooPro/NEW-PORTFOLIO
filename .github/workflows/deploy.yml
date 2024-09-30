@@ -32,9 +32,6 @@ jobs:
                   host: ${{ secrets.EC2_HOST }}
                   username: ${{ secrets.EC2_USER }}
                   key: ${{ secrets.EC2_KEY }}
-                  envs: |
-                      GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }}
-                      RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
                   script: |
                       cd /home/ubuntu
 
@@ -46,11 +43,8 @@ jobs:
 
                       git pull origin main
 
-                      [ -z "$GIT_HUB_ACCESS_TOKEN" ] && { echo "Missing GIT_HUB_ACCESS_TOKEN!"; exit 1; }
-                      [ -z "$RESEND_API_KEY" ] && { echo "Missing RESEND_API_KEY!"; exit 1; }
-
-                      npm ci --prefix .
-                      npm run build --prefix .
+                      RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} npm ci --prefix .
+                      RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} npm run build --prefix .
 
                       pm2 describe portfolio > /dev/null && pm2 restart portfolio --update-env || pm2 start npm --name "portfolio" -- start --prefix . --update-env
 
