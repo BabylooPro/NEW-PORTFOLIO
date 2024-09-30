@@ -58,18 +58,18 @@ const ShowInfo: React.FC<ShowInfoProps> = ({
 				<Tooltip>
 					<TooltipTrigger asChild>
 						<button onClick={handleInteraction}>
-							<InfoIcon size={iconSize} className="cursor-pointer" />
+							<InfoIcon size={iconSize} className="cursor-pointer mt-1" />
 						</button>
 					</TooltipTrigger>
 					{!isMobile && (
 						<TooltipContent side={position} sideOffset={sideOffset}>
 							<div>
-								<p>{tooltipText || title || "Text - Tooltip"}</p>
-								<p className="text-sm text-neutral-500 dark:text-neutral-400">
-									{(tooltipDescription || description) && (
-										<p>{tooltipDescription || description}</p>
-									)}
-								</p>
+								<div>{tooltipText || title || "Text - Tooltip"}</div>
+								{(tooltipDescription || description) && (
+									<div className="text-sm text-neutral-500 dark:text-neutral-400">
+										{tooltipDescription || description}
+									</div>
+								)}
 							</div>
 						</TooltipContent>
 					)}
