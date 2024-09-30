@@ -4,9 +4,11 @@ const nextConfig = {
 		domains: ["avatars.githubusercontent.com", "cdnjs.cloudflare.com"],
 	},
 	compiler: {
-		removeConsole: {
-			exclude: ["error", "warn"],
-		},
+		...(process.env.NODE_ENV === "production" && {
+			removeConsole: {
+				exclude: ["error", "warn"],
+			},
+		}),
 	},
 };
 
