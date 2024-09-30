@@ -22,7 +22,7 @@ jobs:
                       ${{ runner.os }}-node_modules-
 
             - name: Install dependencies
-              run: npm install
+              run: npm ci
 
             - name: Deploy to EC2
               uses: appleboy/ssh-action@v0.1.5
@@ -34,11 +34,17 @@ jobs:
                       GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }}
                       RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
                   script: |
-                      cd /home/ubuntu/NEW-PORTFOLIO
+                      cd /home/ubuntu
+
+                      if [ ! -d "NEW-PORTFOLIO" ]; then
+                        git clone https://github.com/BabylooPro/NEW-PORTFOLIO.git
+                      fi
+
+                      cd NEW-PORTFOLIO
 
                       git pull origin main
 
-                      npm install --prefix .
+                      npm ci --prefix .
                       npm run build --prefix .
 
                       if pm2 list | grep -q "portfolio"; then
