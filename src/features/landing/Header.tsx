@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { LayoutGroup, motion } from "framer-motion";
-import { Github, Linkedin, ArrowLeft } from "lucide-react";
+import { Github, Linkedin, ArrowLeft, Youtube } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { OneClickModeToggle } from "../themes/OneClickModeToggle";
@@ -30,9 +30,34 @@ export default function Header() {
 	const [isCompact, setIsCompact] = useState(false);
 	const [isHeaderMoved, setIsHeaderMoved] = useState(false);
 
-	const profileRef = useRef(null);
+	const profileRef = useRef<HTMLDivElement>(null);
 	const separatorRef = useRef(null);
-	const socialLinksRef = useRef(null);
+	const socialLinksRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		console.log(`isCompact: ${isCompact}`);
+
+		//! Log positions of "Profile & Description" and "Social Links"
+		if (profileRef.current) {
+			const profileRect = profileRef.current.getBoundingClientRect();
+			console.log("Profile & Description position:", {
+				top: profileRect.top,
+				left: profileRect.left,
+				bottom: profileRect.bottom,
+				right: profileRect.right,
+			});
+		}
+
+		if (socialLinksRef.current) {
+			const socialLinksRect = socialLinksRef.current.getBoundingClientRect();
+			console.log("Social Links position:", {
+				top: socialLinksRect.top,
+				left: socialLinksRect.left,
+				bottom: socialLinksRect.bottom,
+				right: socialLinksRect.right,
+			});
+		}
+	}, [isCompact]);
 
 	const handleBackNavigation = () => {
 		const pathSegments = pathname.split("/").filter((segment) => segment !== "");
@@ -180,7 +205,6 @@ export default function Header() {
 							opacity: 1,
 							x: 0,
 							alignSelf: isCompact ? "flex-start" : "center",
-							marginLeft: isCompact ? "1rem" : "0",
 							transition: {
 								duration: 1,
 								ease: "easeInOut",
@@ -267,7 +291,7 @@ export default function Header() {
 						}}
 						layout
 					>
-						<TooltipProvider>
+						<TooltipProvider delayDuration={0}>
 							{/* GITHUB */}
 							<Tooltip>
 								<TooltipTrigger asChild>
@@ -305,6 +329,26 @@ export default function Header() {
 								</TooltipTrigger>
 								<PortalTooltipContent side="bottom">
 									<span>LinkedIn</span>
+								</PortalTooltipContent>
+							</Tooltip>
+
+							{/* YOUTUBE */}
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<motion.a
+										href="https://www.youtube.com/@MaxRemyDev"
+										target="_blank"
+										rel="noopener noreferrer"
+										className="hover:text-neutral-400 dark:hover:text-neutral-400 text-black dark:text-white transition-colors duration-200"
+										whileHover={{ scale: 1.2 }}
+										whileTap={{ scale: 0.9 }}
+										transition={{ type: "spring", stiffness: 400, damping: 10 }}
+									>
+										<Youtube size={isSmallScreen ? 24 : 28} />
+									</motion.a>
+								</TooltipTrigger>
+								<PortalTooltipContent side="bottom">
+									<span>YouTube</span>
 								</PortalTooltipContent>
 							</Tooltip>
 
