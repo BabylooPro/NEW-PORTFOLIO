@@ -95,6 +95,7 @@ const ContactSection: React.FC = () => {
 						title: "Success",
 						description: "Your message has been sent successfully.",
 					});
+					form.reset(); // RESET FORM AFTER SUCCESSFUL SUBMISSION
 				} else {
 					setProgress(0); // RESET PROGRESS IN CASE OF ERROR
 					setHasTemporaryError(true);
@@ -117,7 +118,7 @@ const ContactSection: React.FC = () => {
 				setIsSubmitting(false);
 			}
 		},
-		[toast]
+		[toast, form]
 	);
 
 	const handleButtonClick = useCallback(() => {
@@ -208,7 +209,7 @@ const ContactSection: React.FC = () => {
 									Message
 								</FormLabel>
 								<FormControl>
-									<Textarea {...field} placeholder="Your Message" rows={6} />
+									<Textarea {...field} placeholder="Your Message" rows={10} />
 								</FormControl>
 								<FormDescription className="text-neutral-500 dark:text-neutral-400">
 									Describe your project or inquiry in detail.

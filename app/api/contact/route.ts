@@ -27,43 +27,36 @@ export async function POST(req: Request) {
 
 		console.log("RESEND API response:", result);
 
-		// CHECKING FOR ERROR IN RESPONSE
-		if ("error" in result) {
-			throw result.error;
+		// CHECK IF RESULT HAS A 'DATA' PROPERTY WITH AN 'ID'
+		if (result.data && "id" in result.data) {
+			return NextResponse.json({
+				success: true,
+				message: `Email sent successfully to ${toEmail} from ${name}.`,
+			});
+		} else {
+			throw new Error("RESEND: Unexpected response from Resend API");
 		}
-
-		// RETURNING SUCCESS RESPONSE WITH SUCCESS MESSAGE
-		return NextResponse.json({
-			success: true,
-			message: `RESEND: Email sent successfully to ${toEmail} from ${name}.`,
-		});
 	} catch (error: unknown) {
-		console.error("RESEND: Error sending email:", error);
+		console.error("RESEND Error sending email:", error);
 
 		// CHECKING FOR 403 ERROR - RESEND API ERROR - DOMAIN NOT VERIFIED
-		if (typeof error === "object" && error !== null) {
-			const resendError = error as { name?: string; message?: string; statusCode?: number };
-
-			if (resendError.statusCode === 403) {
-				console.error("RESEND API 403 error:", resendError.message);
-				return new NextResponse(
-					JSON.stringify({
-						success: false,
-						message:
-							"RESEND: Forbidden. The domain is not verified. Please verify domain on https://resend.com/domains",
-					}),
-					{ status: 403, headers: { "Content-Type": "application/json" } }
-				);
-			}
+		if (error instanceof Error) {
+			return NextResponse.json(
+				{
+					success: false,
+					message: error.message,
+				},
+				{ status: 500 }
+			);
 		}
 
 		// RETURNING ERROR RESPONSE
-		return new NextResponse(
-			JSON.stringify({
+		return NextResponse.json(
+			{
 				success: false,
 				message: `RESEND: Error sending email to ${toEmail}`,
-			}),
-			{ status: 500, headers: { "Content-Type": "application/json" } }
+			},
+			{ status: 500 }
 		);
 	}
 }
