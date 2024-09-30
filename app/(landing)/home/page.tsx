@@ -7,7 +7,8 @@ import SkillSection from "@/features/landing/SkillSection";
 import SideProjectsSection from "@/features/landing/SideProjectsSection";
 import WhatIDoSection from "@/features/landing/WhatIDoSection";
 import SocialSection from "@/features/landing/SocialSection";
-// import { ContactSection } from "@/features/landing/ContactSection";
+// import { TestimonialSection } from "@/features/landing/TestimonialSection";
+import ContactSection from "@/features/landing/ContactSection";
 
 export const metadata: Metadata = {
 	title: "Home",
@@ -25,7 +26,8 @@ export default function Home() {
 			<SkillSection />
 			<SideProjectsSection />
 			<WhatIDoSection />
-			{/* <ContactSection /> */} {/* WARN: THIS SECTION IS NOT WORKING YET*/}
+			{/* <TestimonialSection /> */} {/* NEED DESIGN */}
+			<ContactSection />
 			<Footer />
 		</div>
 	);

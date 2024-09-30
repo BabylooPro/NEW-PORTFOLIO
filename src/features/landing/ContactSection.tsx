@@ -1,9 +1,16 @@
 "use client";
 
+import React, { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Section } from "@/components/ui/section";
+import ShowInfo from "@/components/ui/show-info";
+import ProgressButton from "@/components/ui/progress-button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { Send } from "lucide-react";
 import {
 	Form,
 	FormItem,
@@ -13,8 +20,6 @@ import {
 	FormDescription,
 	FormField,
 } from "@/components/ui/form";
-import ShowInfo from "@/components/ui/show-info";
-import ProgressButton from "@/components/ui/progress-button";
 
 // ZOD SCHEMA FOR VALIDATION
 const contactSchema = z.object({
@@ -25,7 +30,14 @@ const contactSchema = z.object({
 
 type ContactFormValues = z.infer<typeof contactSchema>;
 
-export const ContactSection = () => {
+const ContactSection: React.FC = () => {
+	const { toast } = useToast();
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [progress, setProgress] = useState(0);
+	const [hasError, setHasError] = useState(false);
+	const [hasTemporaryError, setHasTemporaryError] = useState(false);
+	const developerContact = "Please contact me at 'maxremy.dev@gmail.com'";
+
 	const form = useForm<ContactFormValues>({
 		resolver: zodResolver(contactSchema),
 		defaultValues: {
@@ -33,20 +45,100 @@ export const ContactSection = () => {
 			email: "",
 			message: "",
 		},
+		mode: "onChange",
 	});
 
-	const onSubmit = async (data: ContactFormValues) => {
-		// GENERATE RANDOM DELAY BETWEEN 1 AND 30 SECONDS
-		const delay = Math.floor(Math.random() * 30000) + 1000; // GENERATE A NUMBER BETWEEN 1000MS (1S) AND 30000MS (30S)
+	useEffect(() => {
+		if (form.formState.isValid) {
+			setHasError(false); // REMOVE ERROR WHEN FORM IS VALID
+		}
+	}, [form.formState.isValid]);
 
-		console.log(`Simulating email send delay: ${delay / 1000} seconds`);
+	const onSubmit = useCallback(
+		async (data: ContactFormValues) => {
+			setIsSubmitting(true); // START SUBMITTING
+			setProgress(20); // START PROGRESS
+			setHasError(false);
+			setHasTemporaryError(false);
 
-		// SIMULATE EMAIL SEND DELAY
-		await new Promise((resolve) => setTimeout(resolve, delay));
+			try {
+				const response = await fetch("/api/contact", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(data),
+				});
 
-		// ONCE THE DELAY IS FINISHED, DISPLAY THE RESULT
-		console.log("Form Submitted", data);
-	};
+				const result = await response.json();
+
+				if (!response.ok) {
+					setProgress(0);
+					if (response.status === 403) {
+						setHasError(true);
+						toast({
+							title: "Error: Email Domain Not Verified",
+							description: developerContact,
+							variant: "destructive",
+						});
+					} else {
+						setHasTemporaryError(true);
+						toast({
+							title: "Error: Failed to send your message",
+							description: result.message || developerContact,
+							variant: "destructive",
+						});
+					}
+				} else if (result.success) {
+					setProgress(100); // COMPLETE PROGRESS
+					toast({
+						title: "Success",
+						description: "Your message has been sent successfully.",
+					});
+				} else {
+					setProgress(0); // RESET PROGRESS IN CASE OF ERROR
+					setHasTemporaryError(true);
+					toast({
+						title: "Error: An unexpected error occurred",
+						description: result.message || developerContact,
+						variant: "destructive",
+					});
+				}
+			} catch (error) {
+				console.error("Fetch error:", error);
+				setProgress(0); // RESET PROGRESS IN CASE OF ERROR
+				setHasTemporaryError(true);
+				toast({
+					title: "Error: An unexpected error occurred",
+					description: developerContact,
+					variant: "destructive",
+				});
+			} finally {
+				setIsSubmitting(false);
+			}
+		},
+		[toast]
+	);
+
+	const handleButtonClick = useCallback(() => {
+		if (form.formState.isValid) {
+			setHasError(false); // NO VALIDATION ERROR
+			setHasTemporaryError(false);
+			toast({
+				title: "Sending message",
+				description: "Your message is being sent...",
+			});
+			form.handleSubmit(onSubmit)(); // LAUNCH SUBMISSION
+		} else {
+			setHasError(true); // MARK VALIDATION ERROR
+			form.trigger(); // TRIGGER MANUAL VALIDATION
+			toast({
+				title: "Validation Error",
+				description: "Please fill in all the fields correctly.",
+				variant: "destructive",
+			});
+		}
+	}, [form, onSubmit, toast]);
 
 	return (
 		<Section>
@@ -73,10 +165,10 @@ export const ContactSection = () => {
 										Name
 									</FormLabel>
 									<FormControl>
-										<input
+										<Input
 											{...field}
 											placeholder="Your Name"
-											className="input w-full border border-neutral-300 rounded-lg p-3 text-neutral-700 dark:text-neutral-300 dark:bg-neutral-700"
+											className="w-full"
 										/>
 									</FormControl>
 									<FormMessage />
@@ -94,10 +186,10 @@ export const ContactSection = () => {
 										Email
 									</FormLabel>
 									<FormControl>
-										<input
+										<Input
 											{...field}
 											placeholder="Your Email"
-											className="input w-full border border-neutral-300 rounded-lg p-3 text-neutral-700 dark:text-neutral-300 dark:bg-neutral-700"
+											className="w-full"
 										/>
 									</FormControl>
 									<FormMessage />
@@ -116,12 +208,7 @@ export const ContactSection = () => {
 									Message
 								</FormLabel>
 								<FormControl>
-									<textarea
-										{...field}
-										placeholder="Your Message"
-										className="textarea w-full border border-neutral-300 rounded-lg p-3 text-neutral-700 dark:text-neutral-300 dark:bg-neutral-700"
-										rows={6}
-									/>
+									<Textarea {...field} placeholder="Your Message" rows={6} />
 								</FormControl>
 								<FormDescription className="text-neutral-500 dark:text-neutral-400">
 									Describe your project or inquiry in detail.
@@ -134,11 +221,16 @@ export const ContactSection = () => {
 					{/* SUBMIT BUTTON */}
 					<div className="flex justify-end mt-6">
 						<ProgressButton
-							progressType="automatic"
-							onClick={() => form.handleSubmit(onSubmit)()}
+							progressType="manual"
+							progress={progress}
+							onClick={handleButtonClick}
+							icon={Send}
 							buttonText="Send Message"
 							successColorClass="green-500"
 							buttonVariant="outline"
+							disabled={isSubmitting}
+							hasError={hasError}
+							hasTemporaryError={hasTemporaryError}
 						/>
 					</div>
 				</form>
@@ -146,3 +238,5 @@ export const ContactSection = () => {
 		</Section>
 	);
 };
+
+export default ContactSection;
