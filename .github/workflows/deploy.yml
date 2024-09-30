@@ -15,7 +15,7 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v3
 
-            - name: Cache node_modules
+            - name: Cache dependencies
               uses: actions/cache@v3
               with:
                   path: node_modules
@@ -46,23 +46,12 @@ jobs:
 
                       git pull origin main
 
-                      export RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
-                      export GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }}
-
-                      if [ -z "$GIT_HUB_ACCESS_TOKEN" ]; then
-                        echo "GIT_HUB_ACCESS_TOKEN is not set!"
-                        exit 1
-                      else
-                        echo "GIT_HUB_ACCESS_TOKEN is set."
-                      fi
+                      [ -z "$GIT_HUB_ACCESS_TOKEN" ] && { echo "Missing GIT_HUB_ACCESS_TOKEN!"; exit 1; }
+                      [ -z "$RESEND_API_KEY" ] && { echo "Missing RESEND_API_KEY!"; exit 1; }
 
                       npm ci --prefix .
                       npm run build --prefix .
 
-                      if pm2 list | grep -q "portfolio"; then
-                        pm2 restart portfolio --update-env
-                      else
-                        pm2 start npm --name "portfolio" -- start --prefix . --update-env
-                      fi
+                      pm2 describe portfolio > /dev/null && pm2 restart portfolio --update-env || pm2 start npm --name "portfolio" -- start --prefix . --update-env
 
                       pm2 save
