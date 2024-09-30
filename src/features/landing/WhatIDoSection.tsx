@@ -15,6 +15,8 @@ const WhatIDoData = [
 	{
 		title: "Backend Development",
 		file: "UsersController.cs",
+		language: "csharp",
+		snippetHeight: 555,
 		snippet: `  using Microsoft.AspNetCore.Mvc;
 
  [ApiController]
@@ -35,13 +37,14 @@ const WhatIDoData = [
          return Ok(users);
      }
  }`,
-		language: "csharp",
 	},
 
 	// PYTHON PROJECT: PAYMENT PROCESSING USING STRATEGY PATTERN
 	{
 		title: "Software Engineering",
 		file: "payment_processor.py",
+		language: "python",
+		snippetHeight: 620,
 		snippet: `  from abc import ABC, abstractmethod
 
  class PaymentProcessor(ABC):
@@ -66,13 +69,14 @@ const WhatIDoData = [
          print("Payment successful!")
      else:
          print("Payment failed.")`,
-		language: "python",
 	},
 
 	// REACT PROJECT: SIMPLE COUNTER COMPONENT WITH USESTATE HOOK
 	{
 		title: "Frontend Development",
 		file: "Counter.jsx",
+		language: "javascript",
+		snippetHeight: 450,
 		snippet: `  import React, { useState } from 'react';
 
  const Counter = () => {
@@ -89,13 +93,14 @@ const WhatIDoData = [
  };
 
  export default Counter;`,
-		language: "javascript",
 	},
 
 	// NEXT.JS PROJECT: FETCHING DATA FROM AN API ROUTE
 	{
 		title: "Full Stack Development",
 		file: "index.tsx",
+		language: "typescript",
+		snippetHeight: 635,
 		snippet: `  // app/api/data.ts
  import type { NextApiRequest, NextApiResponse } from 'next';
 
@@ -121,13 +126,14 @@ const WhatIDoData = [
 
    return <div>{data ? JSON.stringify(data) : "Loading..."}</div>;
  }`,
-		language: "typescript",
 	},
 
 	// DOCKER PROJECT: BASIC SETUP WITH A WEB SERVICE, DATABASE, AND REDIS
 	{
 		title: "DevOps",
 		file: "docker-compose.yml",
+		language: "yaml",
+		snippetHeight: 500,
 		snippet: `  version: '3'
  services:
    web:
@@ -146,7 +152,6 @@ const WhatIDoData = [
      image: "redis:alpine"
 
  # DEPLOY WITH: docker-compose up -d`,
-		language: "yaml",
 	},
 ];
 
@@ -185,6 +190,11 @@ const TypedSyntaxHighlighter: React.FC<{ code: string; language: string }> = ({
 				border: "none",
 				overflowX: "auto",
 			}}
+			codeTagProps={{
+				style: {
+					background: "transparent",
+				},
+			}}
 		>
 			{displayedCode}
 		</SyntaxHighlighter>
@@ -193,15 +203,11 @@ const TypedSyntaxHighlighter: React.FC<{ code: string; language: string }> = ({
 
 const WhatIDoSection: React.FC = () => {
 	const { resolvedTheme } = useTheme();
-	const [contentHeight, setContentHeight] = useState<number | null>(null);
+	const [activeTab, setActiveTab] = useState(WhatIDoData[0].file);
 	const [isMounted, setIsMounted] = useState(false);
 
 	useEffect(() => {
 		setIsMounted(true);
-	}, []);
-
-	useEffect(() => {
-		setContentHeight(400);
 	}, []);
 
 	if (!resolvedTheme) {
@@ -211,6 +217,9 @@ const WhatIDoSection: React.FC = () => {
 	if (!isMounted) {
 		return null;
 	}
+
+	const activeSnippet = WhatIDoData.find((item) => item.file === activeTab);
+	const contentHeight = activeSnippet ? activeSnippet.snippetHeight : 0;
 
 	return (
 		<Section>
@@ -222,12 +231,12 @@ const WhatIDoSection: React.FC = () => {
 				/>
 			</h2>
 
-			<Tabs defaultValue={WhatIDoData[0].file}>
+			<Tabs defaultValue={WhatIDoData[0].file} onValueChange={setActiveTab}>
 				{WhatIDoData.map((vscode) => (
 					<TabsContent
 						key={vscode.file}
 						value={vscode.file}
-						style={{ minHeight: contentHeight ? `${contentHeight}px` : "auto" }}
+						style={{ minHeight: `${contentHeight}px` }}
 					>
 						<Card
 							className={`rounded-lg overflow-hidden border-none ${
@@ -242,9 +251,9 @@ const WhatIDoSection: React.FC = () => {
 								}`}
 							>
 								<div className="flex space-x-2 mt-[10px] ml-4 items-center absolute left-0">
-									<div className="w-3 h-3 rounded-full bg-red-500"></div>
-									<div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-									<div className="w-3 h-3 rounded-full bg-green-500"></div>
+									<div className="w-3 h-3 rounded-full bg-red-500" />
+									<div className="w-3 h-3 rounded-full bg-yellow-500" />
+									<div className="w-3 h-3 rounded-full bg-green-500" />
 								</div>
 								<div className="text-sm font-semibold w-full text-center">
 									{vscode.title}
@@ -268,11 +277,6 @@ const WhatIDoSection: React.FC = () => {
 								className={` ${
 									resolvedTheme === "dark" ? "bg-neutral-900" : "bg-white"
 								} transition-all ease-in-out`}
-								ref={(el) => {
-									if (el && el.clientHeight > (contentHeight || 0)) {
-										setContentHeight(el.clientHeight);
-									}
-								}}
 							>
 								<TypedSyntaxHighlighter
 									code={vscode.snippet}
