@@ -44,6 +44,18 @@ jobs:
 
                       git pull origin main
 
+                      if [ -z "$RESEND_API_KEY" ]; then
+                        echo "RESEND_API_KEY is not set!"
+                      else
+                        echo "RESEND_API_KEY is set."
+                      fi
+
+                      if [ -z "$GIT_HUB_ACCESS_TOKEN" ]; then
+                        echo "GIT_HUB_ACCESS_TOKEN is not set!"
+                      else
+                        echo "GIT_HUB_ACCESS_TOKEN is set."
+                      fi
+
                       npm ci --prefix .
                       npm run build --prefix .
 
