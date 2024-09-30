@@ -8,7 +8,9 @@ const progressButtonMachine = setup({
 		events: {} as
 			| { type: "click" }
 			| { type: "complete" }
-			| { type: "setProgress"; progress: number },
+			| { type: "setProgress"; progress: number }
+			| { type: "reset" }
+			| { type: "error" },
 	},
 }).createMachine({
 	context: {
@@ -19,28 +21,59 @@ const progressButtonMachine = setup({
 
 	states: {
 		idle: {
-			on: { click: "inProgress" },
+			on: {
+				click: "inProgress",
+				reset: {
+					target: "idle",
+					actions: assign(() => ({
+						progress: 0,
+					})),
+				},
+			},
 		},
 		inProgress: {
 			on: {
 				setProgress: {
-					actions: assign(({ event }) => {
-						return {
-							progress: event.progress,
-						};
-					}),
+					actions: assign(({ event }) => ({
+						progress: event.progress,
+					})),
 				},
 				complete: "success",
+				error: "error",
+				reset: {
+					target: "idle",
+					actions: assign(() => ({
+						progress: 0,
+					})),
+				},
 			},
 		},
 		success: {
 			after: {
 				1500: "successFadeOut",
 			},
+			on: {
+				reset: {
+					target: "idle",
+					actions: assign(() => ({
+						progress: 0,
+					})),
+				},
+			},
 		},
 		successFadeOut: {
 			after: {
 				10: "idle",
+			},
+		},
+		error: {
+			on: {
+				reset: {
+					target: "idle",
+					actions: assign(() => ({
+						progress: 0,
+					})),
+				},
 			},
 		},
 	},
