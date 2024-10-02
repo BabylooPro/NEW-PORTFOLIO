@@ -160,19 +160,24 @@ const TypedSyntaxHighlighter: React.FC<{ code: string; language: string }> = ({
 	language,
 }) => {
 	const [displayedCode, setDisplayedCode] = useState("");
+	const [showCursor, setShowCursor] = useState(true);
 	const { resolvedTheme } = useTheme();
 
 	useEffect(() => {
 		let index = 0;
-		const intervalId = setInterval(() => {
+		const typingInterval = setInterval(() => {
 			setDisplayedCode((prev) => prev + code[index]);
 			index++;
 			if (index === code.length) {
-				clearInterval(intervalId);
+				clearInterval(typingInterval);
+				const cursorInterval = setInterval(() => {
+					setShowCursor((prev) => !prev);
+				}, 500);
+				return () => clearInterval(cursorInterval);
 			}
 		}, 20);
 
-		return () => clearInterval(intervalId);
+		return () => clearInterval(typingInterval);
 	}, [code]);
 
 	return (
@@ -196,7 +201,7 @@ const TypedSyntaxHighlighter: React.FC<{ code: string; language: string }> = ({
 				},
 			}}
 		>
-			{displayedCode}
+			{displayedCode + (showCursor ? "|" : " ")}
 		</SyntaxHighlighter>
 	);
 };

@@ -64,7 +64,7 @@ export default function HeroSection() {
 				>
 					<p>Swiss Army Knife</p>
 					<motion.div
-						className="absolute hidden group-hover:block top-full left-0 md:-top-12 md:left-1/2 z-10 w-full md:w-auto"
+						className="absolute hidden group-hover:block top-full left-0 md:-top-12 md:left-1/2 z-10 w-auto"
 						style={{ x: springX }}
 					>
 						<Card className="p-2 whitespace-nowrap">

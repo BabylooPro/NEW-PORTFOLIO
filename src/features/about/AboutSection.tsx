@@ -1,7 +1,13 @@
+"use client";
+
 import React from "react";
 import { Section } from "@/components/ui/section";
 import ShowInfo from "@/components/ui/show-info";
 import { Separator } from "@/components/ui/separator";
+import Link from "next/link";
+import { skills } from "@/features/landing/data/skills";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import "devicon";
 import {
 	UserRound,
 	Calendar,
@@ -12,8 +18,18 @@ import {
 	FileText,
 	Building,
 	Mail,
+	CodeXml,
+	Heart,
+	Languages,
+	GraduationCap,
 } from "lucide-react";
-import Link from "next/link";
+
+type Skill = {
+	name: string;
+	icon?: string;
+	description: string;
+	favorite?: boolean;
+};
 
 const AboutSection: React.FC = () => {
 	const calculateAge = () => {
@@ -84,7 +100,7 @@ const AboutSection: React.FC = () => {
 						<div className="flex items-center gap-2">
 							<FileText strokeWidth={3} className="w-6 h-6" />
 							<span className="text-neutral-500 dark:text-neutral-400">
-								<strong>Contract : </strong>Freelance or Salaried acceptable
+								<strong>Contract : </strong>Freelance or Salaried
 							</span>
 						</div>
 						<div className="flex items-center gap-2">
@@ -155,7 +171,17 @@ const AboutSection: React.FC = () => {
 				{/* LANGUAGE AND EDUCATION */}
 				<div className="flex flex-col md:grid md:grid-cols-3 gap-4 md:gap-x-8 text-base md:text-xl text-neutral-800 dark:text-neutral-200">
 					<div className="md:col-span-2">
-						<h3 className="font-bold mb-2">Languages</h3>
+						<h3 className="text-lg md:text-xl font-bold mb-4 flex items-center gap-2">
+							Languages
+							<ShowInfo
+								title={"Languages"}
+								description={
+									"I'll give you a quick overview of the languages I'm fluent in"
+								}
+								icon={<Languages className="w-5 h-5" />}
+								iconColor="text-blue-500"
+							/>
+						</h3>
 						<ul className="list-disc list-inside space-y-1">
 							<li>
 								French : C2{" "}
@@ -171,7 +197,15 @@ const AboutSection: React.FC = () => {
 						</ul>
 					</div>
 					<div className="md:justify-self-end">
-						<h3 className="font-bold mb-2">Education</h3>
+						<h3 className="text-lg md:text-xl font-bold mb-4 flex items-center gap-2">
+							Education
+							<ShowInfo
+								title={"Education"}
+								description={"So, a bit about my education..."}
+								icon={<GraduationCap className="w-5 h-5" />}
+								iconColor="text-green-500"
+							/>
+						</h3>
 						<ul className="list-disc list-inside space-y-1">
 							<li>
 								<Link
@@ -203,8 +237,54 @@ const AboutSection: React.FC = () => {
 						</ul>
 					</div>
 				</div>
+
+				<Separator className="h-1 my-4" />
+
+				{/* MY FAVORITE SKILLS */}
+				<TooltipProvider>
+					<div>
+						<h3 className="text-lg md:text-xl font-bold mb-4 flex items-center gap-2">
+							My Favorite Skills
+							<ShowInfo
+								title={"My Favorite Skills"}
+								description={"Here's a look at my favorite code skills"}
+								icon={<Heart className="w-5 h-5 text-red-600" />}
+								iconColor="text-red-600"
+								iconFill
+							/>
+						</h3>
+						<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:grid-rows-4 md:grid-flow-col">
+							{skills
+								.flatMap((yearSkills) =>
+									yearSkills.skills.filter((skill: Skill) => skill.favorite)
+								)
+								.map((skill: Skill) => (
+									<Tooltip key={skill.name} delayDuration={0}>
+										<TooltipTrigger asChild>
+											<div className="flex items-center space-x-2">
+												{skill.icon ? (
+													<i
+														className={`devicon-${skill.icon}-plain colored text-2xl`}
+													/>
+												) : (
+													<CodeXml size={24} />
+												)}
+												<span className="text-neutral-700 dark:text-neutral-300">
+													{skill.name}
+												</span>
+											</div>
+										</TooltipTrigger>
+										<TooltipContent>
+											{skill.description ?? "Description not available"}
+										</TooltipContent>
+									</Tooltip>
+								))}
+						</div>
+					</div>
+				</TooltipProvider>
 			</div>
 		</Section>
 	);
 };
+
 export default AboutSection;
