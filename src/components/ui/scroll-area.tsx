@@ -14,9 +14,12 @@ const ScrollArea = React.forwardRef<
 	ScrollAreaRef,
 	React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root> & {
 		onScrollChange?: (isAtTop: boolean, isAtBottom: boolean) => void;
+		showShadows?: boolean;
 	}
->(({ className, children, onScrollChange, ...props }, ref) => {
+>(({ className, children, onScrollChange, showShadows = false, ...props }, ref) => {
 	const viewportRef = React.useRef<HTMLDivElement>(null);
+	const [showTopShadow, setShowTopShadow] = React.useState(false);
+	const [showBottomShadow, setShowBottomShadow] = React.useState(true);
 
 	const scrollToTop = () => {
 		if (viewportRef.current) {
@@ -41,6 +44,8 @@ const ScrollArea = React.forwardRef<
 			const { scrollTop, scrollHeight, clientHeight } = viewportRef.current;
 			const isAtTop = scrollTop === 0;
 			const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 1;
+			setShowTopShadow(!isAtTop);
+			setShowBottomShadow(!isAtBottom);
 			onScrollChange?.(isAtTop, isAtBottom);
 			return { isAtTop, isAtBottom };
 		}
@@ -58,7 +63,20 @@ const ScrollArea = React.forwardRef<
 	);
 
 	return (
-		<ScrollAreaPrimitive.Root className={cn("relative overflow-hidden", className)} {...props}>
+		<ScrollAreaPrimitive.Root
+			className={cn(
+				"relative overflow-hidden",
+				showShadows &&
+					cn(
+						showTopShadow &&
+							"before:content-[''] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:z-10 before:h-14 before:bg-gradient-to-b before:from-background before:to-transparent",
+						showBottomShadow &&
+							"after:content-[''] after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:z-10 after:h-14 after:bg-gradient-to-t after:from-background after:to-transparent"
+					),
+				className
+			)}
+			{...props}
+		>
 			<ScrollAreaPrimitive.Viewport
 				ref={viewportRef}
 				className="h-full w-full rounded-[inherit]"

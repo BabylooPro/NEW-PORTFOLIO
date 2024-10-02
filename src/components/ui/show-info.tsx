@@ -4,6 +4,7 @@ import * as React from "react";
 import { Info as InfoIcon } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "./tooltip";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface ShowInfoProps {
 	title?: string;
@@ -16,6 +17,9 @@ interface ShowInfoProps {
 	sideOffset?: number;
 	iconSize?: number;
 	className?: string;
+	icon?: React.ReactNode;
+	iconColor?: string;
+	iconFill?: boolean;
 }
 
 const ShowInfo: React.FC<ShowInfoProps> = ({
@@ -29,13 +33,16 @@ const ShowInfo: React.FC<ShowInfoProps> = ({
 	sideOffset = 4,
 	iconSize = 24,
 	className = "",
+	icon,
+	iconColor = "text-current",
+	iconFill = false,
 }) => {
 	const { toast } = useToast();
 	const [isMobile, setIsMobile] = React.useState(false);
 
 	React.useEffect(() => {
 		const checkDevice = () => {
-			setIsMobile(window.innerWidth <= 768 || "ontouchstart" in window);
+			setIsMobile(window.innerWidth <= 768 ?? "ontouchstart" in window);
 		};
 
 		checkDevice();
@@ -46,10 +53,19 @@ const ShowInfo: React.FC<ShowInfoProps> = ({
 	const handleInteraction = () => {
 		if (isMobile) {
 			toast({
-				title: toastTitle || title || "Title - Toast",
-				description: toastDescription || description || "Description - Toast",
+				title: toastTitle ?? title ?? "Title - Toast",
+				description: toastDescription ?? description ?? "Description - Toast",
 			});
 		}
+	};
+
+	const iconProps = {
+		size: iconSize,
+		className: cn(
+			"cursor-pointer mt-1",
+			iconColor,
+			iconFill ? "fill-current" : "stroke-current"
+		),
 	};
 
 	return (
@@ -58,16 +74,20 @@ const ShowInfo: React.FC<ShowInfoProps> = ({
 				<Tooltip>
 					<TooltipTrigger asChild>
 						<button onClick={handleInteraction}>
-							<InfoIcon size={iconSize} className="cursor-pointer mt-1" />
+							{icon ? (
+								React.cloneElement(icon as React.ReactElement, iconProps)
+							) : (
+								<InfoIcon {...iconProps} />
+							)}
 						</button>
 					</TooltipTrigger>
 					{!isMobile && (
 						<TooltipContent side={position} sideOffset={sideOffset}>
 							<div>
-								<div>{tooltipText || title || "Text - Tooltip"}</div>
-								{(tooltipDescription || description) && (
+								<div>{tooltipText ?? title ?? "Text - Tooltip"}</div>
+								{(tooltipDescription ?? description) && (
 									<div className="text-sm text-neutral-500 dark:text-neutral-400">
-										{tooltipDescription || description}
+										{tooltipDescription ?? description}
 									</div>
 								)}
 							</div>
