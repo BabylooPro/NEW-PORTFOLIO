@@ -120,7 +120,6 @@ export const skills = [
 				name: "Node.js",
 				icon: "nodejs",
 				description: "JavaScript runtime for building backend services.",
-				favorite: true,
 			},
 			{
 				name: "Express.js",
@@ -142,7 +141,6 @@ export const skills = [
 				name: "Figma",
 				icon: "figma",
 				description: "Design tool used for creating UI/UX mockups.",
-				favorite: true,
 			},
 		],
 	},

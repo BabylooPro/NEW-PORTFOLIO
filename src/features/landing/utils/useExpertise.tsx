@@ -89,7 +89,7 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 					/>
 				</div>
 
-				<ScrollArea ref={scrollAreaRef} className={scrollHeight}>
+				<ScrollArea showShadows ref={scrollAreaRef} className={scrollHeight}>
 					{/* TIMELINE */}
 					<ol className="m-4 relative border-l border-neutral-400 dark:border-neutral-600">
 						{items.map((item) => (
@@ -172,7 +172,13 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 														)}
 
 														{/* NAME */}
-														<p className="text-base font-normal text-neutral-700 dark:text-neutral-300 cursor-pointer">
+														<p
+															className={`text-base font-normal text-neutral-700 dark:text-neutral-300 cursor-pointer ${
+																skill.unlike
+																	? "line-through text-neutral-500 dark:text-neutral-500"
+																	: ""
+															}`}
+														>
 															{skill.name}
 														</p>
 
@@ -265,7 +271,7 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 															</motion.div>
 														)}
 
-														{/* ICON UNLIKE */}
+														{/* ICON UNLIKE WITH LINE-THROUGH INDICATOR */}
 														{skill.unlike && (
 															<motion.div
 																animate={{
@@ -274,8 +280,11 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 																		getRandomScale() + 0.2,
 																		getRandomScale(),
 																	],
-																	translateY: [0, 5, 0],
-																	rotate: [0, -20, 0],
+																	rotate: [
+																		getRandomRotate(),
+																		getRandomRotate() + 20,
+																		getRandomRotate(),
+																	],
 																}}
 																transition={{
 																	duration: getRandomDuration(),
@@ -286,7 +295,7 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 															>
 																<ThumbsDown
 																	size={18}
-																	className="text-red-500"
+																	className="text-neutral-500"
 																/>
 															</motion.div>
 														)}
