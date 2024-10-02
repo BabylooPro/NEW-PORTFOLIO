@@ -28,6 +28,13 @@ export const GITHUB_PROJECTS_QUERY = `
                   name
                 }
               }
+              repositoryTopics(first: 3) {
+                nodes {
+                  topic {
+                    name
+                  }
+                }
+              }
             }
           }
         }
@@ -46,6 +53,13 @@ export const GITHUB_PROJECTS_QUERY = `
           languages(first: 3, orderBy: {field: SIZE, direction: DESC}) {
             nodes {
               name
+            }
+          }
+          repositoryTopics(first: 3) {
+            nodes {
+              topic {
+                name
+              }
             }
           }
         }

@@ -7,14 +7,23 @@ import Link from "next/link";
 import ShowInfo from "@/components/ui/show-info";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGitHubProjects } from "@/hooks/use-GitHubProjects";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import ScrollIndicator from "@/components/ui/scroll-indicator";
 import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
 const SideProjectsSection = () => {
 	const { projects, error, loading } = useGitHubProjects(); // GET PROJECTS FROM GITHUB
 	const scrollAreaRef = useRef<ScrollAreaRef>(null);
+
+	useEffect(() => {
+		const checkInitialPosition = () => {
+			scrollAreaRef.current?.checkScrollPosition();
+		};
+
+		checkInitialPosition();
+	}, []);
 
 	// DISPLAY ERROR MESSAGE IF REQUEST FAILS
 	if (error) {
@@ -72,7 +81,7 @@ const SideProjectsSection = () => {
 			</div>
 
 			{/* SCROLL AREA TO DISPLAY MORE PROJECTS */}
-			<ScrollArea ref={scrollAreaRef} className="h-[555px] w-full">
+			<ScrollArea showShadows ref={scrollAreaRef} className="h-[555px] w-full">
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
 					{sortedProjects.map((project) => (
 						<motion.div
@@ -90,7 +99,7 @@ const SideProjectsSection = () => {
 								<CardHeader className="pb-2">
 									<CardTitle className="text-lg">{project.name}</CardTitle>
 								</CardHeader>
-								<CardContent className="flex-grow py-2">
+								<CardContent className="flex-grow">
 									<p className="text-sm text-muted-foreground mb-2 line-clamp-2">
 										{project.description}
 									</p>
@@ -105,8 +114,19 @@ const SideProjectsSection = () => {
 											</span>
 										))}
 									</p>
+									<div className="flex flex-wrap gap-1 mt-2">
+										{project.topics.slice(0, 3).map((topic) => (
+											<Badge
+												key={topic}
+												variant="secondary"
+												className="text-xs"
+											>
+												{topic}
+											</Badge>
+										))}
+									</div>
 								</CardContent>
-								<CardFooter className="flex justify-between items-center pt-2">
+								<CardFooter className="flex justify-between items-center">
 									<div className="flex items-center space-x-4">
 										<div className="flex items-center space-x-1">
 											<Github className="w-4 h-4" />
