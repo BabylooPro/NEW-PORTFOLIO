@@ -42,7 +42,7 @@ const ShowInfo: React.FC<ShowInfoProps> = ({
 
 	React.useEffect(() => {
 		const checkDevice = () => {
-			setIsMobile(window.innerWidth <= 768 ?? "ontouchstart" in window);
+			setIsMobile(window.innerWidth <= 768 || "ontouchstart" in window);
 		};
 
 		checkDevice();
