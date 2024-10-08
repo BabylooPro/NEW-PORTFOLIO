@@ -1,0 +1,51 @@
+# INFO: THIS WORKFLOW IS USED TO TEST LOCAL BUILD AND DEPLOY PORTFOLIO USING NEKTOS/ACT IN A DOCKER CONTAINER
+# VERSION: ACT 0.2.67 | DOCKER 27.2.0, build 3ab4256
+# RUN: act -j deploy --env-file .env -W ./deploy-local-act.yml --container-architecture linux/amd64
+
+name: Deploy Locally with Act
+
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: "Environment to deploy (GitHub Actions local - nektos/act)"
+                default: "local"
+                required: true
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Cache dependencies
+              uses: actions/cache@v3
+              with:
+                  path: node_modules
+                  key: ${{ runner.os }}-node_modules-${{ hashFiles('package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node_modules-
+
+            - name: Install dependencies
+              run: npm ci
+              env:
+                  GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+                  RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+
+            - name: Build project
+              run: npm run build
+              env:
+                  RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+                  GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+
+            - name: Install PM2
+              run: npm install -g pm2
+
+            - name: Start project locally
+              run: |
+                  pm2 describe portfolio > /dev/null && pm2 restart portfolio --update-env || pm2 start npm --name "portfolio" -- start --update-env
+                  pm2 save
+              env:
+                  RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+                  GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
