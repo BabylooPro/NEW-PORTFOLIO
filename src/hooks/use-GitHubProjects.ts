@@ -10,6 +10,11 @@ interface GitHubRepo {
 	pinned?: boolean;
 	languages: string[];
 	topics: string[];
+	created_at: string;
+	updated_at: string;
+	license: string | null;
+	default_branch: string;
+	homepage?: string | null;
 }
 
 interface PinnedRepo {
@@ -31,6 +36,12 @@ interface PinnedRepo {
 	repositoryTopics: {
 		nodes: { topic: { name: string } }[];
 	};
+	createdAt: string;
+	updatedAt: string;
+	licenseInfo: { name: string } | null;
+	defaultBranchRef: { name: string };
+	homepage: string | null;
+	homepageUrl?: string;
 }
 
 interface AllRepo {
@@ -52,6 +63,12 @@ interface AllRepo {
 	repositoryTopics: {
 		nodes: { topic: { name: string } }[];
 	};
+	createdAt: string;
+	updatedAt: string;
+	licenseInfo: { name: string } | null;
+	defaultBranchRef: { name: string };
+	homepage: string | null;
+	homepageUrl?: string;
 }
 
 // DEFINE A GENERIC FETCHER TO GET DATA
@@ -103,6 +120,11 @@ export const useGitHubProjects = () => {
 			languages: edge.node.languages.nodes.map((lang) => lang.name),
 			topics: edge.node.repositoryTopics.nodes.map((topic) => topic.topic.name),
 			pinned: true,
+			created_at: edge.node.createdAt,
+			updated_at: edge.node.updatedAt,
+			license: edge.node.licenseInfo?.name || null,
+			default_branch: edge.node.defaultBranchRef.name,
+			homepage: edge.node.homepageUrl || null,
 		})
 	);
 
@@ -116,6 +138,11 @@ export const useGitHubProjects = () => {
 		forks_count: node.forks.totalCount,
 		languages: node.languages.nodes.map((lang) => lang.name),
 		topics: node.repositoryTopics.nodes.map((topic) => topic.topic.name),
+		created_at: node.createdAt,
+		updated_at: node.updatedAt,
+		license: node.licenseInfo?.name || null,
+		default_branch: node.defaultBranchRef.name,
+		homepage: node.homepageUrl || null,
 	}));
 
 	// FILTER REPOS FOR EXCLUDED REPOS

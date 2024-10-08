@@ -8,7 +8,7 @@
 */
 
 export const GITHUB_PROJECTS_QUERY = `
-  query ($login: String!) {
+  query($login: String!, $cursor: String) {
     user(login: $login) {
       pinnedItems(first: 6, types: REPOSITORY) {
         edges {
@@ -16,14 +16,15 @@ export const GITHUB_PROJECTS_QUERY = `
             ... on Repository {
               name
               description
+              url
+              homepageUrl
               stargazers {
                 totalCount
               }
               forks {
                 totalCount
               }
-              url
-              languages(first: 3, orderBy: {field: SIZE, direction: DESC}) {
+              languages(first: 3) {
                 nodes {
                   name
                 }
@@ -35,22 +36,31 @@ export const GITHUB_PROJECTS_QUERY = `
                   }
                 }
               }
+              createdAt
+              updatedAt
+              licenseInfo {
+                name
+              }
+              defaultBranchRef {
+                name
+              }
             }
           }
         }
       }
-      repositories(first: 100) {
+      repositories(first: 100, after: $cursor) {
         nodes {
           name
           description
+          url
+          homepageUrl
           stargazers {
             totalCount
           }
           forks {
             totalCount
           }
-          url
-          languages(first: 3, orderBy: {field: SIZE, direction: DESC}) {
+          languages(first: 3) {
             nodes {
               name
             }
@@ -62,6 +72,18 @@ export const GITHUB_PROJECTS_QUERY = `
               }
             }
           }
+          createdAt
+          updatedAt
+          licenseInfo {
+            name
+          }
+          defaultBranchRef {
+            name
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
         }
       }
     }

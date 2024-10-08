@@ -1,6 +1,5 @@
 "use client";
 
-import { Github, ExternalLink, Pin } from "lucide-react";
 import { ScrollArea, ScrollAreaRef } from "@/components/ui/scroll-area";
 import { Section } from "@/components/ui/section";
 import Link from "next/link";
@@ -12,6 +11,26 @@ import ScrollIndicator from "@/components/ui/scroll-indicator";
 import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+	Github,
+	ExternalLink,
+	Pin,
+	Calendar,
+	Clock,
+	FileText,
+	Info,
+	Star,
+	GitFork,
+} from "lucide-react";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
 
 const SideProjectsSection = () => {
 	const { projects, error, loading } = useGitHubProjects(); // GET PROJECTS FROM GITHUB
@@ -90,7 +109,7 @@ const SideProjectsSection = () => {
 							whileHover={{ scale: 1.03 }}
 							transition={{ type: "spring", stiffness: 300 }}
 						>
-							<Card className="flex flex-col h-[250px] relative">
+							<Card className="flex flex-col h-[275px] relative">
 								{project.pinned && (
 									<div className="absolute top-2 right-2">
 										<Pin className="size-4 rotate-45 text-yellow-500" />
@@ -127,27 +146,98 @@ const SideProjectsSection = () => {
 									</div>
 								</CardContent>
 								<CardFooter className="flex justify-between items-center">
-									<div className="flex items-center space-x-4">
+									<div className="flex items-center space-x-4 text-muted-foreground">
 										<div className="flex items-center space-x-1">
-											<Github className="w-4 h-4" />
+											<Star className="w-4 h-4" />
 											<span className="text-sm">
 												{project.stargazers_count}
 											</span>
 										</div>
 										<div className="flex items-center space-x-1">
-											<span className="text-xs text-muted-foreground">
-												Forks:
+											<span className="text-xs">
+												<GitFork className="w-4 h-4" />
 											</span>
-											<span className="text-sm">{project.forks_count}</span>
+											<span className="text-sm ">{project.forks_count}</span>
 										</div>
 									</div>
-									<Link
-										href={project.html_url}
-										target="_blank"
-										rel="noopener noreferrer"
-									>
-										<ExternalLink className="w-4 h-4" />
-									</Link>
+									<div className="flex items-center space-x-0">
+										{/* DIALOG TO SHOW MORE INFO ABOUT PROJECT */}
+										<Dialog>
+											<DialogTrigger asChild>
+												<Button variant="ghost" size="icon">
+													<Info className="h-4 w-4" />
+												</Button>
+											</DialogTrigger>
+											<DialogContent className="sm:max-w-[425px]">
+												<DialogHeader>
+													<DialogTitle>{project.name}</DialogTitle>
+													<DialogDescription>
+														{project.description}
+													</DialogDescription>
+												</DialogHeader>
+												<div className="grid gap-4 py-4">
+													<div className="flex items-center gap-4">
+														<Calendar className="h-4 w-4" />
+														<p className="text-sm">
+															Created:{" "}
+															{new Date(
+																project.created_at
+															).toLocaleDateString()}
+														</p>
+													</div>
+													<div className="flex items-center gap-4">
+														<Clock className="h-4 w-4" />
+														<p className="text-sm">
+															Updated:{" "}
+															{new Date(
+																project.updated_at
+															).toLocaleDateString()}
+														</p>
+													</div>
+													{project.license && (
+														<div className="flex items-center gap-4">
+															<FileText className="h-4 w-4" />
+															<p className="text-sm">
+																License:{" "}
+																<Link
+																	href={`${project.html_url}/blob/${project.default_branch}/LICENSE`}
+																	target="_blank"
+																	rel="noopener noreferrer"
+																	className="text-blue-500 hover:underline"
+																>
+																	{project.license}
+																</Link>
+															</p>
+														</div>
+													)}
+												</div>
+											</DialogContent>
+										</Dialog>
+
+										{/* BUTTON LINK TO REPOSITORY GITHUB */}
+										<Button variant="ghost" size="icon">
+											<Link
+												href={project.html_url}
+												target="_blank"
+												rel="noopener noreferrer"
+											>
+												<Github className="w-4 h-4" />
+											</Link>
+										</Button>
+
+										{/* BUTTON LINK TO LIVE WEBSITE */}
+										{project.homepage && (
+											<Button variant="ghost" size="icon">
+												<Link
+													href={project.homepage}
+													target="_blank"
+													rel="noopener noreferrer"
+												>
+													<ExternalLink className="w-4 h-4" />
+												</Link>
+											</Button>
+										)}
+									</div>
 								</CardFooter>
 							</Card>
 						</motion.div>
