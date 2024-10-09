@@ -1,6 +1,6 @@
 # INFO: THIS WORKFLOW IS USED TO TEST LOCAL BUILD AND DEPLOY PORTFOLIO USING NEKTOS/ACT IN A DOCKER CONTAINER
 # VERSION: ACT 0.2.67 | DOCKER 27.2.0, build 3ab4256
-# RUN: act -j deploy --env-file .env -W ./deploy-local-act.yml --container-architecture linux/amd64
+# RUN: act -j deploy --secret-file .secrets -W ./.github/workflows/deploy-local-act.yml --container-architecture linux/amd64
 
 name: Deploy Locally with Act
 
