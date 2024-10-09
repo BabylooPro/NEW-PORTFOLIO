@@ -32,10 +32,62 @@ export default function Header() {
 	const [isSmallScreen, setIsSmallScreen] = useState(false);
 	const [isCompact, setIsCompact] = useState(false);
 	const [isHeaderMoved, setIsHeaderMoved] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
+	const [showWIPBadge, setShowWIPBadge] = useState(true);
+	const [lastCommitInfo, setLastCommitInfo] = useState<{
+		date: string;
+		message: string;
+		hiddenDate: string;
+	} | null>(null);
 
 	const profileRef = useRef<HTMLDivElement>(null);
 	const separatorRef = useRef(null);
 	const socialLinksRef = useRef<HTMLDivElement>(null);
+
+	// FETCH LAST COMMIT INFO FROM GITHUB
+	const fetchLastCommitInfo = async () => {
+		try {
+			const response = await fetch(
+				"https://api.github.com/repos/BabylooPro/NEW-PORTFOLIO/commits?per_page=1"
+			);
+			const [latestCommit] = await response.json();
+			const commitDate = new Date(latestCommit.commit.author.date);
+			const currentDate = new Date();
+			const daysSinceLastCommit = Math.floor(
+				(currentDate.getTime() - commitDate.getTime()) / (1000 * 60 * 60 * 24)
+			);
+
+			// CHECK IF LAST COMMIT IS RECENT
+			const isRecent = daysSinceLastCommit <= 60;
+			const daysUntilHidden = Math.max(60 - daysSinceLastCommit, 0);
+
+			const hiddenDate = new Date(commitDate.getTime() + 60 * 24 * 60 * 60 * 1000); // CALCULATE HIDDEN DATE
+
+			// FORMAT DATE WITH TIMEZONE FOR DISPLAY
+			const dateTimeFormat = {
+				year: "numeric",
+				month: "long",
+				day: "numeric",
+				hour: "2-digit",
+				minute: "2-digit",
+				timeZone: "Europe/Zurich",
+			} as const;
+			const formattedCommitDate = commitDate.toLocaleString("fr-CH", dateTimeFormat);
+			const formattedHiddenDate = hiddenDate.toLocaleString("fr-CH", dateTimeFormat);
+
+			// RETURN LAST COMMIT INFO
+			return {
+				date: formattedCommitDate,
+				message: latestCommit.commit.message.split("\n")[0],
+				isRecent,
+				daysUntilHidden,
+				hiddenDate: formattedHiddenDate,
+			};
+		} catch (error) {
+			console.error("Failed to fetch last commit info", error);
+			return null;
+		}
+	};
 
 	useEffect(() => {
 		console.log(`isCompact: ${isCompact}`);
@@ -61,6 +113,22 @@ export default function Header() {
 			});
 		}
 	}, [isCompact]);
+
+	useEffect(() => {
+		setIsLoading(true);
+		fetchLastCommitInfo().then((info) => {
+			if (info) {
+				setLastCommitInfo(info);
+				setShowWIPBadge(info.isRecent);
+				if (info.isRecent) {
+					// console.log(`WIP Badge will be hidden on ${info.hiddenDate}`);
+				} else {
+					// console.log("WIP Badge is already hidden");
+				}
+			}
+			setIsLoading(false);
+		});
+	}, []);
 
 	const handleBackNavigation = () => {
 		const pathSegments = pathname.split("/").filter((segment) => segment !== "");
@@ -146,24 +214,35 @@ export default function Header() {
 	return (
 		<>
 			{/* WIP BADGE */}
-			<div className="fixed top-2 left-2 flex items-center gap-2 z-[99]">
-				<ShowInfo
-					title="Work In Progress"
-					description={
-						<>
-							This project is currently under active development. <br /> Features and
-							content may change frequently.
-						</>
-					}
-					wrapMode={true}
-				>
-					<Badge className="z-[99] w-full h-7 flex items-center gap-1 cursor-progress">
-						<AppleEmoji emojiShortName="construction" size={16} />
-						<span>WIP</span>
-						<AppleEmoji emojiShortName="construction" size={16} />
-					</Badge>
-				</ShowInfo>
-			</div>
+			{!isLoading && showWIPBadge && (
+				<div className="fixed top-2 left-2 flex items-center gap-2 z-[99]">
+					<ShowInfo
+						title="Work In Progress"
+						description={
+							<>
+								This project is currently under active development. <br />
+								Features and content may change frequently.
+								{lastCommitInfo && (
+									<>
+										<br />
+										<br />
+										<strong>Last Update :</strong> {lastCommitInfo.date}
+										<br />
+										<strong>Latest Change :</strong> {lastCommitInfo.message}
+									</>
+								)}
+							</>
+						}
+						wrapMode={true}
+					>
+						<Badge className="z-[99] w-full h-7 flex items-center gap-1 cursor-default">
+							<AppleEmoji emojiShortName="construction" size={16} />
+							<span>WIP</span>
+							<AppleEmoji emojiShortName="construction" size={16} />
+						</Badge>
+					</ShowInfo>
+				</div>
+			)}
 
 			{/* HEADER */}
 			<motion.header
