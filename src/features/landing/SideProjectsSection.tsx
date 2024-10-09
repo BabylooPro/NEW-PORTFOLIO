@@ -49,11 +49,7 @@ const SideProjectsSection = () => {
 		console.log("SideProjectsSection rendered with lastUpdate:", lastUpdate);
 	}, [lastUpdate]);
 
-	// SORT PROJECTS BY STARGAZERS COUNT
-	const sortedProjects = useMemo(() => {
-		if (!projects) return [];
-		return [...projects].sort((a, b) => b.stargazers_count - a.stargazers_count);
-	}, [projects]);
+	const sortedProjects = projects; // SORT PROJECTS BY CREATED_AT DATE
 
 	// FILTER PROJECTS BY TECHNOLOGY AND YEAR
 	const filteredProjects = useMemo(() => {

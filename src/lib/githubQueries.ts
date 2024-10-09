@@ -49,7 +49,7 @@ export const GITHUB_PROJECTS_QUERY = `
           }
         }
       }
-      repositories(first: 100, after: $cursor) {
+      repositories(first: 100, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
         nodes {
           name
           description

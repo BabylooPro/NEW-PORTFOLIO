@@ -229,15 +229,20 @@ export const useGitHubProjects = (): {
 	}));
 
 	// FILTER REPOS FOR EXCLUDED REPOS AND PRIVATE REPOS
-	const filteredRepos = allRepos.filter(
-		(repo: GitHubRepo) =>
-			!excludedRepos.includes(repo.name) &&
-			!pinnedRepos.some((pinned) => pinned.name === repo.name) &&
-			!repo.isPrivate
-	);
+	const filteredRepos = allRepos
+		.filter(
+			(repo: GitHubRepo) =>
+				!excludedRepos.includes(repo.name) &&
+				!pinnedRepos.some((pinned) => pinned.name === repo.name) &&
+				!repo.isPrivate
+		)
+		.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
 
-	// MERGE PINNED PROJECTS WITH OTHER FILTERED PROJECTS
-	const allProjects = [...pinnedRepos, ...filteredRepos];
+	// SORT PINNED PROJECTS BY STAR COUNT
+	const sortedPinnedRepos = pinnedRepos.sort((a, b) => b.stargazers_count - a.stargazers_count);
+
+	// MERGE SORTED PINNED PROJECTS WITH OTHER FILTERED PROJECTS
+	const allProjects = [...sortedPinnedRepos, ...filteredRepos];
 
 	return {
 		projects: allProjects,
