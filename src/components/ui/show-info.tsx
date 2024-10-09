@@ -8,11 +8,11 @@ import { cn } from "@/lib/utils";
 
 interface ShowInfoProps {
 	title?: string;
-	description?: string;
+	description?: string | React.ReactNode;
 	tooltipText?: string;
-	tooltipDescription?: string;
+	tooltipDescription?: string | React.ReactNode;
 	toastTitle?: string;
-	toastDescription?: string;
+	toastDescription?: string | React.ReactNode;
 	position?: "top" | "bottom" | "left" | "right";
 	sideOffset?: number;
 	iconSize?: number;
@@ -20,6 +20,8 @@ interface ShowInfoProps {
 	icon?: React.ReactNode;
 	iconColor?: string;
 	iconFill?: boolean;
+	children?: React.ReactNode;
+	wrapMode?: boolean;
 }
 
 const ShowInfo: React.FC<ShowInfoProps> = ({
@@ -36,6 +38,8 @@ const ShowInfo: React.FC<ShowInfoProps> = ({
 	icon,
 	iconColor = "text-current",
 	iconFill = false,
+	children,
+	wrapMode = false,
 }) => {
 	const { toast } = useToast();
 	const [isMobile, setIsMobile] = React.useState(false);
@@ -54,9 +58,21 @@ const ShowInfo: React.FC<ShowInfoProps> = ({
 		if (isMobile) {
 			toast({
 				title: toastTitle ?? title ?? "Title - Toast",
-				description: toastDescription ?? description ?? "Description - Toast",
+				description:
+					typeof toastDescription === "string" ? (
+						<div dangerouslySetInnerHTML={{ __html: toastDescription }} />
+					) : (
+						toastDescription ?? description ?? "Description - Toast"
+					),
 			});
 		}
+	};
+
+	const renderDescription = (content: string | React.ReactNode) => {
+		if (typeof content === "string") {
+			return <div dangerouslySetInnerHTML={{ __html: content }} />;
+		}
+		return content;
 	};
 
 	const iconProps = {
@@ -67,6 +83,36 @@ const ShowInfo: React.FC<ShowInfoProps> = ({
 			iconFill ? "fill-current" : "stroke-current"
 		),
 	};
+
+	const content = (
+		<div>
+			<div>{tooltipText ?? title ?? "Text - Tooltip"}</div>
+			{(tooltipDescription ?? description) && (
+				<div className="text-sm text-neutral-500 dark:text-neutral-400">
+					{renderDescription(tooltipDescription ?? description)}
+				</div>
+			)}
+		</div>
+	);
+
+	if (wrapMode) {
+		return (
+			<TooltipProvider delayDuration={0}>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<div onClick={handleInteraction} className={className}>
+							{children}
+						</div>
+					</TooltipTrigger>
+					{!isMobile && (
+						<TooltipContent side={position} sideOffset={sideOffset}>
+							{content}
+						</TooltipContent>
+					)}
+				</Tooltip>
+			</TooltipProvider>
+		);
+	}
 
 	return (
 		<div className={className}>
@@ -83,14 +129,7 @@ const ShowInfo: React.FC<ShowInfoProps> = ({
 					</TooltipTrigger>
 					{!isMobile && (
 						<TooltipContent side={position} sideOffset={sideOffset}>
-							<div>
-								<div>{tooltipText ?? title ?? "Text - Tooltip"}</div>
-								{(tooltipDescription ?? description) && (
-									<div className="text-sm text-neutral-500 dark:text-neutral-400">
-										{tooltipDescription ?? description}
-									</div>
-								)}
-							</div>
+							{content}
 						</TooltipContent>
 					)}
 				</Tooltip>
