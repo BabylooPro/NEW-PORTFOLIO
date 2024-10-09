@@ -6,7 +6,7 @@ import Link from "next/link";
 import ShowInfo from "@/components/ui/show-info";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGitHubProjects } from "@/hooks/use-GitHubProjects";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import ScrollIndicator from "@/components/ui/scroll-indicator";
 import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
@@ -31,18 +31,59 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 
 const SideProjectsSection = () => {
-	const { projects, error, loading } = useGitHubProjects(); // GET PROJECTS FROM GITHUB
+	const { projects, error, loading, lastUpdate } = useGitHubProjects();
 	const scrollAreaRef = useRef<ScrollAreaRef>(null);
+	const [filterTechnology, setFilterTechnology] = useState<string>("All");
+	const [filterYear, setFilterYear] = useState<string>("All");
 
 	useEffect(() => {
-		const checkInitialPosition = () => {
-			scrollAreaRef.current?.checkScrollPosition();
-		};
+		console.log("SideProjectsSection rendered with lastUpdate:", lastUpdate);
+	}, [lastUpdate]);
 
-		checkInitialPosition();
-	}, []);
+	// SORT PROJECTS BY STARGAZERS COUNT
+	const sortedProjects = useMemo(() => {
+		if (!projects) return [];
+		return [...projects].sort((a, b) => b.stargazers_count - a.stargazers_count);
+	}, [projects]);
+
+	// FILTER PROJECTS BY TECHNOLOGY AND YEAR
+	const filteredProjects = useMemo(() => {
+		return sortedProjects.filter((project) => {
+			const techMatch =
+				filterTechnology === "All" || project.languages.includes(filterTechnology);
+			const yearMatch =
+				filterYear === "All" ||
+				new Date(project.created_at).getFullYear().toString() === filterYear;
+			return techMatch && yearMatch;
+		});
+	}, [sortedProjects, filterTechnology, filterYear]);
+
+	// GET ALL TECHNOLOGIES USED IN PROJECTS
+	const technologies = useMemo(() => {
+		if (!projects) return ["All"];
+		const techSet = new Set<string>();
+		projects.forEach((project) => project.languages.forEach((lang) => techSet.add(lang)));
+		return ["All", ...Array.from(techSet)];
+	}, [projects]);
+
+	// GET ALL YEARS OF PROJECTS
+	const years = useMemo(() => {
+		if (!projects) return ["All"];
+		const yearSet = new Set<string>();
+		projects.forEach((project) =>
+			yearSet.add(new Date(project.created_at).getFullYear().toString())
+		);
+		return ["All", ...Array.from(yearSet).sort((a, b) => b.localeCompare(a))];
+	}, [projects]);
 
 	// DISPLAY ERROR MESSAGE IF REQUEST FAILS
 	if (error) {
@@ -50,10 +91,14 @@ const SideProjectsSection = () => {
 			<Section>
 				<h2 className="text-2xl font-bold mb-6">Error Loading Projects</h2>
 				<p className="text-red-500">An error occurred : {error}</p>
-				<ScrollArea className="h-[600px] w-full">
+				<div className="flex pb-4 px-4 justify-between sm:justify-center lg:justify-end gap-2 sm:gap-6 md:gap-4 lg:gap-[0.6rem] sm:px-4">
+					<Skeleton className="h-10 w-[calc(50%-4px)] sm:w-full lg:w-[145px]" />
+					<Skeleton className="h-10 w-[calc(50%-4px)] sm:w-full lg:w-[145px]" />
+				</div>
+				<ScrollArea className="h-[555px] w-full">
 					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-4">
 						{[...Array(6)].map((_, index) => (
-							<Skeleton key={index} className="h-60 w-full rounded-xl" />
+							<Skeleton key={index} className="h-[270px] w-full rounded-xl" />
 						))}
 					</div>
 				</ScrollArea>
@@ -66,10 +111,14 @@ const SideProjectsSection = () => {
 		return (
 			<Section>
 				<h2 className="text-2xl font-bold mb-6">Projects</h2>
-				<ScrollArea className="h-[600px] w-full">
+				<div className="flex pb-4 px-4 justify-between sm:justify-center lg:justify-end gap-2 sm:gap-6 md:gap-4 lg:gap-[0.6rem] sm:px-4">
+					<Skeleton className="h-10 w-[calc(50%-4px)] sm:w-full lg:w-[145px]" />
+					<Skeleton className="h-10 w-[calc(50%-4px)] sm:w-full lg:w-[145px]" />
+				</div>
+				<ScrollArea className="h-[555px] w-full">
 					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-4">
 						{[...Array(6)].map((_, index) => (
-							<Skeleton key={index} className="h-60 w-full rounded-xl" />
+							<Skeleton key={index} className="h-[270px] w-full rounded-xl" />
 						))}
 					</div>
 				</ScrollArea>
@@ -77,18 +126,31 @@ const SideProjectsSection = () => {
 		);
 	}
 
-	// SORT PROJECTS BY NUMBER OF STARS
-	const sortedProjects = [...projects].sort((a, b) => b.stargazers_count - a.stargazers_count);
-
 	return (
 		<Section>
+			{/* HEADER */}
 			<div className="relative mb-10">
 				<h2 className="text-2xl font-bold flex items-center gap-2 -mb-5">
-					Projects
+					Projects ({filteredProjects.length})
 					<ShowInfo
 						title={"Projects"}
 						description={
-							"This section displays my projects on GitHub (no private/clients projects)"
+							<div className="flex flex-col gap-2">
+								<p>
+									Explore my public GitHub repositories. No client or private
+									projects are shown here.
+								</p>
+								<span className="text-xs text-muted-foreground">
+									<strong>Total projects : </strong> {projects?.length || 0}
+								</span>
+								<span className="text-xs text-muted-foreground">
+									<strong>Main technologies : </strong>
+									{technologies.slice(1, 4).join(", ")}
+								</span>
+								<span className="text-xs text-muted-foreground">
+									<strong>Last updated : </strong> {lastUpdate}
+								</span>
+							</div>
 						}
 					/>
 				</h2>
@@ -99,17 +161,46 @@ const SideProjectsSection = () => {
 				/>
 			</div>
 
+			{/* FILTERS - TECHNOLOGY AND YEAR */}
+			<div className="flex pb-4 px-4 justify-between sm:justify-center lg:justify-end gap-2 sm:gap-6 md:gap-4 lg:gap-[0.6rem] sm:px-4">
+				<Select onValueChange={setFilterTechnology} defaultValue={filterTechnology}>
+					<SelectTrigger className="w-[calc(50%-4px)] sm:w-full lg:w-[145px]">
+						<SelectValue placeholder="Filter by Technology" />
+					</SelectTrigger>
+					<SelectContent>
+						{technologies.map((tech) => (
+							<SelectItem key={tech} value={tech}>
+								{tech}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+
+				<Select onValueChange={setFilterYear} defaultValue={filterYear}>
+					<SelectTrigger className="w-[calc(50%-4px)] sm:w-full lg:w-[145px]">
+						<SelectValue placeholder="Filter by Year" />
+					</SelectTrigger>
+					<SelectContent>
+						{years.map((year) => (
+							<SelectItem key={year} value={year}>
+								{year}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</div>
+
 			{/* SCROLL AREA TO DISPLAY MORE PROJECTS */}
 			<ScrollArea showShadows ref={scrollAreaRef} className="h-[555px] w-full">
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
-					{sortedProjects.map((project) => (
+					{filteredProjects.map((project) => (
 						<motion.div
 							key={project.name}
 							className="h-full"
 							whileHover={{ scale: 1.03 }}
 							transition={{ type: "spring", stiffness: 300 }}
 						>
-							<Card className="flex flex-col h-[275px] relative">
+							<Card className="flex flex-col h-[270px] relative">
 								{project.pinned && (
 									<div className="absolute top-2 right-2">
 										<Pin className="size-4 rotate-45 text-yellow-500" />
@@ -124,17 +215,19 @@ const SideProjectsSection = () => {
 									</p>
 									<p className="text-xs mb-2">
 										Built With:{" "}
-										{project.languages.slice(0, 3).map((lang, index) => (
-											<span key={lang} className="font-semibold">
-												{lang}
-												{index <
-													Math.min(project.languages.length, 3) - 1 &&
-													", "}
-											</span>
-										))}
+										{project.languages
+											.slice(0, 3)
+											.map((lang: string, index: number) => (
+												<span key={lang} className="font-semibold">
+													{lang}
+													{index <
+														Math.min(project.languages.length, 3) - 1 &&
+														", "}
+												</span>
+											))}
 									</p>
 									<div className="flex flex-wrap gap-1 mt-2">
-										{project.topics.slice(0, 3).map((topic) => (
+										{project.topics.slice(0, 3).map((topic: string) => (
 											<Badge
 												key={topic}
 												variant="secondary"

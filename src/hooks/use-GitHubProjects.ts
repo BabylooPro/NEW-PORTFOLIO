@@ -1,4 +1,6 @@
 import useSWR from "swr";
+import { formatDistanceToNow } from "date-fns";
+import { useRef, useEffect, useState } from "react";
 
 interface GitHubRepo {
 	name: string;
@@ -15,6 +17,7 @@ interface GitHubRepo {
 	license: string | null;
 	default_branch: string;
 	homepage?: string | null;
+	isPrivate: boolean;
 }
 
 interface PinnedRepo {
@@ -42,6 +45,7 @@ interface PinnedRepo {
 	defaultBranchRef: { name: string };
 	homepage: string | null;
 	homepageUrl?: string;
+	isPrivate: boolean;
 }
 
 interface AllRepo {
@@ -69,14 +73,88 @@ interface AllRepo {
 	defaultBranchRef: { name: string };
 	homepage: string | null;
 	homepageUrl?: string;
+	isPrivate: boolean;
 }
 
 // DEFINE A GENERIC FETCHER TO GET DATA
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export const useGitHubProjects = () => {
+export const useGitHubProjects = (): {
+	projects: GitHubRepo[];
+	error: string | null;
+	loading: boolean;
+	lastUpdate: string;
+} => {
+	const lastUpdateRef = useRef<string | null>(null);
+	const [lastUpdateFormatted, setLastUpdateFormatted] = useState<string>("");
+
 	// USE SWR TO FETCH PROJECTS FROM NEXT.JS API
-	const { data, error } = useSWR("/api/github-projects", fetcher);
+	const { data, error, mutate } = useSWR("/api/github-projects", fetcher, {
+		revalidateOnFocus: false,
+		revalidateOnReconnect: false,
+		refreshInterval: 0,
+		dedupingInterval: 3600000, // 1 HOURS IN MS
+		onSuccess: (newData) => {
+			if (
+				newData.lastUpdate &&
+				(!lastUpdateRef.current ||
+					new Date(newData.lastUpdate) > new Date(lastUpdateRef.current))
+			) {
+				console.log(
+					"Updating lastUpdate from",
+					lastUpdateRef.current,
+					"to",
+					newData.lastUpdate
+				);
+				lastUpdateRef.current = newData.lastUpdate;
+				setLastUpdateFormatted(
+					formatDistanceToNow(new Date(newData.lastUpdate), { addSuffix: true })
+				);
+			}
+		},
+	});
+
+	useEffect(() => {
+		const checkForUpdates = async () => {
+			const response = await fetch("/api/github-projects?force=true");
+			if (response.ok) {
+				const newData = await response.json();
+				if (
+					newData.lastUpdate &&
+					(!lastUpdateRef.current ||
+						new Date(newData.lastUpdate) > new Date(lastUpdateRef.current))
+				) {
+					mutate(newData, false);
+				}
+			}
+		};
+
+		// CHECK FOR UPDATES IMMEDIATELY WHEN COMPONENT IS MOUNTED
+		checkForUpdates();
+
+		// CHECK FOR UPDATES EVERY HOUR
+		const intervalId = setInterval(checkForUpdates, 3600000);
+
+		return () => clearInterval(intervalId);
+	}, [mutate]);
+
+	// UPDATE LAST UPDATE FORMAT EVERY HOUR
+	useEffect(() => {
+		const updateFormattedTime = () => {
+			if (lastUpdateRef.current) {
+				setLastUpdateFormatted(
+					formatDistanceToNow(new Date(lastUpdateRef.current), { addSuffix: true })
+				);
+			}
+		};
+
+		const intervalId = setInterval(updateFormattedTime, 3600000);
+
+		// EXECUTE ONCE WHEN MOUNTED
+		updateFormattedTime();
+
+		return () => clearInterval(intervalId);
+	}, []);
 
 	// DEFINE REPOS TO EXCLUDE
 	const excludedRepos = ["BabylooPro", "CUSTOM-ONE-DARK-PRO-THEME"];
@@ -87,6 +165,7 @@ export const useGitHubProjects = () => {
 			projects: [],
 			error: "Failed to fetch GitHub projects",
 			loading: false,
+			lastUpdate: "",
 		};
 	}
 
@@ -96,6 +175,7 @@ export const useGitHubProjects = () => {
 			projects: [],
 			error: null,
 			loading: true,
+			lastUpdate: "",
 		};
 	}
 
@@ -105,6 +185,7 @@ export const useGitHubProjects = () => {
 			projects: [],
 			error: "Invalid response from GitHub API",
 			loading: false,
+			lastUpdate: "",
 		};
 	}
 
@@ -125,6 +206,7 @@ export const useGitHubProjects = () => {
 			license: edge.node.licenseInfo?.name || null,
 			default_branch: edge.node.defaultBranchRef.name,
 			homepage: edge.node.homepageUrl || null,
+			isPrivate: edge.node.isPrivate,
 		})
 	);
 
@@ -143,13 +225,15 @@ export const useGitHubProjects = () => {
 		license: node.licenseInfo?.name || null,
 		default_branch: node.defaultBranchRef.name,
 		homepage: node.homepageUrl || null,
+		isPrivate: node.isPrivate,
 	}));
 
-	// FILTER REPOS FOR EXCLUDED REPOS
+	// FILTER REPOS FOR EXCLUDED REPOS AND PRIVATE REPOS
 	const filteredRepos = allRepos.filter(
 		(repo: GitHubRepo) =>
 			!excludedRepos.includes(repo.name) &&
-			!pinnedRepos.some((pinned) => pinned.name === repo.name)
+			!pinnedRepos.some((pinned) => pinned.name === repo.name) &&
+			!repo.isPrivate
 	);
 
 	// MERGE PINNED PROJECTS WITH OTHER FILTERED PROJECTS
@@ -158,6 +242,7 @@ export const useGitHubProjects = () => {
 	return {
 		projects: allProjects,
 		error: null,
-		loading: false,
+		loading: !data && !error,
+		lastUpdate: lastUpdateFormatted,
 	};
 };

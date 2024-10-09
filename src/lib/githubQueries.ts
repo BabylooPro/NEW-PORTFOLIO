@@ -18,6 +18,7 @@ export const GITHUB_PROJECTS_QUERY = `
               description
               url
               homepageUrl
+              isPrivate
               stargazers {
                 totalCount
               }
@@ -54,6 +55,7 @@ export const GITHUB_PROJECTS_QUERY = `
           description
           url
           homepageUrl
+          isPrivate
           stargazers {
             totalCount
           }
@@ -86,6 +88,14 @@ export const GITHUB_PROJECTS_QUERY = `
           endCursor
         }
       }
+    }
+  }
+`;
+
+export const GITHUB_LAST_UPDATE_QUERY = `
+  query($login: String!) {
+    user(login: $login) {
+      updatedAt
     }
   }
 `;
