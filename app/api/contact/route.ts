@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
+import { resend } from "./utils";
 
-// INITIALIZING RESEND WITH API KEY AND SETTING EMAIL ADDRESSES
-const resend = new Resend(process.env.RESEND_API_KEY);
 const fromEmail = "portfolio@maxremy.dev";
 const toEmail = "maxremy.dev@gmail.com";
 
@@ -35,10 +33,8 @@ export async function POST(req: Request) {
          `,
 		});
 
-		console.log("RESEND API response:", result);
-
-		// CHECK IF RESULT HAS A 'DATA' PROPERTY WITH AN 'ID'
-		if (result.data && "id" in result.data) {
+		// CHECK IF EMAIL WAS SENT AND RETURN SUCCESS RESPONSE
+		if (result && result.data && result.data.id) {
 			return NextResponse.json({
 				success: true,
 				message: `Email sent successfully to ${toEmail} from ${name}.`,
@@ -49,22 +45,11 @@ export async function POST(req: Request) {
 	} catch (error: unknown) {
 		console.error("RESEND Error sending email:", error);
 
-		// CHECKING FOR 403 ERROR - RESEND API ERROR - DOMAIN NOT VERIFIED
-		if (error instanceof Error) {
-			return NextResponse.json(
-				{
-					success: false,
-					message: error.message,
-				},
-				{ status: 500 }
-			);
-		}
-
-		// RETURNING ERROR RESPONSE
+		// RETURN ERROR RESPONSE
 		return NextResponse.json(
 			{
 				success: false,
-				message: `RESEND: Error sending email to ${toEmail}`,
+				message: error instanceof Error ? error.message : "Unknown error occurred",
 			},
 			{ status: 500 }
 		);

@@ -26,6 +26,9 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
+            - name: Run tests
+              run: npm test
+
             - name: Deploy to EC2
               uses: appleboy/ssh-action@v0.1.5
               with:
@@ -46,6 +49,7 @@ jobs:
                       RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} npm ci --prefix .
                       RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} npm run build --prefix .
 
+                      RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} npm test --prefix .
                       pm2 describe portfolio > /dev/null && pm2 restart portfolio --update-env || pm2 start npm --name "portfolio" -- start --prefix /home/ubuntu/NEW-PORTFOLIO --update-env
 
                       pm2 save

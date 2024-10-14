@@ -33,6 +33,12 @@ jobs:
                   GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
                   RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
 
+            - name: Run tests
+              run: npm test
+              env:
+                  GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+                  RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+
             - name: Build project
               run: npm run build
               env:
