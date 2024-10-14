@@ -15,7 +15,7 @@ class MockNextRequest {
 }
 
 // MOCK RESEND
-jest.mock("../../../app/api/contact/resend-client", () => ({
+jest.mock("../../../app/api/contact/utils", () => ({
 	resend: {
 		emails: {
 			send: jest.fn(),
