@@ -8,6 +8,7 @@ on:
 jobs:
     deploy:
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         env:
             GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
             RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
@@ -46,10 +47,10 @@ jobs:
 
                       git pull origin main
 
-                      RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} NODE_OPTIONS="--max-old-space-size=2048" npm ci --prefix .
-                      RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} NODE_OPTIONS="--max-old-space-size=2048" npm run build --prefix .
+                      RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} NODE_OPTIONS="--max-old-space-size=3072" npm ci --prefix .
+                      RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} NODE_OPTIONS="--max-old-space-size=3072" npm run build --prefix .
 
-                      RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} NODE_OPTIONS="--max-old-space-size=2048" npm test --prefix .
+                      RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} NODE_OPTIONS="--max-old-space-size=3072" npm test --prefix .
                       pm2 describe portfolio > /dev/null && pm2 restart portfolio --update-env || pm2 start npm --name "portfolio" -- start --prefix /home/ubuntu/NEW-PORTFOLIO --update-env
 
                       pm2 save
