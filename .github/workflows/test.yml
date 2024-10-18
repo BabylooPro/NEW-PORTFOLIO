@@ -47,11 +47,15 @@ jobs:
               run: |
                   git remote set-url origin https://BabylooPro:${{ secrets.GH_PAT }}@github.com/BabylooPro/NEW-PORTFOLIO.git
 
-            - name: Pull remote changes before pushing
+            - name: Pull latest changes and resolve conflicts
               run: |
                   git fetch origin test-results/pr
                   git rebase origin/test-results/pr || git rebase --abort  # Abort if conflicts arise
-                  git push origin HEAD:test-results/pr
+                  git pull --rebase origin test-results/pr  # Pull to ensure latest changes
+
+            - name: Push changes to test-results/pr
+              run: |
+                  git push origin HEAD:test-results/pr --force-with-lease  # Force push if conflicts are resolved
 
             - name: Create Pull Request with Test Results
               uses: peter-evans/create-pull-request@v4
