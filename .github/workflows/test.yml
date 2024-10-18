@@ -35,7 +35,7 @@ jobs:
             - name: Create Pull Request with Test Results
               uses: peter-evans/create-pull-request@v4
               with:
-                  token: ${{ secrets.GITHUB_TOKEN }}
+                  token: ${{ secrets.GH_PAT }}
                   commit-message: "Test Results: Update"
                   branch: test-results/pr
                   title: "Test Results"
@@ -44,6 +44,11 @@ jobs:
                       ```bash
                       $(cat test-output.log)
                       ```
+                  committer: GitHub <noreply@github.com>
+                  author: BabylooPro <BabylooPro@users.noreply.github.com>
+                  signoff: false
+                  delete-branch: false
+                  draft: false
 
             - name: Upload Test Results as Artifact
               uses: actions/upload-artifact@v3
