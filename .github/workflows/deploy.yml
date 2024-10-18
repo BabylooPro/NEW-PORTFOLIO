@@ -8,10 +8,11 @@ on:
 jobs:
     deploy:
         runs-on: ubuntu-latest
-        timeout-minutes: 30
         env:
             GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
             RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+            WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
+
         steps:
             - name: Checkout code
               uses: actions/checkout@v3
@@ -47,10 +48,14 @@ jobs:
 
                       git pull origin main
 
-                      RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} NODE_OPTIONS="--max-old-space-size=3072" npm ci --prefix .
-                      RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} NODE_OPTIONS="--max-old-space-size=3072" npm run build --prefix .
+                      RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} WAKATIME_API_KEY=${{ secrets.WAKATIME_API_KEY }} NODE_OPTIONS="--max-old-space-size=3072" npm ci --prefix .
+                      RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} WAKATIME_API_KEY=${{ secrets.WAKATIME_API_KEY }} NODE_OPTIONS="--max-old-space-size=3072" npm run build --prefix .
 
-                      RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} NODE_OPTIONS="--max-old-space-size=3072" npm test --prefix .
+                      # INFO: THE COMMAND NPM TEST HAS BEEN MODIFIED TO HANDLE MEMORY LIMITATIONS ON THE T2.MICRO EC2 INSTANCE (1GB RAM + 4GB SWAP).
+                      # WARN: COMPLEX JEST TESTS CAN STILL CAUSE OUT-OF-MEMORY (OOM) ERRORS.
+                      #! FIXED: SEQUENTIAL EXECUTION (--RUNINBAND), INCREASING NODE MEMORY LIMIT (--MAX-OLD-SPACE-SIZE=3072), AND DETECTING OPEN HANDLES (--DETECTOPENHANDLES) HAVE BEEN APPLIED TO MITIGATE ISSUES.
+                      RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} WAKATIME_API_KEY=${{ secrets.WAKATIME_API_KEY }} NODE_OPTIONS="--max-old-space-size=3072" npm test --runInBand --detectOpenHandles --prefix .
+
                       pm2 describe portfolio > /dev/null && pm2 restart portfolio --update-env || pm2 start npm --name "portfolio" -- start --prefix /home/ubuntu/NEW-PORTFOLIO --update-env
 
                       pm2 save
