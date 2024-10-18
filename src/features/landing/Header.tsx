@@ -12,6 +12,8 @@ import { useRouter, usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import AppleEmoji from "@/components/decoration/apple-emoji";
 import ShowInfo from "@/components/ui/show-info";
+import AvatarStatus from "@/components/ui/avatar-status";
+import { useWakaTimeData } from "@/utils/WakaTimeProvider";
 
 // FUNCTION TO RENDER TOOLTIP CONTENT IN A PORTAL
 const PortalTooltipContent = ({
@@ -39,6 +41,7 @@ export default function Header() {
 		message: string;
 		hiddenDate: string;
 	} | null>(null);
+	const wakaTimeData = useWakaTimeData();
 
 	const profileRef = useRef<HTMLDivElement>(null);
 	const separatorRef = useRef(null);
@@ -317,15 +320,91 @@ export default function Header() {
 							}}
 							layout
 						>
-							<motion.div
-								whileHover={{ scale: 1.1 }}
-								transition={{ type: "spring", stiffness: 300, damping: 10 }}
+							<ShowInfo
+								title="Activity Status"
+								description={
+									<>
+										{wakaTimeData ? (
+											<>
+												<strong>
+													I&apos;m currently {wakaTimeData.status} :
+												</strong>
+												<ul className="list-disc pl-4">
+													<li>
+														Today, I&apos;ve been{" "}
+														{wakaTimeData.data.categories[0].name.toLowerCase()}{" "}
+														for{" "}
+														{wakaTimeData.data.categories[0].digital}
+													</li>
+													<li>
+														Currently using{" "}
+														{
+															wakaTimeData.data.operating_systems[0]
+																.name
+														}
+														, with {wakaTimeData.data.editors[0].name}
+													</li>
+												</ul>
+
+												<Separator className="my-4" />
+
+												<ul className="mt-2">
+													<li>
+														<span className="text-green-500">●</span>{" "}
+														<strong>Available: </strong>
+														Active in the last 15 minutes
+													</li>
+													<li>
+														<span className="text-orange-500">●</span>{" "}
+														<strong>Away: </strong>
+														Inactive for 15 to 60 minutes
+													</li>
+													<li>
+														<span className="text-red-500">●</span>{" "}
+														<strong>Busy: </strong>
+														Inactive for more than an hour
+													</li>
+												</ul>
+
+												<Separator className="my-4" />
+
+												<p className="text-neutral-500 text-sm font-extralight">
+													<strong>Time Zone:</strong>{" "}
+													{wakaTimeData.data.range.timezone}
+												</p>
+
+												<p className="text-neutral-500 text-sm font-extralight">
+													<strong>Last update:</strong>{" "}
+													{new Date(
+														wakaTimeData.cached_at
+													).toLocaleString()}
+												</p>
+											</>
+										) : (
+											<p>Loading data...</p>
+										)}
+									</>
+								}
+								position="bottom"
+								wrapMode={true}
 							>
-								<Avatar className="w-10 h-10 sm:w-14 sm:h-14">
-									<AvatarImage src={avatarUrl ?? ""} alt="Profile Image" />
-									<AvatarFallback>MR</AvatarFallback>
-								</Avatar>
-							</motion.div>
+								<motion.div
+									whileHover={{ scale: 1.1 }}
+									transition={{ type: "spring", stiffness: 300, damping: 10 }}
+									className="relative"
+								>
+									<div className="relative">
+										<Avatar className="w-10 h-10 sm:w-14 sm:h-14">
+											<AvatarImage
+												src={avatarUrl ?? ""}
+												alt="Profile Image"
+											/>
+											<AvatarFallback>MR</AvatarFallback>
+										</Avatar>
+										<AvatarStatus size={14} />
+									</div>
+								</motion.div>
+							</ShowInfo>
 							<div className="text-left">
 								<motion.h1
 									className="text-lg sm:text-xl font-semibold"
