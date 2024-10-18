@@ -51,10 +51,15 @@ jobs:
               run: |
                   git fetch origin test-results/pr
                   git rebase origin/test-results/pr || git rebase --abort  # Abort if conflicts arise
-                  git pull --rebase origin test-results/pr  # Pull to ensure latest changes
 
-            - name: Push changes to test-results/pr
+            - name: Resolve conflicts if they occur
+              if: failure()
               run: |
+                  echo "Rebase conflicts detected. You need to manually resolve conflicts."
+
+            - name: Push changes to test-results/pr (force push)
+              run: |
+                  git pull --rebase origin test-results/pr
                   git push origin HEAD:test-results/pr --force-with-lease  # Force push if conflicts are resolved
 
             - name: Create Pull Request with Test Results
