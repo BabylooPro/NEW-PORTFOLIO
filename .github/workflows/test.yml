@@ -32,9 +32,9 @@ jobs:
               run: |
                   npm test 2>&1 | tee test-output.log
 
-            - name: Read test output into variable
+            - name: Read and encode test output
               id: test_output
-              run: echo "TEST_OUTPUT=$(cat test-output.log)" >> $GITHUB_ENV
+              run: echo "TEST_OUTPUT=$(base64 -w 0 test-output.log)" >> $GITHUB_ENV
 
             - name: Commit changes if any
               run: |
@@ -57,7 +57,7 @@ jobs:
                   body: |
                       ## Test Output
                       ```bash
-                      ${{ env.TEST_OUTPUT }}
+                      $(echo ${{ env.TEST_OUTPUT }} | base64 --decode)
                       ```
                       ## Files Changed
                       The following files were modified:
