@@ -30,7 +30,22 @@ jobs:
 
             - name: Run tests
               run: |
-                  npm test | tee test-output.log
+                  npm test 2>&1 | tee test-output.log
+
+            - name: Read test output into variable
+              id: test_output
+              run: echo "TEST_OUTPUT=$(cat test-output.log)" >> $GITHUB_ENV
+
+            - name: Commit changes if any
+              run: |
+                  git config --global user.name "GitHub Actions"
+                  git config --global user.email "actions@github.com"
+                  git add .
+                  git diff --cached --exit-code || git commit -m "Apply changes after running tests"
+
+            - name: Push changes to test-results/pr
+              run: |
+                  git push origin HEAD:test-results/pr
 
             - name: Create Pull Request with Test Results
               uses: peter-evans/create-pull-request@v4
@@ -42,7 +57,12 @@ jobs:
                   body: |
                       ## Test Output
                       ```bash
-                      $(cat test-output.log)
+                      ${{ env.TEST_OUTPUT }}
+                      ```
+                      ## Files Changed
+                      The following files were modified:
+                      ```bash
+                      $(git diff --name-only HEAD~1 HEAD)
                       ```
                   committer: GitHub <noreply@github.com>
                   author: BabylooPro <BabylooPro@users.noreply.github.com>
