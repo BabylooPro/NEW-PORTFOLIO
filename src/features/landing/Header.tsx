@@ -332,17 +332,26 @@ export default function Header() {
 												<ul className="list-disc pl-4">
 													<li>
 														Today, I&apos;ve been{" "}
-														{wakaTimeData.data.categories[0].name.toLowerCase()}{" "}
+														{wakaTimeData.data.categories.length > 0
+															? wakaTimeData.data.categories[0].name.toLowerCase()
+															: "inactive"}{" "}
 														for{" "}
-														{wakaTimeData.data.categories[0].digital}
+														{wakaTimeData.data.categories.length > 0
+															? wakaTimeData.data.categories[0]
+																	.digital
+															: "00:00"}
 													</li>
 													<li>
 														Currently using{" "}
-														{
-															wakaTimeData.data.operating_systems[0]
-																.name
-														}
-														, with {wakaTimeData.data.editors[0].name}
+														{wakaTimeData.data.operating_systems
+															.length > 0
+															? wakaTimeData.data.operating_systems[0]
+																	.name
+															: "an unknown system"}
+														, with{" "}
+														{wakaTimeData.data.editors.length > 0
+															? wakaTimeData.data.editors[0].name
+															: "no editor"}
 													</li>
 												</ul>
 

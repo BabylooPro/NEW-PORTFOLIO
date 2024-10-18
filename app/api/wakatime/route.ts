@@ -44,29 +44,30 @@ async function fetchDataWithCache(revalidate: boolean = false) {
 
 	const data: WakaTimeData = await response.json(); // PARSE JSON RESPONSE
 
+	// ENSURE DEFAULT VALUES FOR EMPTY ARRAYS
+	const categories: Category[] =
+		data.data.categories.length > 0
+			? data.data.categories
+			: [{ name: "No activity", total_seconds: 0, digital: "0:00", percent: 0 }];
+
+	const editors: Editor[] =
+		data.data.editors.length > 0
+			? data.data.editors
+			: [{ name: "None", total_seconds: 0, digital: "0:00", percent: 0 }];
+
+	const operating_systems: OperatingSystem[] =
+		data.data.operating_systems.length > 0
+			? data.data.operating_systems
+			: [{ name: "None", total_seconds: 0, digital: "0:00", percent: 0 }];
+
 	// STORE DATA IN CACHE
 	cachedData = {
 		cached_at: data.cached_at,
 		data: {
 			range: data.data.range,
-			editors: data.data.editors.map((editor: Editor) => ({
-				name: editor.name,
-				total_seconds: editor.total_seconds,
-				digital: editor.digital,
-				percent: editor.percent,
-			})),
-			operating_systems: data.data.operating_systems.map((os: OperatingSystem) => ({
-				name: os.name,
-				total_seconds: os.total_seconds,
-				digital: os.digital,
-				percent: os.percent,
-			})),
-			categories: data.data.categories.map((category: Category) => ({
-				name: category.name,
-				total_seconds: category.total_seconds,
-				digital: category.digital,
-				percent: category.percent,
-			})),
+			editors: editors,
+			operating_systems: operating_systems,
+			categories: categories,
 			grand_total: data.data.grand_total,
 		},
 	};
