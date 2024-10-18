@@ -43,13 +43,11 @@ jobs:
                   git add .
                   git diff --cached --exit-code || git commit -m "Apply changes after running tests"
 
-            - name: Configure Git for pushing with PAT
+            - name: Set up Git to use PAT for authentication
               run: |
                   git remote set-url origin https://BabylooPro:${{ secrets.GH_PAT }}@github.com/BabylooPro/NEW-PORTFOLIO.git
 
             - name: Push changes to test-results/pr
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
               run: |
                   git push origin HEAD:test-results/pr
 
