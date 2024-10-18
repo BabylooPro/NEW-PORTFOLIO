@@ -50,7 +50,7 @@ jobs:
             - name: Pull remote changes before pushing
               run: |
                   git fetch origin test-results/pr
-                  git rebase origin/test-results/pr
+                  git rebase origin/test-results/pr || git rebase --abort  # Abort if conflicts arise
                   git push origin HEAD:test-results/pr
 
             - name: Create Pull Request with Test Results
@@ -81,3 +81,4 @@ jobs:
               with:
                   name: test-results
                   path: test-output.log
+fix
