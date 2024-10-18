@@ -1,0 +1,52 @@
+name: Run Tests and Create Pull Request
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        env:
+            GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+            RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+            WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Cache dependencies
+              uses: actions/cache@v3
+              with:
+                  path: node_modules
+                  key: ${{ runner.os }}-node_modules-${{ hashFiles('package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node_modules-
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Run tests
+              run: |
+                  npm test | tee test-output.log
+
+            - name: Create Pull Request with Test Results
+              uses: peter-evans/create-pull-request@v4
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  commit-message: "Test Results: Update"
+                  branch: test-results/pr
+                  title: "Test Results"
+                  body: |
+                      ## Test Output
+                      ```bash
+                      $(cat test-output.log)
+                      ```
+
+            - name: Upload Test Results as Artifact
+              uses: actions/upload-artifact@v3
+              with:
+                  name: test-results
+                  path: test-output.log
