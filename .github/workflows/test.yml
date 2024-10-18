@@ -9,7 +9,7 @@ jobs:
     test:
         runs-on: ubuntu-latest
         env:
-            GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+            GIT_HUB_ACCESS_TOKEN: ${{ secrets.GH_PAT }}
             RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
             WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
 
@@ -32,6 +32,7 @@ jobs:
               run: |
                   npm test 2>&1 | tee test-output.log
 
+            # Encodage du contenu du fichier de log en base64 pour éviter les problèmes de format
             - name: Read and encode test output
               id: test_output
               run: echo "TEST_OUTPUT=$(base64 -w 0 test-output.log)" >> $GITHUB_ENV
@@ -46,6 +47,8 @@ jobs:
             - name: Push changes to test-results/pr
               run: |
                   git push origin HEAD:test-results/pr
+              env:
+                  GIT_HUB_ACCESS_TOKEN: ${{ secrets.GH_PAT }}
 
             - name: Create Pull Request with Test Results
               uses: peter-evans/create-pull-request@v4
