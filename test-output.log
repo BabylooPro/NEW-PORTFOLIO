@@ -2,53 +2,53 @@
 > portfolio@0.1.0 test
 > dotenv -e .env.test -- jest
 
-PASS __tests__/app/api/contact.test.ts (46.864 s)
-  Contact API
-    ✓ should send an email successfully (10 ms)
-    ✓ should handle Resend API errors (2 ms)
-    ✓ should handle unexpected Resend API response (7 ms)
-
   console.log
     Changes detected in GitHub data
 
       at app/api/github-projects/utils.ts:40:11
 
-PASS __tests__/integration/github-projects.test.ts (48.893 s)
+PASS __tests__/app/api/contact.test.ts (47.604 s)
+  Contact API
+    ✓ should send an email successfully (10 ms)
+    ✓ should handle Resend API errors (1 ms)
+    ✓ should handle unexpected Resend API response
+
+PASS __tests__/integration/github-projects.test.ts (47.828 s)
   GitHub Projects API
     checkForUpdates function
-      ✓ should return true when there is no cached data (6 ms)
-      ✓ should return true when there are changes in the data (43 ms)
+      ✓ should return true when there is no cached data (7 ms)
+      ✓ should return true when there are changes in the data (42 ms)
 
-PASS __tests__/app/api/github-projects.test.ts (49.125 s)
+PASS __tests__/app/api/github-projects.test.ts (50.673 s)
   GitHub Projects API
-    ✓ should return projects data (7 ms)
+    ✓ should return projects data (10 ms)
     ✓ should handle errors and use cached data (2 ms)
-    ✓ should force refresh data when 'force' query param is true (1 ms)
-    ✓ should handle pagination (2 ms)
+    ✓ should force refresh data when 'force' query param is true (2 ms)
+    ✓ should handle pagination (3 ms)
 
-PASS __tests__/app/api/wakatime.test.ts (10.6 s)
+PASS __tests__/app/api/wakatime.test.ts (10.866 s)
   WakaTime API Route
     ✓ should fetch and cache data from WakaTime API (4 ms)
-    ✓ should use cached data within cache duration (1 ms)
+    ✓ should use cached data within cache duration (2 ms)
     ✓ should handle WakaTime API errors (1 ms)
     ✓ should change status based on last activity (1 ms)
 
-PASS __tests__/integration/contact.test.ts (10.932 s)
+PASS __tests__/integration/contact.test.ts (11.152 s)
   Contact API Integration
-    ✓ should send an email successfully via Resend API (476 ms)
+    ✓ should send an email successfully via Resend API (414 ms)
 
-PASS __tests__/app/layout.test.tsx (18.27 s)
+PASS __tests__/app/layout.test.tsx (19.065 s)
   RootLayout
-    ✓ should render children correctly (53 ms)
+    ✓ should render children correctly (55 ms)
     ✓ should apply the correct class names (3 ms)
-    ✓ should set the correct lang attribute (3 ms)
+    ✓ should set the correct lang attribute (4 ms)
     ✓ should use Providers component (2 ms)
     ✓ should have correct metadata (1 ms)
 
-PASS __tests__/integration/wakatime.test.ts (10.737 s)
+PASS __tests__/integration/wakatime.test.ts (10.41 s)
   WakaTime API Integration
-    ✓ should fetch WakaTime data successfully (744 ms)
-    ✓ should use cached data on subsequent calls within cache duration (1002 ms)
+    ✓ should fetch WakaTime data successfully (635 ms)
+    ✓ should use cached data on subsequent calls within cache duration (1001 ms)
 
 ---------------------------------------|---------|----------|---------|---------|--------------------------
 File                                   | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s        
@@ -72,5 +72,5 @@ All files                              |   83.56 |    64.86 |   85.71 |   83.56 
 Test Suites: 7 passed, 7 total
 Tests:       21 passed, 21 total
 Snapshots:   0 total
-Time:        69.135 s
+Time:        69.95 s
 Ran all test suites.
