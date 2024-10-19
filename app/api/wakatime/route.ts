@@ -21,7 +21,7 @@ async function fetchDataWithCache(revalidate: boolean = false) {
 	if (cachedData && lastCachedAt && !revalidate) {
 		const cacheAge = now - lastCachedAt;
 		if (cacheAge < CACHE_DURATION_SECONDS * 1000) {
-			return cachedData;
+			return cachedData; // RETURN CACHED DATA IF STILL VALID
 		}
 	}
 
@@ -60,6 +60,13 @@ async function fetchDataWithCache(revalidate: boolean = false) {
 				? data.data.operating_systems
 				: [{ name: "None", total_seconds: 0, digital: "0:00", percent: 0 }];
 
+		const totalSeconds = data.data.grand_total.total_seconds; // GET TOTAL SECONDS
+
+		// FORCE CACHE UPDATE IF NEW DATA IS AVAILABLE
+		if (!cachedData || totalSeconds > cachedData.data.grand_total.total_seconds) {
+			lastActivityAt = Date.now(); // UPDATE LAST ACTIVITY TIME IF NEW ACTIVITY DETECTED
+		}
+
 		// STORE DATA IN CACHE
 		cachedData = {
 			cached_at: data.cached_at,
@@ -73,16 +80,6 @@ async function fetchDataWithCache(revalidate: boolean = false) {
 		};
 
 		lastCachedAt = Date.now(); // UPDATE CACHE TIME
-
-		const totalSeconds = data.data.grand_total.total_seconds; // GET TOTAL SECONDS
-
-		// UPDATE LAST ACTIVITY IF TOTAL SECONDS HAS INCREASED
-		if (
-			totalSeconds > 0 &&
-			(!lastActivityAt || totalSeconds > cachedData.data.grand_total.total_seconds)
-		) {
-			lastActivityAt = Date.now(); // UPDATE LAST ACTIVITY TIME
-		}
 
 		return cachedData; // RETURN CACHED DATA
 	} catch (error) {
@@ -103,9 +100,11 @@ export async function GET() {
 			const timeSinceLastActivity = (now - lastActivityAt) / 1000; // TIME IN SECONDS
 
 			if (timeSinceLastActivity > BUSY_THRESHOLD_SECONDS) {
-				status = "busy"; // SET STATUS TO BUSY
+				status = "busy"; // SET STATUS TO BUSY IF INACTIVE FOR MORE THAN 1 HOUR
 			} else if (timeSinceLastActivity > AWAY_THRESHOLD_SECONDS) {
-				status = "away"; // SET STATUS TO AWAY
+				status = "away"; // SET STATUS TO AWAY IF INACTIVE FOR MORE THAN 15 MINUTES
+			} else {
+				status = "available"; // SET STATUS TO AVAILABLE IF ACTIVITY DETECTED
 			}
 		}
 
