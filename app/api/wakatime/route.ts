@@ -6,7 +6,7 @@ const WAKATIME_API_KEY = process.env.WAKATIME_API_KEY;
 // CACHE SETTINGS
 let cachedData: WakaTimeData | null = null;
 let lastCachedAt: number | null = null;
-let lastActivityAt: string | null = null;
+let lastActivityAt: number | null = null;
 
 // THRESHOLD SETTINGS
 const CACHE_DURATION_SECONDS = 300; // 5 MINUTES
@@ -76,9 +76,12 @@ async function fetchDataWithCache(revalidate: boolean = false) {
 
 		const totalSeconds = data.data.grand_total.total_seconds; // GET TOTAL SECONDS
 
-		// IF TOTAL SECONDS IS GREATER THAN 0, UPDATE LAST ACTIVITY TIME
-		if (totalSeconds > 0) {
-			lastActivityAt = new Date(lastCachedAt).toISOString(); // UPDATE LAST ACTIVITY TIME
+		// UPDATE LAST ACTIVITY IF TOTAL SECONDS HAS INCREASED
+		if (
+			totalSeconds > 0 &&
+			(!lastActivityAt || totalSeconds > cachedData.data.grand_total.total_seconds)
+		) {
+			lastActivityAt = Date.now(); // UPDATE LAST ACTIVITY TIME
 		}
 
 		return cachedData; // RETURN CACHED DATA
@@ -96,8 +99,8 @@ export async function GET() {
 
 		// IF LAST ACTIVITY TIME IS SET, CHECK IF STATUS SHOULD BE AWAY OR BUSY
 		if (lastActivityAt) {
-			const now = new Date().getTime(); // GET CURRENT TIME
-			const timeSinceLastActivity = (now - new Date(lastActivityAt).getTime()) / 1000; // GET TIME SINCE LAST ACTIVITY
+			const now = Date.now(); // GET CURRENT TIME
+			const timeSinceLastActivity = (now - lastActivityAt) / 1000; // TIME IN SECONDS
 
 			if (timeSinceLastActivity > BUSY_THRESHOLD_SECONDS) {
 				status = "busy"; // SET STATUS TO BUSY
