@@ -18,9 +18,9 @@ interface AvatarStatusProps {
 // COLORS FOR STATUS
 const statusColors: Record<StatusType, string> = {
 	null: "",
-	available: "bg-green-500 border-green-700",
-	away: "bg-orange-500 border-orange-700",
-	busy: "bg-red-500 border-red-700",
+	available: "bg-green-500 border-2 border-green-700",
+	away: "bg-orange-500 border-2 border-orange-700",
+	busy: "bg-red-500 border-2 border-red-700",
 };
 
 // TITLES FOR STATUS
@@ -39,7 +39,7 @@ const AvatarStatus: React.FC<AvatarStatusProps> = ({ size = 12 }) => {
 
 	return (
 		<div
-			className={`absolute -top-0 -left-0 rounded-full border-2 ${statusColors[status]}`}
+			className={`absolute -top-0 -left-0 rounded-full ${statusColors[status]}`}
 			style={{ width: size, height: size }}
 			title={statusTitles[status]}
 		/>

@@ -56,6 +56,7 @@ jobs:
                       #! TO FIXED: AN INSTANCE WITH MORE RAM MAY BE NEEDED TO RE-ENABLE THE TESTS.
                       # RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} WAKATIME_API_KEY=${{ secrets.WAKATIME_API_KEY }} NODE_OPTIONS="--max-old-space-size=3072" npm test --runInBand --detectOpenHandles --prefix .
 
-                      pm2 describe portfolio > /dev/null && pm2 restart portfolio --update-env || pm2 start npm --name "portfolio" -- start --prefix /home/ubuntu/NEW-PORTFOLIO --update-env
+                      pm2 describe portfolio > /dev/null || pm2 start npm --name "portfolio" -- start --prefix /home/ubuntu/NEW-PORTFOLIO --update-env
+                      pm2 restart portfolio --update-env
 
                       pm2 save
