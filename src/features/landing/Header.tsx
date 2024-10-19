@@ -327,11 +327,21 @@ export default function Header() {
 										{wakaTimeData ? (
 											<>
 												<strong>
-													I&apos;m currently {wakaTimeData.status} :
+													{wakaTimeData.status === "available" &&
+														"I'm currently available:"}
+													{wakaTimeData.status === "away" &&
+														"I'm currently away:"}
+													{wakaTimeData.status === "busy" &&
+														"I'm currently busy:"}
 												</strong>
 												<ul className="list-disc pl-4">
 													<li>
-														Today, I&apos;ve been{" "}
+														{wakaTimeData.status === "available" &&
+															"Today, I've been "}
+														{wakaTimeData.status === "away" &&
+															"I've been "}
+														{wakaTimeData.status === "busy" &&
+															"I've already spent "}
 														{wakaTimeData.data.categories.length > 0
 															? wakaTimeData.data.categories[0].name.toLowerCase()
 															: "inactive"}{" "}
@@ -340,9 +350,18 @@ export default function Header() {
 															? wakaTimeData.data.categories[0]
 																	.digital
 															: "00:00"}
+														{wakaTimeData.status === "away" &&
+															" so far today"}
+														{wakaTimeData.status === "busy" &&
+															" coding today"}
 													</li>
 													<li>
-														Currently using{" "}
+														{wakaTimeData.status === "available" &&
+															"Currently using "}
+														{wakaTimeData.status === "away" &&
+															"Last active on "}
+														{wakaTimeData.status === "busy" &&
+															"Not working at the moment, but earlier I was on "}
 														{wakaTimeData.data.operating_systems
 															.length > 0
 															? wakaTimeData.data.operating_systems[0]
