@@ -15,7 +15,7 @@ export const Providers = (props: ProvidersProps) => {
 			enableSystem
 			disableTransitionOnChange
 		>
-			<Toaster />
+			<Toaster showTestToast={false} />
 			<WakaTimeProvider>{props.children}</WakaTimeProvider>
 		</ThemeProvider>
 	);
