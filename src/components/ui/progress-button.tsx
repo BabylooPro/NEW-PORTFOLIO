@@ -27,7 +27,7 @@ type ProgressButtonBaseProps = {
 	icon?: React.ElementType;
 	iconSize?: string;
 	buttonSize?: string;
-	buttonVariant?: ButtonVariants;
+	buttonVariant?: ButtonVariants | ButtonVariants[];
 	onClick?: () => void;
 	onComplete?: () => void;
 	onError?: (error: Error) => void;
