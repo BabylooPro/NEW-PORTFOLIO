@@ -2,12 +2,12 @@
 
 import React from "react";
 import { experiences } from "./data/experiences";
-import UseExpertise from "./utils/useExpertise";
+import UseExpertise from "./utils/expertise/useExpertise";
 
 const ExperienceSection: React.FC = () => {
 	return (
 		<UseExpertise
-			title="Experience"
+			title="My Experience"
 			items={experiences}
 			showCompany={true}
 			showSkills={true}

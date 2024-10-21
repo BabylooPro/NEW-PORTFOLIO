@@ -2,16 +2,16 @@
 
 import React from "react";
 import { skills } from "./data/skills";
-import UseExpertise from "./utils/useExpertise";
+import UseExpertise from "./utils/expertise/useExpertise";
 
 const SkillSection: React.FC = () => {
 	return (
 		<UseExpertise
-			title="Skills"
+			title="My Skills"
 			items={skills}
 			showCompany={false}
 			showSkills={true}
-			scrollHeight="h-[355px]"
+			scrollHeight="h-[400px]"
 		/>
 	);
 };
