@@ -11,9 +11,12 @@ import { createPortal } from "react-dom";
 import { useRouter, usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import AppleEmoji from "@/components/decoration/apple-emoji";
-import ShowInfo from "@/components/ui/show-info";
+import { ShowInfo } from "@/components/ui/show-info";
 import AvatarStatus from "@/components/ui/avatar-status";
 import { useWakaTimeData } from "@/utils/WakaTimeProvider";
+import { useHeaderPosition } from "@/hooks/use-header-position";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { WakaTimeData } from "../../../app/api/wakatime/types";
 
 // FUNCTION TO RENDER TOOLTIP CONTENT IN A PORTAL
 const PortalTooltipContent = ({
@@ -24,6 +27,120 @@ const PortalTooltipContent = ({
 	return createPortal(<TooltipContent {...props}>{children}</TooltipContent>, document.body);
 };
 
+const ProfileContent = ({
+	wakaTimeData,
+	avatarUrl,
+}: {
+	wakaTimeData: WakaTimeData | null;
+	avatarUrl: string | null;
+}) => (
+	<ShowInfo wrapMode>
+		<ShowInfo.Title>Activity Status</ShowInfo.Title>
+		<ShowInfo.Content>
+			<motion.div
+				whileHover={{ scale: 1.1 }}
+				transition={{
+					type: "spring",
+					stiffness: 300,
+					damping: 10,
+				}}
+				className="relative"
+			>
+				<div className="relative">
+					<Avatar className="w-10 h-10 sm:w-14 sm:h-14">
+						<AvatarImage src={avatarUrl ?? ""} alt="Profile Image" />
+						<AvatarFallback>MR</AvatarFallback>
+					</Avatar>
+					<AvatarStatus size={14} />
+				</div>
+			</motion.div>
+		</ShowInfo.Content>
+		<ShowInfo.Description>
+			{wakaTimeData ? (
+				<>
+					<strong>
+						{wakaTimeData.status === "available" && "I'm currently available:"}
+						{wakaTimeData.status === "away" && "I'm currently away:"}
+						{wakaTimeData.status === "busy" && "I'm currently busy:"}
+					</strong>
+					<ul className="list-disc pl-4">
+						<li>
+							{wakaTimeData.status === "available" && "Today, i've been "}
+							{wakaTimeData.status === "away" && "i've been "}
+							{wakaTimeData.status === "busy" && "I've already spent "}
+							{wakaTimeData.data.categories.length > 0
+								? wakaTimeData.data.categories[0].name.toLowerCase()
+								: "inactive"}{" "}
+							for{" "}
+							{wakaTimeData.data.categories.length > 0
+								? wakaTimeData.data.categories[0].digital
+								: "00:00"}
+							{wakaTimeData.status === "away" && " so far today"}
+							{wakaTimeData.status === "busy" && " coding today"}
+						</li>
+						<li>
+							{wakaTimeData.status === "available" && "currently using "}
+							{wakaTimeData.status === "away" && "last active on "}
+							{wakaTimeData.status === "busy" &&
+								"not working at the moment, but earlier i was on "}
+							{wakaTimeData.data.operating_systems.length > 0
+								? wakaTimeData.data.operating_systems[0].name
+								: "an unknown system"}
+							, with{" "}
+							{wakaTimeData.data.editors.length > 0
+								? wakaTimeData.data.editors[0].name
+								: "no editor"}
+						</li>
+					</ul>
+
+					<Separator className="my-4" />
+
+					<ul className="mt-2">
+						<li>
+							<span className="text-green-500">●</span> <strong>Available: </strong>
+							Active in the last 15 minutes
+						</li>
+						<li>
+							<span className="text-orange-500">●</span> <strong>Away: </strong>
+							Inactive for 15 to 60 minutes
+						</li>
+						<li>
+							<span className="text-red-500">●</span> <strong>Busy: </strong>
+							Inactive for more than an hour
+						</li>
+					</ul>
+
+					<Separator className="my-4" />
+
+					<p className="text-neutral-500 text-sm font-extralight">
+						<strong>Time Zone:</strong> {wakaTimeData.data.range.timezone}
+					</p>
+
+					<p className="text-neutral-500 text-sm font-extralight">
+						<strong>Last update:</strong>{" "}
+						{new Date(wakaTimeData.cached_at).toLocaleString()}
+					</p>
+				</>
+			) : (
+				<p>Loading Status...</p>
+			)}
+		</ShowInfo.Description>
+	</ShowInfo>
+);
+
+const ProfileDescription = ({ isSmallScreen }: { isSmallScreen: boolean }) => (
+	<div className="text-left">
+		<h1 className="text-lg sm:text-xl font-semibold">Max Remy</h1>
+		{isSmallScreen ? (
+			<p className="text-neutral-500">FullStack Developer</p>
+		) : (
+			<p className="text-neutral-500 hidden sm:block">
+				FullStack Developer | Software Engineer
+			</p>
+		)}
+	</div>
+);
+
 // HEADER COMPONENT
 export default function Header() {
 	const router = useRouter();
@@ -31,9 +148,7 @@ export default function Header() {
 	const [isScrolling, setIsScrolling] = useState(false);
 	const [isClient, setIsClient] = useState(false);
 	const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-	const [isSmallScreen, setIsSmallScreen] = useState(false);
 	const [isCompact, setIsCompact] = useState(false);
-	const [isHeaderMoved, setIsHeaderMoved] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 	const [showWIPBadge, setShowWIPBadge] = useState(true);
 	const [lastCommitInfo, setLastCommitInfo] = useState<{
@@ -42,6 +157,7 @@ export default function Header() {
 		hiddenDate: string;
 	} | null>(null);
 	const wakaTimeData = useWakaTimeData();
+	const { isHeaderMoved } = useHeaderPosition();
 
 	const profileRef = useRef<HTMLDivElement>(null);
 	const separatorRef = useRef(null);
@@ -93,41 +209,11 @@ export default function Header() {
 	};
 
 	useEffect(() => {
-		console.log(`isCompact: ${isCompact}`);
-
-		//! Log positions of "Profile & Description" and "Social Links"
-		if (profileRef.current) {
-			const profileRect = profileRef.current.getBoundingClientRect();
-			console.log("Profile & Description position:", {
-				top: profileRect.top,
-				left: profileRect.left,
-				bottom: profileRect.bottom,
-				right: profileRect.right,
-			});
-		}
-
-		if (socialLinksRef.current) {
-			const socialLinksRect = socialLinksRef.current.getBoundingClientRect();
-			console.log("Social Links position:", {
-				top: socialLinksRect.top,
-				left: socialLinksRect.left,
-				bottom: socialLinksRect.bottom,
-				right: socialLinksRect.right,
-			});
-		}
-	}, [isCompact]);
-
-	useEffect(() => {
 		setIsLoading(true);
 		fetchLastCommitInfo().then((info) => {
 			if (info) {
 				setLastCommitInfo(info);
 				setShowWIPBadge(info.isRecent);
-				if (info.isRecent) {
-					// console.log(`WIP Badge will be hidden on ${info.hiddenDate}`);
-				} else {
-					// console.log("WIP Badge is already hidden");
-				}
 			}
 			setIsLoading(false);
 		});
@@ -174,8 +260,7 @@ export default function Header() {
 		setIsClient(true);
 
 		const handleResize = () => {
-			const isMobile = window.innerWidth < 640;
-			setIsSmallScreen(isMobile);
+			// const isMobile = window.innerWidth < 640;
 			setIsCompact(false);
 		};
 
@@ -188,7 +273,6 @@ export default function Header() {
 			const isMobile = window.innerWidth < 640;
 			if (window.scrollY > 0) {
 				setIsScrolling(true);
-				setIsHeaderMoved(true);
 				if (!isMobile) {
 					setIsCompact(true);
 				}
@@ -200,8 +284,6 @@ export default function Header() {
 				}, 150);
 			} else {
 				setIsScrolling(false);
-				setIsHeaderMoved(false);
-				setIsCompact(false);
 			}
 		};
 
@@ -214,35 +296,35 @@ export default function Header() {
 		};
 	}, []);
 
+	const isSmallScreen = useMediaQuery("(max-width: 640px)");
+
 	return (
 		<>
 			{/* WIP BADGE */}
 			{!isLoading && showWIPBadge && (
 				<div className="fixed top-2 left-2 flex items-center gap-2 z-[99]">
-					<ShowInfo
-						title="Work In Progress"
-						description={
-							<>
-								This project is currently under active development. <br />
-								Features and content may change frequently.
-								{lastCommitInfo && (
-									<>
-										<br />
-										<br />
-										<strong>Last Update :</strong> {lastCommitInfo.date}
-										<br />
-										<strong>Latest Change :</strong> {lastCommitInfo.message}
-									</>
-								)}
-							</>
-						}
-						wrapMode={true}
-					>
-						<Badge className="z-[99] w-full h-7 flex items-center gap-1 cursor-default">
-							<AppleEmoji emojiShortName="construction" size={16} />
-							<span>WIP</span>
-							<AppleEmoji emojiShortName="construction" size={16} />
-						</Badge>
+					<ShowInfo wrapMode>
+						<ShowInfo.Title>Work In Progress</ShowInfo.Title>
+						<ShowInfo.Description>
+							This project is currently under active development. <br />
+							Features and content may change frequently.
+							{lastCommitInfo && (
+								<>
+									<br />
+									<br />
+									<strong>Last Update :</strong> {lastCommitInfo.date}
+									<br />
+									<strong>Latest Change :</strong> {lastCommitInfo.message}
+								</>
+							)}
+						</ShowInfo.Description>
+						<ShowInfo.Content>
+							<Badge className="z-[99] w-full h-7 flex items-center gap-1 cursor-default">
+								<AppleEmoji emojiShortName="construction" size={16} />
+								<span>WIP</span>
+								<AppleEmoji emojiShortName="construction" size={16} />
+							</Badge>
+						</ShowInfo.Content>
 					</ShowInfo>
 				</div>
 			)}
@@ -256,7 +338,7 @@ export default function Header() {
 					hidden: { opacity: 0, y: 50, scale: 0.9 },
 					visible: { opacity: 1, y: 0, scale: 1 },
 				}}
-				className={`sticky z-50 flex items-center justify-center p-4 sm:p-6 max-xl:w-3/4 w-full max-w-5xl mx-auto shadow-2xl rounded-lg sm:rounded-2xl bg-neutral-300/30 dark:bg-neutral-900/70 backdrop-blur-lg transition-all duration-300 ${
+				className={`sticky z-[98] flex items-center justify-center p-4 sm:p-6 max-xl:w-3/4 w-full max-w-5xl mx-auto shadow-2xl rounded-2xl bg-neutral-300/30 dark:bg-neutral-900/70 backdrop-blur-md transition-all duration-300 ${
 					isScrolling ? "top-0" : isHeaderMoved ? "top-6 sm:top-10" : "top-6 sm:top-10"
 				}`}
 			>
@@ -301,170 +383,40 @@ export default function Header() {
 						}}
 						layout
 					>
-						{/* PROFILE & DESCRIPTION */}
-						<motion.div
-							ref={profileRef}
-							className={`flex items-center justify-center  ${
-								isCompact ? "space-x-2" : "space-x-2 sm:space-x-4"
-							}`}
-							initial={{ opacity: 0, x: isCompact ? -100 : 100 }}
-							animate={{
-								opacity: 1,
-								x: 0,
-								alignSelf: isCompact ? "flex-start" : "center",
-								transition: {
+						{/* PROFILE & DESCRIPTION - MOBILE & DESKTOP */}
+						{isSmallScreen ? (
+							<div
+								ref={profileRef}
+								className={`flex items-center justify-center mt-2 ${
+									isCompact ? "space-x-2" : "space-x-2 sm:space-x-4"
+								}`}
+							>
+								<ProfileContent wakaTimeData={wakaTimeData} avatarUrl={avatarUrl} />
+								<ProfileDescription isSmallScreen={isSmallScreen} />
+							</div>
+						) : (
+							<motion.div
+								ref={profileRef}
+								className={`flex items-center justify-center ${
+									isCompact ? "space-x-2" : "space-x-2 sm:space-x-4"
+								}`}
+								initial={{ opacity: 0, x: isCompact ? -100 : 100 }}
+								animate={{
+									opacity: 1,
+									x: 0,
+									alignSelf: isCompact ? "flex-start" : "center",
+								}}
+								transition={{
 									duration: 1,
 									ease: "easeInOut",
 									delay: isCompact ? 0 : 1,
-								},
-							}}
-							layout
-						>
-							<ShowInfo
-								title="Activity Status"
-								description={
-									<>
-										{wakaTimeData ? (
-											<>
-												<strong>
-													{wakaTimeData.status === "available" &&
-														"I'm currently available:"}
-													{wakaTimeData.status === "away" &&
-														"I'm currently away:"}
-													{wakaTimeData.status === "busy" &&
-														"I'm currently busy:"}
-												</strong>
-												<ul className="list-disc pl-4">
-													<li>
-														{wakaTimeData.status === "available" &&
-															"Today, I've been "}
-														{wakaTimeData.status === "away" &&
-															"I've been "}
-														{wakaTimeData.status === "busy" &&
-															"I've already spent "}
-														{wakaTimeData.data.categories.length > 0
-															? wakaTimeData.data.categories[0].name.toLowerCase()
-															: "inactive"}{" "}
-														for{" "}
-														{wakaTimeData.data.categories.length > 0
-															? wakaTimeData.data.categories[0]
-																	.digital
-															: "00:00"}
-														{wakaTimeData.status === "away" &&
-															" so far today"}
-														{wakaTimeData.status === "busy" &&
-															" coding today"}
-													</li>
-													<li>
-														{wakaTimeData.status === "available" &&
-															"Currently using "}
-														{wakaTimeData.status === "away" &&
-															"Last active on "}
-														{wakaTimeData.status === "busy" &&
-															"Not working at the moment, but earlier I was on "}
-														{wakaTimeData.data.operating_systems
-															.length > 0
-															? wakaTimeData.data.operating_systems[0]
-																	.name
-															: "an unknown system"}
-														, with{" "}
-														{wakaTimeData.data.editors.length > 0
-															? wakaTimeData.data.editors[0].name
-															: "no editor"}
-													</li>
-												</ul>
-
-												<Separator className="my-4" />
-
-												<ul className="mt-2">
-													<li>
-														<span className="text-green-500">●</span>{" "}
-														<strong>Available: </strong>
-														Active in the last 15 minutes
-													</li>
-													<li>
-														<span className="text-orange-500">●</span>{" "}
-														<strong>Away: </strong>
-														Inactive for 15 to 60 minutes
-													</li>
-													<li>
-														<span className="text-red-500">●</span>{" "}
-														<strong>Busy: </strong>
-														Inactive for more than an hour
-													</li>
-												</ul>
-
-												<Separator className="my-4" />
-
-												<p className="text-neutral-500 text-sm font-extralight">
-													<strong>Time Zone:</strong>{" "}
-													{wakaTimeData.data.range.timezone}
-												</p>
-
-												<p className="text-neutral-500 text-sm font-extralight">
-													<strong>Last update:</strong>{" "}
-													{new Date(
-														wakaTimeData.cached_at
-													).toLocaleString()}
-												</p>
-											</>
-										) : (
-											<p>Loading data...</p>
-										)}
-									</>
-								}
-								position="bottom"
-								wrapMode={true}
+								}}
+								layout
 							>
-								<motion.div
-									whileHover={{ scale: 1.1 }}
-									transition={{ type: "spring", stiffness: 300, damping: 10 }}
-									className="relative"
-								>
-									<div className="relative">
-										<Avatar className="w-10 h-10 sm:w-14 sm:h-14">
-											<AvatarImage
-												src={avatarUrl ?? ""}
-												alt="Profile Image"
-											/>
-											<AvatarFallback>MR</AvatarFallback>
-										</Avatar>
-										<AvatarStatus size={14} />
-									</div>
-								</motion.div>
-							</ShowInfo>
-							<div className="text-left">
-								<motion.h1
-									className="text-lg sm:text-xl font-semibold"
-									initial={{ opacity: 0, y: -20 }}
-									animate={{
-										opacity: 1,
-										y: 0,
-										transition: { duration: 0.6, ease: "easeOut" },
-									}}
-								>
-									Max Remy
-								</motion.h1>
-								<motion.p
-									className="text-neutral-500 sm:hidden"
-									initial={{ x: -100, opacity: 0 }}
-									animate={{ x: 0, opacity: 1 }}
-									exit={{ x: -100, opacity: 0 }}
-									transition={{ duration: 0.6, delay: 0.4 }}
-								>
-									FullStack Developer
-								</motion.p>
-								<motion.p
-									className="text-neutral-500 hidden sm:block"
-									initial={{ x: -100, opacity: 0 }}
-									animate={{ x: 0, opacity: 1 }}
-									exit={{ x: -100, opacity: 0 }}
-									transition={{ duration: 0.6, delay: 0.4 }}
-								>
-									FullStack Developer | Software Engineer
-								</motion.p>
-							</div>
-						</motion.div>
+								<ProfileContent wakaTimeData={wakaTimeData} avatarUrl={avatarUrl} />
+								<ProfileDescription isSmallScreen={isSmallScreen} />
+							</motion.div>
+						)}
 
 						{/* SEPARATOR HIDDEN ON MOBILE */}
 						{!isCompact && (
