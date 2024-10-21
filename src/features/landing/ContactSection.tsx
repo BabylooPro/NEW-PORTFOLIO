@@ -5,12 +5,12 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Section } from "@/components/ui/section";
-import ShowInfo from "@/components/ui/show-info";
+import { ShowInfo } from "@/components/ui/show-info";
 import ProgressButton from "@/components/ui/progress-button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Send } from "lucide-react";
+import { Mail, Phone, Send } from "lucide-react";
 import {
 	Form,
 	FormItem,
@@ -20,6 +20,7 @@ import {
 	FormDescription,
 	FormField,
 } from "@/components/ui/form";
+import { ClipboardButton } from "@/components/ui/clipboard-button";
 
 // ZOD SCHEMA FOR VALIDATION
 const contactSchema = z.object({
@@ -144,11 +145,47 @@ const ContactSection: React.FC = () => {
 	return (
 		<Section>
 			<h2 className="text-2xl font-bold flex items-center gap-2">
-				Contact
-				<ShowInfo
-					title={"Contact"}
-					description={"If you contact me, I will get back to you as soon as possible."}
-				/>
+				Contact me
+				<div className="flex flex-row gap-4">
+					<ShowInfo
+						title={"Contact"}
+						description={
+							"If you contact me, I will get back to you as soon as possible."
+						}
+					/>
+					<ShowInfo wrapMode disableToast>
+						<ShowInfo.Title>
+							Email: <span className="font-extralight">maxremy.dev@gmail.com</span>
+						</ShowInfo.Title>
+						<ShowInfo.Description>Click to copy my email address</ShowInfo.Description>
+						<ShowInfo.Content>
+							<ClipboardButton
+								text="maxremy.dev@gmail.com"
+								title="my email address"
+								variant="none"
+								CopyIcon={Mail}
+								iconOnly
+								size="icon"
+							/>
+						</ShowInfo.Content>
+					</ShowInfo>
+					<ShowInfo wrapMode disableToast>
+						<ShowInfo.Title>
+							Phone: <span className="font-extralight">+41 79 873 06 05</span>
+						</ShowInfo.Title>
+						<ShowInfo.Description>Click to copy my phone number</ShowInfo.Description>
+						<ShowInfo.Content>
+							<ClipboardButton
+								text="+41 79 873 06 05"
+								title="my phone number"
+								variant="none"
+								CopyIcon={Phone}
+								iconOnly
+								size="icon"
+							/>
+						</ShowInfo.Content>
+					</ShowInfo>
+				</div>
 			</h2>
 			<p className="flex items-center gap-2 text-neutral-500 mb-8">
 				Please fill in the form below to get in touch.
@@ -228,7 +265,7 @@ const ContactSection: React.FC = () => {
 							icon={Send}
 							buttonText="Send Message"
 							successColorClass="green-500"
-							buttonVariant="outline"
+							buttonVariant={["outline", "ringHover"]}
 							disabled={isSubmitting}
 							hasError={hasError}
 							hasTemporaryError={hasTemporaryError}
