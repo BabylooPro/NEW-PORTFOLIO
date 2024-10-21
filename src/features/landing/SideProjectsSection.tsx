@@ -3,10 +3,10 @@
 import { ScrollArea, ScrollAreaRef } from "@/components/ui/scroll-area";
 import { Section } from "@/components/ui/section";
 import Link from "next/link";
-import ShowInfo from "@/components/ui/show-info";
+import { ShowInfo } from "@/components/ui/show-info";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGitHubProjects } from "@/hooks/use-GitHubProjects";
-import { useRef, useEffect, useState, useMemo } from "react";
+import { useRef, useState, useMemo } from "react";
 import ScrollIndicator from "@/components/ui/scroll-indicator";
 import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
@@ -44,10 +44,6 @@ const SideProjectsSection = () => {
 	const scrollAreaRef = useRef<ScrollAreaRef>(null);
 	const [filterTechnology, setFilterTechnology] = useState<string>("All");
 	const [filterYear, setFilterYear] = useState<string>("All");
-
-	useEffect(() => {
-		console.log("SideProjectsSection rendered with lastUpdate:", lastUpdate);
-	}, [lastUpdate]);
 
 	const sortedProjects = projects; // SORT PROJECTS BY CREATED_AT DATE
 
