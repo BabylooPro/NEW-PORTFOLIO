@@ -7,135 +7,199 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 interface ShowInfoProps {
-	title?: string;
-	description?: string | React.ReactNode;
-	tooltipText?: string;
-	tooltipDescription?: string | React.ReactNode;
-	toastTitle?: string;
-	toastDescription?: string | React.ReactNode;
-	position?: "top" | "bottom" | "left" | "right";
-	sideOffset?: number;
-	iconSize?: number;
+	title?: string | React.ReactNode;
+	description?: React.ReactNode;
 	className?: string;
+	position?: "top" | "bottom" | "left" | "right";
 	icon?: React.ReactNode;
-	iconColor?: string;
-	iconFill?: boolean;
 	children?: React.ReactNode;
 	wrapMode?: boolean;
+	sideOffset?: number;
+	iconSize?: number;
+	iconColor?: string;
+	iconFill?: boolean;
+	disableTooltip?: boolean;
+	disableToast?: boolean;
 }
 
-const ShowInfo: React.FC<ShowInfoProps> = ({
-	title,
-	description,
-	tooltipText,
-	tooltipDescription,
-	toastTitle,
-	toastDescription,
-	position = "top",
-	sideOffset = 4,
-	iconSize = 24,
-	className = "",
-	icon,
-	iconColor = "text-current",
-	iconFill = false,
+const ShowInfoTitle: React.FC<{ children: React.ReactNode; className?: string }> = ({
 	children,
-	wrapMode = false,
-}) => {
-	const { toast } = useToast();
-	const [isMobile, setIsMobile] = React.useState(false);
+	className,
+}) => <div className={className}>{children}</div>;
 
-	React.useEffect(() => {
-		const checkDevice = () => {
-			setIsMobile(window.innerWidth <= 768 || "ontouchstart" in window);
+const ShowInfoDescription: React.FC<{ children: React.ReactNode; className?: string }> = ({
+	children,
+	className,
+}) => <div className={className}>{children}</div>;
+
+const ShowInfoContent: React.FC<{ children: React.ReactNode; className?: string }> = ({
+	children,
+	className,
+}) => <div className={className}>{children}</div>;
+
+const ShowInfo = React.forwardRef<HTMLSpanElement, ShowInfoProps>(
+	(
+		{
+			title,
+			description,
+			className,
+			position = "top",
+			icon,
+			children,
+			wrapMode,
+			sideOffset = 4,
+			iconSize = 24,
+			iconColor = "text-current",
+			iconFill = false,
+			disableTooltip = false,
+			disableToast = false,
+		},
+		ref
+	) => {
+		const { toast } = useToast();
+		const [isMobile, setIsMobile] = React.useState(false);
+
+		React.useEffect(() => {
+			const checkDevice = () => {
+				setIsMobile(window.innerWidth <= 768 || "ontouchstart" in window);
+			};
+			checkDevice();
+			window.addEventListener("resize", checkDevice);
+			return () => window.removeEventListener("resize", checkDevice);
+		}, []);
+
+		const handleClick = () => {
+			if (isMobile && !disableToast) {
+				toast({
+					title: wrapMode
+						? (
+								React.Children.toArray(children).find(
+									(child): child is React.ReactElement =>
+										React.isValidElement(child) && child.type === ShowInfoTitle
+								) as React.ReactElement
+						  )?.props?.children || title
+						: title,
+					description: wrapMode
+						? (
+								React.Children.toArray(children).find(
+									(child): child is React.ReactElement =>
+										React.isValidElement(child) &&
+										child.type === ShowInfoDescription
+								) as React.ReactElement
+						  )?.props?.children || description
+						: description,
+				});
+			}
 		};
 
-		checkDevice();
-		window.addEventListener("resize", checkDevice);
-		return () => window.removeEventListener("resize", checkDevice);
-	}, []);
+		const renderContent = (content: string | React.ReactNode, className?: string) => {
+			if (typeof content === "string") {
+				return <div className={className} dangerouslySetInnerHTML={{ __html: content }} />;
+			}
+			return <div className={className}>{content}</div>;
+		};
 
-	const handleInteraction = () => {
-		if (isMobile) {
-			toast({
-				title: toastTitle ?? title ?? "Title - Toast",
-				description:
-					typeof toastDescription === "string" ? (
-						<div dangerouslySetInnerHTML={{ __html: toastDescription }} />
-					) : (
-						toastDescription ?? description ?? "Description - Toast"
-					),
-			});
-		}
-	};
+		const iconProps = {
+			size: iconSize,
+			className: cn(
+				"cursor-pointer",
+				iconColor,
+				iconFill ? "fill-current" : "stroke-current"
+			),
+		};
 
-	const renderDescription = (content: string | React.ReactNode) => {
-		if (typeof content === "string") {
-			return <div dangerouslySetInnerHTML={{ __html: content }} />;
-		}
-		return content;
-	};
+		const content = (
+			<span
+				ref={ref}
+				onClick={handleClick}
+				className={cn("inline-flex items-center cursor-pointer", className)}
+				role="button"
+				tabIndex={0}
+				onKeyDown={(e) => {
+					if (e.key === "Enter" || e.key === " ") {
+						handleClick();
+					}
+				}}
+			>
+				{wrapMode
+					? React.Children.toArray(children).find(
+							(child) => React.isValidElement(child) && child.type === ShowInfoContent
+					  )
+					: icon || <InfoIcon {...iconProps} />}
+			</span>
+		);
 
-	const iconProps = {
-		size: iconSize,
-		className: cn(
-			"cursor-pointer mt-1",
-			iconColor,
-			iconFill ? "fill-current" : "stroke-current"
-		),
-	};
+		const tooltipContent = (
+			<>
+				{renderContent(
+					wrapMode
+						? (
+								React.Children.toArray(children).find(
+									(child): child is React.ReactElement =>
+										React.isValidElement(child) && child.type === ShowInfoTitle
+								) as React.ReactElement
+						  )?.props?.children || title
+						: title,
+					wrapMode
+						? (
+								React.Children.toArray(children).find(
+									(child): child is React.ReactElement =>
+										React.isValidElement(child) && child.type === ShowInfoTitle
+								) as React.ReactElement
+						  )?.props?.className
+						: undefined
+				)}
+				{renderContent(
+					wrapMode
+						? (
+								React.Children.toArray(children).find(
+									(child): child is React.ReactElement =>
+										React.isValidElement(child) &&
+										child.type === ShowInfoDescription
+								) as React.ReactElement
+						  )?.props?.children || description
+						: description,
+					cn(
+						"text-sm text-neutral-500 dark:text-neutral-400",
+						wrapMode
+							? (
+									React.Children.toArray(children).find(
+										(child): child is React.ReactElement =>
+											React.isValidElement(child) &&
+											child.type === ShowInfoDescription
+									) as React.ReactElement
+							  )?.props?.className
+							: undefined
+					)
+				)}
+			</>
+		);
 
-	const content = (
-		<div>
-			<div>{tooltipText ?? title ?? "Text - Tooltip"}</div>
-			{(tooltipDescription ?? description) && (
-				<div className="text-sm text-neutral-500 dark:text-neutral-400">
-					{renderDescription(tooltipDescription ?? description)}
-				</div>
-			)}
-		</div>
-	);
-
-	if (wrapMode) {
-		return (
+		return disableTooltip ? (
+			content
+		) : (
 			<TooltipProvider delayDuration={0}>
 				<Tooltip>
-					<TooltipTrigger asChild>
-						<div onClick={handleInteraction} className={className}>
-							{children}
-						</div>
-					</TooltipTrigger>
-					{!isMobile && (
-						<TooltipContent side={position} sideOffset={sideOffset}>
-							{content}
-						</TooltipContent>
-					)}
+					<TooltipTrigger asChild>{content}</TooltipTrigger>
+					<TooltipContent side={position} sideOffset={sideOffset}>
+						{tooltipContent}
+					</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>
 		);
 	}
+);
 
-	return (
-		<div className={className}>
-			<TooltipProvider delayDuration={0}>
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<button onClick={handleInteraction}>
-							{icon ? (
-								React.cloneElement(icon as React.ReactElement, iconProps)
-							) : (
-								<InfoIcon {...iconProps} />
-							)}
-						</button>
-					</TooltipTrigger>
-					{!isMobile && (
-						<TooltipContent side={position} sideOffset={sideOffset}>
-							{content}
-						</TooltipContent>
-					)}
-				</Tooltip>
-			</TooltipProvider>
-		</div>
-	);
+ShowInfo.displayName = "ShowInfo";
+
+const ShowInfoWithSubcomponents = ShowInfo as typeof ShowInfo & {
+	Title: typeof ShowInfoTitle;
+	Description: typeof ShowInfoDescription;
+	Content: typeof ShowInfoContent;
 };
 
-export default ShowInfo;
+ShowInfoWithSubcomponents.Title = ShowInfoTitle;
+ShowInfoWithSubcomponents.Description = ShowInfoDescription;
+ShowInfoWithSubcomponents.Content = ShowInfoContent;
+
+export { ShowInfoWithSubcomponents as ShowInfo };
