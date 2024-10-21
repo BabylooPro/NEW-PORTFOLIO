@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Section } from "@/components/ui/section";
-import ShowInfo from "@/components/ui/show-info";
+import { ShowInfo } from "@/components/ui/show-info";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism";

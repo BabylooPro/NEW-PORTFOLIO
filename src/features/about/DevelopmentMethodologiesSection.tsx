@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Section } from "@/components/ui/section";
-import ShowInfo from "@/components/ui/show-info";
+import { ShowInfo } from "@/components/ui/show-info";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	GitBranch,
