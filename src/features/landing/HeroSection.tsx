@@ -8,11 +8,15 @@ import Link from "next/link";
 import { PocketKnife } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useRef } from "react";
+import { ShowInfo } from "@/components/ui/show-info";
+import AudioReader from "@/components/ui/AudioReader";
+import { useState } from "react";
 
 export default function HeroSection() {
 	const ref = useRef<HTMLSpanElement>(null);
 	const mouseX = useMotionValue(0);
 	const springX = useSpring(mouseX, { stiffness: 500, damping: 50 });
+	const [isCardVisible, setIsCardVisible] = useState(false);
 
 	const handleMouseMove = (e: React.MouseEvent<HTMLSpanElement>) => {
 		const element = ref.current;
@@ -22,6 +26,10 @@ export default function HeroSection() {
 			const centerX = element.offsetWidth / 2;
 			mouseX.set(relativeX - centerX);
 		}
+	};
+
+	const handleClick = () => {
+		setIsCardVisible(!isCardVisible);
 	};
 
 	return (
@@ -58,30 +66,42 @@ export default function HeroSection() {
 				In short, I&apos;m your{" "}
 				<span
 					ref={ref}
-					className="relative inline-block group cursor-pointer"
+					className="relative inline-block cursor-pointer"
 					onMouseMove={handleMouseMove}
-					onMouseLeave={() => mouseX.set(0)}
+					onClick={handleClick}
 				>
-					<p>Swiss Army Knife</p>
-					<motion.div
-						className="absolute hidden group-hover:block top-full left-0 md:-top-12 md:left-1/2 z-10 w-auto"
-						style={{ x: springX }}
-					>
-						<Card className="p-2 whitespace-nowrap">
-							<PocketKnife size={24} className="text-red-400 flex-shrink-0" />
-						</Card>
-					</motion.div>
+					<span>Swiss Army Knife</span>
+					{isCardVisible && (
+						<motion.div
+							className="absolute top-full left-0 md:-top-12 md:left-1/2 z-10 w-auto"
+							style={{ x: springX }}
+						>
+							<Card className="p-2 whitespace-nowrap">
+								<PocketKnife size={24} className="text-red-400 flex-shrink-0" />
+							</Card>
+						</motion.div>
+					)}
 				</span>{" "}
 				for any development needs.
 			</div>
 
 			{/* LEARN MORE REDIRECT */}
-			<p className="text-base md:text-xl mt-4">
-				Learn more
-				<Button variant="linkHover1" className="text-base md:text-xl -ml-3">
-					<Link href="/about">about me.</Link>
-				</Button>
-			</p>
+			<div className="text-base md:text-xl mt-4 flex justify-between items-center">
+				<div>
+					Learn more
+					<Button variant="linkHover1" className="text-base md:text-xl -ml-3">
+						<Link href="/about">about me.</Link>
+					</Button>
+				</div>
+
+				<ShowInfo wrapMode>
+					<ShowInfo.Title>Audio version</ShowInfo.Title>
+					<ShowInfo.Description>Listen to my resume</ShowInfo.Description>
+					<ShowInfo.Content>
+						<AudioReader src="/assets/audio/HeroTextAudio.mp3" />
+					</ShowInfo.Content>
+				</ShowInfo>
+			</div>
 		</Section>
 	);
 }
