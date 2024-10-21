@@ -44,4 +44,5 @@ export interface WakaTimeData {
 		categories: Category[];
 		grand_total: GrandTotal;
 	};
+	status: "available" | "away" | "busy"; //! IF STATUS DOES NOT CHANGE, DELETE THIS LINE
 }

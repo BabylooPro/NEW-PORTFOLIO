@@ -61,6 +61,7 @@ const mockWakaTimeResponse: WakaTimeData = {
 			text: "1 hr",
 		},
 	},
+	status: "available",
 };
 
 describe("WakaTime API Route", () => {

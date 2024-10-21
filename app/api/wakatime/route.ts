@@ -77,6 +77,7 @@ async function fetchDataWithCache(revalidate: boolean = false) {
 				categories: categories,
 				grand_total: data.data.grand_total,
 			},
+			status: data.status, //! IF STATUS DOES NOT CHANGE, DELETE THIS LINE
 		};
 
 		lastCachedAt = Date.now(); // UPDATE CACHE TIME
