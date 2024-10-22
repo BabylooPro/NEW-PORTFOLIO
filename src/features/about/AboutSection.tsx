@@ -177,7 +177,7 @@ const AboutSection: React.FC = () => {
 							<ShowInfo
 								title={"Languages"}
 								description={
-									"I&apos;ll give you a quick overview of the languages I&apos;m fluent in"
+									"I'll give you a quick overview of the languages I'm fluent in"
 								}
 								icon={<Languages className="w-5 h-5" />}
 							/>
