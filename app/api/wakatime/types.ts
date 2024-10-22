@@ -17,6 +17,7 @@ export interface OperatingSystem {
 	total_seconds: number;
 	digital: string;
 	percent: number;
+	last_used?: number;
 }
 
 export interface Category {
@@ -44,5 +45,9 @@ export interface WakaTimeData {
 		categories: Category[];
 		grand_total: GrandTotal;
 	};
-	status: "available" | "away" | "busy"; //! IF STATUS DOES NOT CHANGE, DELETE THIS LINE
+	status: "available" | "away" | "busy";
+}
+
+export interface CachedWakaTimeData extends WakaTimeData {
+	lastCachedAt: number;
 }

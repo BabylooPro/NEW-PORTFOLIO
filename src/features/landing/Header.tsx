@@ -63,35 +63,35 @@ const ProfileContent = ({
 						{wakaTimeData.status === "away" && "I'm currently away:"}
 						{wakaTimeData.status === "busy" && "I'm currently busy:"}
 					</strong>
-					<ul className="list-disc pl-4">
-						<li>
-							{wakaTimeData.status === "available" && "Today, i've been "}
-							{wakaTimeData.status === "away" && "i've been "}
-							{wakaTimeData.status === "busy" && "I've already spent "}
-							{wakaTimeData.data.categories.length > 0
-								? wakaTimeData.data.categories[0].name.toLowerCase()
-								: "inactive"}{" "}
-							for{" "}
-							{wakaTimeData.data.categories.length > 0
-								? wakaTimeData.data.categories[0].digital
-								: "00:00"}
-							{wakaTimeData.status === "away" && " so far today"}
-							{wakaTimeData.status === "busy" && " coding today"}
-						</li>
-						<li>
-							{wakaTimeData.status === "available" && "currently using "}
-							{wakaTimeData.status === "away" && "last active on "}
-							{wakaTimeData.status === "busy" &&
-								"not working at the moment, but earlier i was on "}
-							{wakaTimeData.data.operating_systems.length > 0
-								? wakaTimeData.data.operating_systems[0].name
-								: "an unknown system"}
-							, with{" "}
-							{wakaTimeData.data.editors.length > 0
-								? wakaTimeData.data.editors[0].name
-								: "no editor"}
-						</li>
-					</ul>
+					{wakaTimeData.data.categories.length > 0 &&
+					wakaTimeData.data.categories[0].digital !== "0:00" ? (
+						<ul className="list-disc pl-4">
+							<li>
+								{wakaTimeData.status === "available" && "Today, I've been "}
+								{wakaTimeData.status === "away" && "I've been "}
+								{wakaTimeData.status === "busy" && "I've already spent "}
+								{wakaTimeData.data.categories[0].name.toLowerCase()} for{" "}
+								{wakaTimeData.data.categories[0].digital}
+								{wakaTimeData.status === "away" && " so far today"}
+								{wakaTimeData.status === "busy" && " coding today"}
+							</li>
+							<li>
+								{wakaTimeData.status === "available" && "Currently using "}
+								{wakaTimeData.status === "away" && "Last active on "}
+								{wakaTimeData.status === "busy" &&
+									"Not working at the moment, but earlier I was on "}
+								{wakaTimeData.data.operating_systems.length > 0
+									? wakaTimeData.data.operating_systems[0].name
+									: "an unknown system"}
+								, with{" "}
+								{wakaTimeData.data.editors.length > 0
+									? wakaTimeData.data.editors[0].name
+									: "no editor"}
+							</li>
+						</ul>
+					) : (
+						<p>No activity has been logged since the start of the day.</p>
+					)}
 
 					<Separator className="my-4" />
 
@@ -117,7 +117,7 @@ const ProfileContent = ({
 					</p>
 
 					<p className="text-neutral-500 text-sm font-extralight">
-						<strong>Last update:</strong>{" "}
+						<strong>Last Update:</strong>{" "}
 						{new Date(wakaTimeData.cached_at).toLocaleString()}
 					</p>
 				</>
