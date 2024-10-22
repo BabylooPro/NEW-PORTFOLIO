@@ -144,15 +144,17 @@ const ContactSection: React.FC = () => {
 
 	return (
 		<Section>
-			<h2 className="text-2xl font-bold flex items-center gap-2">
-				Contact me
-				<div className="flex flex-row gap-4">
+			<h2 className="text-2xl font-bold flex items-center justify-between">
+				<div className="flex flex-row gap-2">
+					Contact me
 					<ShowInfo
 						title={"Contact"}
 						description={
 							"If you contact me, I will get back to you as soon as possible."
 						}
 					/>
+				</div>
+				<div className="flex flex-row gap-2">
 					<ShowInfo wrapMode disableToast>
 						<ShowInfo.Title>
 							Email: <span className="font-extralight">maxremy.dev@gmail.com</span>
