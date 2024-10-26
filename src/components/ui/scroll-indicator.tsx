@@ -7,12 +7,20 @@ interface ScrollIndicatorProps {
 	scrollAreaRef: React.RefObject<ScrollAreaRef>;
 	className?: string;
 	position?: "top" | "bottom" | "both";
+	topIcon?: React.ReactNode;
+	bottomIcon?: React.ReactNode;
 }
 
 const ScrollIndicator: React.FC<ScrollIndicatorProps> = ({
 	scrollAreaRef,
 	className = "",
 	position = "both",
+	topIcon = (
+		<GalleryVerticalEnd className="w-5 h-5 transform rotate-180 hover:scale-110 hover:text-black hover:dark:text-white transition-all duration-300" />
+	),
+	bottomIcon = (
+		<GalleryVerticalEnd className="w-5 h-5 transform hover:scale-110 hover:text-black hover:dark:text-white transition-all duration-300" />
+	),
 }) => {
 	const [isAtTop, setIsAtTop] = useState(true);
 	const [isAtBottom, setIsAtBottom] = useState(false);
@@ -73,7 +81,7 @@ const ScrollIndicator: React.FC<ScrollIndicatorProps> = ({
 							ease: "easeInOut",
 						}}
 					>
-						<GalleryVerticalEnd className="w-5 h-5 transform rotate-180 hover:scale-110 hover:text-black hover:dark:text-white transition-all duration-300" />
+						{topIcon}
 					</motion.div>
 				</motion.div>
 			)}
@@ -98,7 +106,7 @@ const ScrollIndicator: React.FC<ScrollIndicatorProps> = ({
 							ease: "easeInOut",
 						}}
 					>
-						<GalleryVerticalEnd className="w-5 h-5 transform hover:scale-110 hover:text-black hover:dark:text-white transition-all duration-300" />
+						{bottomIcon}
 					</motion.div>
 				</motion.div>
 			)}

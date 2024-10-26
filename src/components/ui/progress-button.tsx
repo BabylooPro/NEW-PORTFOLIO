@@ -184,7 +184,7 @@ const ProgressButton = (props: ProgressButtonProps) => {
 					>
 						<RefreshCcw
 							className={`w-5 h-5 ${
-								isRefreshDisabled ? "text-gray-400" : "text-blue-500"
+								isRefreshDisabled ? "text-neutral-400" : "text-blue-500"
 							}`}
 						/>
 					</motion.div>
