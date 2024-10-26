@@ -72,3 +72,15 @@
 		@apply bg-background text-foreground;
 	}
 }
+
+@layer utilities {
+	/* HIDE SCROLLBAR FOR CHROME, SAFARI AND OPERA */
+	.no-scrollbar::-webkit-scrollbar {
+		display: none;
+	}
+	/* HIDE SCROLLBAR FOR IE, EDGE AND FIREFOX */
+	.no-scrollbar {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+}
