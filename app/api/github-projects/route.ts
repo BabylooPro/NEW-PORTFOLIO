@@ -4,6 +4,9 @@ import { inMemoryCache } from "./cache";
 
 const CACHE_MAX_AGE = 3600000; // 1 HOUR IN MILLISECONDS
 
+// FORCE DYNAMIC CACHE
+export const dynamic = "force-dynamic";
+
 // GET GITHUB PROJECTS
 export async function GET(request: NextRequest) {
 	// TRY CATCH BLOCK
