@@ -13,24 +13,52 @@ interface BreakOptionProps {
 }
 
 export function BreakOption({ value, onBreakOptionChange }: BreakOptionProps) {
-	// INITIALIZE FORM WITH ZOD SCHEMA
+	// INITIALIZE FORM WITH ZOD SCHEMA AND DEFAULT VALUES
 	const form = useForm<BreakOptionValues>({
 		resolver: zodResolver(breakOptionSchema),
-		defaultValues: value,
+		defaultValues: {
+			hasBreak: value.hasBreak ?? false,
+			breakDuration: value.breakDuration ?? 5,
+		},
 	});
 
 	// UPDATE FORM WHEN EXTERNAL VALUES CHANGE
 	React.useEffect(() => {
-		form.reset(value);
-	}, [value, form]);
+		form.reset({
+			hasBreak: value.hasBreak ?? false,
+			// IF HASBREAK IS TRUE AND BREAKDURATION IS 0, USE 5 AS DEFAULT VALUE
+			breakDuration:
+				value.hasBreak && (!value.breakDuration || value.breakDuration === 0)
+					? 5
+					: value.breakDuration ?? 5,
+		});
+	}, [value]);
 
 	// WATCH FOR CHANGES AND NOTIFY PARENT
 	React.useEffect(() => {
-		const subscription = form.watch((value) => {
-			onBreakOptionChange?.(value as BreakOptionValues);
+		const subscription = form.watch((values) => {
+			// IF HASBREAK IS TRUE AND BREAKDURATION IS 0, SET TO 5
+			if (values.hasBreak && (!values.breakDuration || values.breakDuration === 0)) {
+				form.setValue("breakDuration", 5);
+				onBreakOptionChange?.({ ...values, breakDuration: 5 } as BreakOptionValues);
+			} else {
+				onBreakOptionChange?.(values as BreakOptionValues);
+			}
 		});
 		return () => subscription.unsubscribe();
-	}, [form, form.watch, onBreakOptionChange]);
+	}, [form, onBreakOptionChange]);
+
+	// HANDLE SWITCH CHANGE
+	const handleSwitchChange = (checked: boolean) => {
+		form.setValue("hasBreak", checked);
+		if (checked) {
+			// IF SWITCH IS CHECKED, SET DURATION TO 5 IF IT IS 0
+			const currentDuration = form.getValues("breakDuration");
+			if (!currentDuration || currentDuration === 0) {
+				form.setValue("breakDuration", 5);
+			}
+		}
+	};
 
 	return (
 		<Form {...form}>
@@ -48,7 +76,10 @@ export function BreakOption({ value, onBreakOptionChange }: BreakOptionProps) {
 								</FormLabel>
 							</div>
 							<FormControl>
-								<Switch checked={field.value} onCheckedChange={field.onChange} />
+								<Switch
+									checked={field.value}
+									onCheckedChange={handleSwitchChange}
+								/>
 							</FormControl>
 						</FormItem>
 					)}
@@ -69,7 +100,11 @@ export function BreakOption({ value, onBreakOptionChange }: BreakOptionProps) {
 										<Input
 											type="number"
 											{...field}
-											onChange={(e) => field.onChange(Number(e.target.value))}
+											value={field.value || 5}
+											onChange={(e) => {
+												const value = Number(e.target.value);
+												field.onChange(value < 5 ? 5 : value);
+											}}
 											max={30}
 											min={5}
 											step={5}
