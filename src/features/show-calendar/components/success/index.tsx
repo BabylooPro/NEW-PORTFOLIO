@@ -8,6 +8,7 @@ import { useState, useEffect, ReactElement } from "react";
 import { SuccessAnimation } from "@/components/decoration/success-animation";
 import { ShowInfo } from "@/components/ui/show-info";
 import { FinalSubmissionData } from "@/features/show-calendar/utils/schema";
+import { useToast } from "@/hooks/use-toast";
 
 type FormDataValue =
 	| string
@@ -20,6 +21,7 @@ export function SuccessAppointment() {
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(false);
 	const [formData, setFormData] = useState<FinalSubmissionData | null>(null);
+	const { toast } = useToast();
 
 	// GET FORM DATA FROM SESSION STORAGE
 	useEffect(() => {
@@ -88,6 +90,17 @@ export function SuccessAppointment() {
 		setIsLoading(true);
 		router.push("/");
 	};
+
+	useEffect(() => {
+		toast({
+			title: "Demo Version - Work in Progress",
+			variant: "warning",
+			showIcon: true,
+			description:
+				"This is a demonstration version. While the booking flow is fully functional, no actual reservations are being processed.",
+			duration: 60000, // 60 SECONDS
+		});
+	}, [toast]);
 
 	return (
 		<>
