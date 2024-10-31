@@ -4,10 +4,12 @@ import { Duration } from "../components/duration";
 import { DateValue, getWeeksInMonth } from "@internationalized/date";
 import { CalendarData } from "../hooks/useCalendarData";
 import { useEffect, useState, useCallback } from "react";
-import type { DurationValues } from "../components/duration/schema";
-import type { PlatformValues } from "../components/platform/schema";
+import type {
+	DurationValues,
+	PlatformValues,
+	CalendarFormData,
+} from "@/features/show-calendar/utils/schema";
 import { useSearchParams, useRouter } from "next/navigation";
-import type { CalendarFormData } from "../components/calendar/schema";
 
 interface CenterPanelProps {
 	readonly date: DateValue;
