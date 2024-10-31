@@ -12,9 +12,12 @@ import { useCalendarData } from "./hooks/useCalendarData";
 import { RightPanel } from "./panel/right-panel";
 import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
-import { TimePickerFormData } from "@/features/show-calendar/utils/schema";
+import { CombinedFormValues, FormValues } from "@/features/show-calendar/utils/schema";
+import { useQueryParams } from "./hooks/useQueryParams";
 
 export function ShowCalendarIndex() {
+	const { setQueryParams } = useQueryParams();
+
 	const calendarData = useCalendarData();
 	const {
 		date,
@@ -42,17 +45,74 @@ export function ShowCalendarIndex() {
 	const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
 	// HANDLE TIME SELECTION - MODIFIED TO HANDLE PRESELECTED TIME
-	const handleTimeSelection = (data: TimePickerFormData) => {
+	const handleTimeSelection = (data: CombinedFormValues) => {
 		const [hours, minutes] = data.selectedTime.split(":").map(Number);
 		const newDateTime = new Date(date.toDate(getLocalTimeZone()));
 		newDateTime.setHours(hours, minutes);
 		setSelectedDateTime(newDateTime);
 
-		// IF THE SAME TIME IS SELECTED, SHOW THE FORM PANEL
+		// UPDATE URL WITH ALL FORM VALUES
+		const updates: Record<string, string> = {
+			date: data.selectedDate,
+			timeFormat: data.timeFormat,
+			duration: data.duration,
+		};
+
+		// ONLY ADD PARAMETERS IF THEY ARE TRUE OR HAVE A VALUE
+		if (data.break.hasBreak) {
+			updates.breakDuration = data.break.breakDuration.toString();
+		}
+		if (data.buffer.hasBuffer) {
+			updates.bufferDuration = data.buffer.bufferDuration.toString();
+		}
+		if (data.delay.hasDelay) {
+			updates.delayDuration = data.delay.delayDuration.toString();
+		}
+		if (data.flexible.isFlexible) {
+			updates.isFlexible = "true";
+		}
+
+		// PLATFORM AND MEETING DETAILS
+		updates.platform = data.platform;
+		if (data.customLink && data.meetingUrl) {
+			updates.meetingUrl = data.meetingUrl;
+		}
+		if (data.webcam) {
+			updates.isWebcam = "true";
+		}
+		if (data.isPhysical) {
+			updates.isPhysical = "true";
+		}
+		if (data.phone?.phoneNumber) {
+			updates.phoneNumber = data.phone.phoneNumber;
+		}
+		if (data.location?.location) {
+			updates.location = data.location.location;
+		}
+
+		setQueryParams(updates);
+
 		if (selectedTime === data.selectedTime) {
 			setShowFormState(true);
+
+			// PRE-FILL FORM DATA
+			const formData: FormValues = {
+				name: "",
+				email: "",
+				phone: data.phone?.phoneNumber ?? "",
+				notes: "",
+				guests: [],
+			};
+
+			// STORE FORM DATA IN SESSION STORAGE
+			sessionStorage.setItem(
+				"preFilledFormData",
+				JSON.stringify({
+					formData,
+					combinedData: data,
+				})
+			);
 		}
-		// UPDATE SELECTED TIME
 		setSelectedTime(data.selectedTime);
 	};
 

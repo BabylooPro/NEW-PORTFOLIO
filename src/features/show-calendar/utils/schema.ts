@@ -75,22 +75,12 @@ export const platformSchema = z.object({
 	meetingUrl: z.string().optional(),
 });
 
-// TYPES FROM SCHEMAS
-export type FormValues = z.infer<typeof formSchema>;
-export type CalendarFormData = z.infer<typeof calendarSchema>;
-export type TimePickerFormData = z.infer<typeof timePickerSchema>;
-export type BreakOptionValues = z.infer<typeof breakOptionSchema>;
-export type BufferOptionValues = z.infer<typeof bufferOptionSchema>;
-export type DelayOptionValues = z.infer<typeof delayOptionSchema>;
-export type FlexibleOptionValues = z.infer<typeof flexibleOptionSchema>;
-export type DurationSelectValues = z.infer<typeof durationSelectSchema>;
-export type DurationValues = z.infer<typeof durationSchema>;
-export type PhoneOptionValues = z.infer<typeof phoneOptionSchema>;
-export type PhysicalLocationValues = z.infer<typeof physicalLocationSchema>;
-export type PlatformValues = z.infer<typeof platformSchema>;
-export type VirtualMeetingValues = z.infer<typeof virtualMeetingSchema>;
-
 // DEFAULT VALUES
+export const defaultTimeAndDateValues = {
+	selectedTime: "",
+	timeFormat: "24" as const,
+	selectedDate: "",
+};
 export const defaultDurationValues: DurationValues = {
 	duration: "15",
 	break: {
@@ -115,3 +105,62 @@ export const defaultPlatformValues: PlatformValues = {
 	webcam: false,
 	isPhysical: false,
 };
+
+// COMBINED SCHEMAS
+export const combinedFormSchema = z
+	.object({
+		// TIME AND DATE - REQUIRED FIELDS
+		selectedTime: z.string().min(1, "Please select a time"),
+		timeFormat: z.enum(["12", "24"]).default("24"),
+		selectedDate: z.string().min(1, "Please select a date"),
+
+		// DURATION - OPTIONAL FIELDS WITH DEFAULTS
+		...durationSchema.shape,
+
+		// PLATFORM - OPTIONAL FIELDS WITH DEFAULTS
+		platform: z.string().default("phone"),
+		customLink: z.boolean().default(false),
+		webcam: z.boolean().default(false),
+		isPhysical: z.boolean().default(false),
+		meetingUrl: z.string().optional(),
+		phone: phoneOptionSchema.optional(),
+		location: physicalLocationSchema.optional(),
+	})
+	.refine((data) => {
+		if (data.platform === "phone" && !data.phone?.phoneNumber) {
+			return false;
+		}
+		if (data.platform === "physical" && !data.location?.location) {
+			return false;
+		}
+		if (data.customLink && !data.meetingUrl) {
+			return false;
+		}
+		return true;
+	}, "Required fields missing for selected platform");
+
+// FINAL COMBINED DATA SCHEMA
+export const finalSubmissionSchema = z.object({
+	// FORM DATA
+	...formSchema.shape,
+
+	// SCHEDULING DATA
+	scheduling: combinedFormSchema,
+});
+
+// TYPES FROM SCHEMAS
+export type FormValues = z.infer<typeof formSchema>;
+export type CalendarFormData = z.infer<typeof calendarSchema>;
+export type TimePickerFormData = z.infer<typeof timePickerSchema>;
+export type BreakOptionValues = z.infer<typeof breakOptionSchema>;
+export type BufferOptionValues = z.infer<typeof bufferOptionSchema>;
+export type DelayOptionValues = z.infer<typeof delayOptionSchema>;
+export type FlexibleOptionValues = z.infer<typeof flexibleOptionSchema>;
+export type DurationSelectValues = z.infer<typeof durationSelectSchema>;
+export type DurationValues = z.infer<typeof durationSchema>;
+export type PhoneOptionValues = z.infer<typeof phoneOptionSchema>;
+export type PhysicalLocationValues = z.infer<typeof physicalLocationSchema>;
+export type PlatformValues = z.infer<typeof platformSchema>;
+export type VirtualMeetingValues = z.infer<typeof virtualMeetingSchema>;
+export type CombinedFormValues = z.infer<typeof combinedFormSchema>;
+export type FinalSubmissionData = z.infer<typeof finalSubmissionSchema>;

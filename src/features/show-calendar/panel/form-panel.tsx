@@ -6,7 +6,7 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import * as React from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormValues, formSchema } from "@/features/show-calendar/utils/schema";
+import { FormValues, formSchema, CombinedFormValues } from "@/features/show-calendar/utils/schema";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Label } from "@/components/ui/label";
@@ -63,20 +63,39 @@ export function FormPanel({ onBack }: FormPanelProps) {
 		name: "guests",
 	});
 
+	// LOAD PRE-FILLED DATA
+	React.useEffect(() => {
+		const storedData = sessionStorage.getItem("preFilledFormData");
+		if (storedData) {
+			const { formData } = JSON.parse(storedData);
+			form.reset(formData);
+		}
+	}, [form]);
+
 	// HANDLE FORM SUBMISSION
 	const onSubmit = async (formData: FormValues) => {
 		setIsLoading(true);
 		try {
-			// SIMULATE API CALL WITH FORM DATA
+			const storedData = sessionStorage.getItem("preFilledFormData");
+			const combinedData: CombinedFormValues = storedData
+				? JSON.parse(storedData).combinedData
+				: {};
+
+			const finalData = {
+				...formData,
+				scheduling: combinedData,
+			};
+
+			// STORE FINAL DATA IN SESSION STORAGE
+			sessionStorage.setItem("finalSubmissionData", JSON.stringify(finalData));
+
 			await new Promise((resolve) => setTimeout(resolve, 2000));
-			console.log("Form submitted with data:", formData);
-			// REDIRECT TO SUCCESS PAGE
+			console.log("Complete submission data:", finalData);
+
+			sessionStorage.removeItem("preFilledFormData");
 			router.push("/showcalendar/success");
 		} catch (error) {
-			// SIMULATE API CALL ERROR
-			await new Promise((resolve) => setTimeout(resolve, 2000));
 			console.error(error);
-			// REDIRECT TO ERROR PAGE
 			router.push("/showcalendar/error");
 		} finally {
 			setIsLoading(false);

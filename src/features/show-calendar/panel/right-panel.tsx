@@ -8,13 +8,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Form, FormField, FormControl } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { timePickerSchema, type TimePickerFormData } from "@/features/show-calendar/utils/schema";
+import {
+	combinedFormSchema,
+	type CombinedFormValues,
+	defaultTimeAndDateValues,
+	defaultDurationValues,
+	defaultPlatformValues,
+} from "@/features/show-calendar/utils/schema";
+import { useSearchParams } from "next/navigation";
 
 interface RightPanelProps {
 	readonly timeZone: string;
 	readonly date: DateValue;
 	readonly calendarData: CalendarData;
-	readonly onTimeSelect: (data: TimePickerFormData) => void;
+	readonly onTimeSelect: (data: CombinedFormValues) => void;
 	readonly onDateTimeChange: (date: Date) => void;
 }
 
@@ -25,6 +32,8 @@ export function RightPanel({
 	onTimeSelect,
 	onDateTimeChange,
 }: RightPanelProps) {
+	const searchParams = useSearchParams();
+
 	// GET DATE PARTS
 	const [dayName, monthName, dayNumber, yearNumber] = date
 		.toDate(timeZone)
@@ -80,17 +89,63 @@ export function RightPanel({
 		return () => clearTimeout(loadingTimeout);
 	}, [date, availableTimesCount]);
 
-	// INITIALIZE FORM
-	const form = useForm<TimePickerFormData>({
-		resolver: zodResolver(timePickerSchema),
-		defaultValues: {
+	// INITIALIZE DEFAULT VALUES FROM URL PARAMS
+	const defaultValues = useMemo(
+		() => ({
+			...defaultTimeAndDateValues,
+			selectedDate: date.toString(),
 			selectedTime: "",
-			timeFormat: "24",
-		},
+			timeFormat: (searchParams.get("timeFormat") as "12" | "24") ?? "24",
+
+			// DURATION
+			duration: searchParams.get("duration") ?? defaultDurationValues.duration,
+			break: {
+				hasBreak: searchParams.get("hasBreak") === "true",
+				breakDuration: parseInt(searchParams.get("breakDuration") ?? "5"),
+			},
+			buffer: {
+				hasBuffer: searchParams.get("hasBuffer") === "true",
+				bufferDuration: parseInt(searchParams.get("bufferDuration") ?? "15"),
+			},
+			delay: {
+				hasDelay: searchParams.get("hasDelay") === "true",
+				delayDuration: parseInt(searchParams.get("delayDuration") ?? "10"),
+			},
+			flexible: {
+				isFlexible: searchParams.get("isFlexible") === "true",
+			},
+
+			// PLATFORM
+			platform: searchParams.get("platform") ?? defaultPlatformValues.platform,
+			customLink: searchParams.get("customLink") === "true",
+			webcam: searchParams.get("isWebcam") === "true",
+			meetingUrl: searchParams.get("meetingUrl") ?? undefined,
+			phone: searchParams.get("phoneNumber")
+				? { phoneNumber: searchParams.get("phoneNumber")! }
+				: undefined,
+			location: searchParams.get("location")
+				? { location: searchParams.get("location")! }
+				: undefined,
+			isPhysical: searchParams.get("isPhysical") === "true",
+		}),
+		[date, searchParams]
+	);
+
+	// INITIALIZE FORM WITH COMBINED FORM SCHEMA AND DEFAULT VALUES
+	const form = useForm<CombinedFormValues>({
+		resolver: zodResolver(combinedFormSchema),
+		defaultValues,
 	});
 
+	// UPDATE FORM WHEN URL PARAMS CHANGE
+	useEffect(() => {
+		const values = form.getValues();
+		const selectedTime = values.selectedTime;
+		form.reset({ ...defaultValues, selectedTime });
+	}, [defaultValues, form]);
+
 	// HANDLE FORM SUBMISSION
-	const onSubmit = (data: TimePickerFormData) => {
+	const onSubmit = (data: CombinedFormValues) => {
 		const [hours, minutes] = data.selectedTime.split(":").map(Number);
 		const newDate = new Date(date.toDate(timeZone));
 		newDate.setHours(hours, minutes);
@@ -103,6 +158,12 @@ export function RightPanel({
 		setSelectedTime(newSelectedTime);
 		form.setValue("selectedTime", newSelectedTime);
 
+		const currentValues = form.getValues();
+		form.reset(
+			{ ...currentValues, selectedTime: newSelectedTime },
+			{ keepDefaultValues: true }
+		);
+
 		const [hours, minutes] = newSelectedTime.split(":").map(Number);
 		const newDate = new Date(date.toDate(timeZone));
 		newDate.setHours(hours, minutes);
@@ -112,9 +173,10 @@ export function RightPanel({
 	// HANDLE TIME CLICK - FOR CLICK
 	const handleTimeClick = (newSelectedTime: string) => {
 		if (selectedTime === newSelectedTime) {
-			const formData: TimePickerFormData = {
+			const currentValues = form.getValues();
+			const formData: CombinedFormValues = {
+				...currentValues,
 				selectedTime: newSelectedTime,
-				timeFormat: form.getValues("timeFormat"),
 			};
 			onTimeSelect(formData);
 		} else {
@@ -124,7 +186,20 @@ export function RightPanel({
 
 	return (
 		<Form {...form}>
-			<form onSubmit={form.handleSubmit(onSubmit)}>
+			<form
+				onSubmit={(e) => {
+					e.preventDefault();
+					// CHECK IF WE HAVE A SELECTED TIME
+					if (!form.getValues("selectedTime")) {
+						return;
+					}
+
+					// SUBMIT FORM WITH CURRENT VALUES
+					const formData = form.getValues();
+					console.log("Submitting form with data:", formData);
+					onSubmit(formData);
+				}}
+			>
 				<Tabs
 					defaultValue="24"
 					className="flex flex-col w-[280px] border-l border-neutral-200 dark:border-neutral-800 pl-6"
