@@ -224,12 +224,12 @@ export function RightPanel({
 						className="flex-grow flex flex-col mt-10"
 					>
 						{isLoading ? (
-							<div className="flex flex-col items-center space-y-2">
-								<Skeleton className="h-12 w-32" />
+							<div className="flex flex-col items-center space-y-2 mr-14">
 								<Skeleton className="h-12 w-36" />
-								<Skeleton className="h-12 w-44 bg-red-500" />
+								<Skeleton className="h-12 w-44" />
+								<Skeleton className="h-12 w-52 bg-red-500" />
+								<Skeleton className="h-12 w-44" />
 								<Skeleton className="h-12 w-36" />
-								<Skeleton className="h-12 w-32" />
 							</div>
 						) : (
 							<FormField
