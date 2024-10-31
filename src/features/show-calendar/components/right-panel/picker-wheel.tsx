@@ -44,16 +44,12 @@ const PickerWheel: React.FC<PickerWheelProps> = ({
 	const [isClickScrolling, setIsClickScrolling] = useState(false); // STATE FOR CLICK SCROLLING
 	const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null); // REF FOR CLICK TIMEOUT
 
-	console.log("Initial selectedIndex:", selectedIndex);
-	console.log("Calculated initial index:", calculatedInitialIndex);
-
 	// EFFECT TO UPDATE CONTAINER HEIGHT
 	useEffect(() => {
 		// FUNCTION TO UPDATE CONTAINER HEIGHT
 		const updateContainerHeight = () => {
 			if (containerRef.current) {
 				setContainerHeight(containerRef.current.clientHeight);
-				console.log("Container height updated:", containerRef.current.clientHeight);
 			}
 		};
 
@@ -108,7 +104,6 @@ const PickerWheel: React.FC<PickerWheelProps> = ({
 			// IF ADJUSTED INDEX IS NOT SAME AS SELECTED INDEX, UPDATE SELECTED INDEX
 			if (adjustedIndex !== selectedIndex) {
 				setSelectedIndex(adjustedIndex);
-				console.log("Updated selectedIndex on scroll:", adjustedIndex);
 				onChange?.(items[adjustedIndex].value, adjustedIndex);
 			}
 		}
@@ -137,8 +132,6 @@ const PickerWheel: React.FC<PickerWheelProps> = ({
 	const handleItemClick = (index: number) => {
 		setSelectedIndex(index); // UPDATE SELECTED INDEX
 		setIsClickScrolling(true); // SET CLICK SCROLLING TO TRUE
-
-		console.log("Item clicked, setting selectedIndex:", index);
 
 		if (clickTimeoutRef.current) {
 			clearTimeout(clickTimeoutRef.current);
@@ -179,20 +172,18 @@ const PickerWheel: React.FC<PickerWheelProps> = ({
 		return 0.8; // OTHERWISE RETURN 0.8
 	};
 
-	// FUNCTION TO SCROLL TO TOP
-	const scrollToTop = () => {
+	// WRAP SCROLL FUNCTIONS WITH USECALLBACK
+	const scrollToTop = useCallback(() => {
 		lenisRef.current?.scrollTo(0, { immediate: false });
-	};
+	}, []);
 
-	// FUNCTION TO SCROLL TO BOTTOM
-	const scrollToBottom = () => {
+	const scrollToBottom = useCallback(() => {
 		lenisRef.current?.scrollTo(items.length * itemHeight - containerHeight, {
 			immediate: false,
 		});
-	};
+	}, [items.length, itemHeight, containerHeight]);
 
-	// FUNCTION TO CHECK SCROLL POSITION
-	const checkScrollPosition = () => {
+	const checkScrollPosition = useCallback(() => {
 		if (containerRef.current) {
 			const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
 			return {
@@ -201,9 +192,9 @@ const PickerWheel: React.FC<PickerWheelProps> = ({
 			};
 		}
 		return { isAtTop: true, isAtBottom: true };
-	};
+	}, []);
 
-	// EFFECT TO SET SCROLL AREA REF
+	// UPDATE THE SCROLL AREA REF EFFECT WITH PROPER DEPENDENCIES
 	useEffect(() => {
 		scrollAreaRef.current = {
 			scrollToTop,
@@ -212,19 +203,17 @@ const PickerWheel: React.FC<PickerWheelProps> = ({
 		};
 	}, [scrollToTop, scrollToBottom, checkScrollPosition]);
 
-	// EFFECT TO SET SELECTED INDEX TO CENTER
+	// UPDATE THE CENTER SCROLL EFFECT WITH PROPER DEPENDENCIES
 	useEffect(() => {
-		const centerIndex = Math.floor(items.length / 2); // CALCULATE CENTER INDEX
-		setSelectedIndex(centerIndex); // UPDATE SELECTED INDEX
-		console.log("Date or item count changed. New center index:", centerIndex);
+		const centerIndex = Math.floor(items.length / 2);
+		setSelectedIndex(centerIndex);
 
-		// CALCULATE SCROLL POSITION
 		const scrollPosition = Math.max(
 			0,
 			centerIndex * itemHeight - containerHeight / 2 + itemHeight / 2
 		);
-		lenisRef.current?.scrollTo(scrollPosition, { immediate: true }); // SCROLL TO POSITION WITH ANIMATION
-	}, [items.length]);
+		lenisRef.current?.scrollTo(scrollPosition, { immediate: true });
+	}, [items.length, itemHeight, containerHeight]);
 
 	return (
 		<div className={cn("relative", wheelWidth, wheelHeight)}>
