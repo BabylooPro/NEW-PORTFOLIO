@@ -41,13 +41,14 @@ export function Toaster({ showTestToast = false }: ToasterProps) {
 
 	return (
 		<ToastProvider swipeDirection="up">
-			{toasts.map(function ({ id, title, description, action, ...props }) {
+			{toasts.map(function ({ id, title, description, action, showIcon, ...props }) {
 				return (
 					<Toast
 						key={id}
 						{...props}
 						headerBottom={headerBottom}
 						isHeaderMoved={isHeaderMoved}
+						showIcon={showIcon}
 					>
 						<div className="grid gap-1">
 							{title && <ToastTitle>{title}</ToastTitle>}

@@ -13,6 +13,7 @@ type ToasterToast = ToastProps & {
 	title?: React.ReactNode;
 	description?: React.ReactNode;
 	action?: ToastActionElement;
+	showIcon?: boolean;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

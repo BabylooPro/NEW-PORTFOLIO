@@ -3,7 +3,7 @@
 import * as React from "react";
 import * as ToastPrimitives from "@radix-ui/react-toast";
 import { cva, type VariantProps } from "class-variance-authority";
-import { X } from "lucide-react";
+import { X, Info, CheckCircle2, AlertTriangle, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { cn } from "@/lib/utils";
@@ -35,6 +35,11 @@ const toastVariants = cva(
 					"bg-neutral-300/30 dark:bg-neutral-900/70 backdrop-blur-md text-foreground duration-300 hover:ring-1 hover:ring-ring dark:hover:ring-ring ",
 				destructive:
 					"destructive group bg-[#d33030]/70 backdrop-blur-md text-destructive-foreground",
+				warning:
+					"bg-yellow-500/30 dark:bg-yellow-900/70 backdrop-blur-md text-foreground duration-300 hover:ring-1 hover:ring-ring dark:hover:ring-ring ",
+				success:
+					"bg-green-500/30 dark:bg-green-900/70 backdrop-blur-md text-foreground duration-300 hover:ring-1 hover:ring-ring dark:hover:ring-ring ",
+				info: "bg-blue-500/30 dark:bg-blue-900/70 backdrop-blur-md text-foreground duration-300 hover:ring-1 hover:ring-ring dark:hover:ring-ring ",
 			},
 		},
 		defaultVariants: {
@@ -49,38 +54,61 @@ const Toast = React.forwardRef<
 		VariantProps<typeof toastVariants> & {
 			headerBottom?: number;
 			isHeaderMoved?: boolean;
+			showIcon?: boolean;
 		}
->(({ className, variant, headerBottom = 0, isHeaderMoved = false, ...props }, ref) => {
-	const isMobile = useMediaQuery("(max-width: 640px)");
+>(
+	(
+		{ className, variant, headerBottom = 0, isHeaderMoved = false, showIcon = false, ...props },
+		ref
+	) => {
+		const isMobile = useMediaQuery("(max-width: 640px)");
 
-	return (
-		<AnimatePresence>
-			{props.open && (
-				<ToastPrimitives.Root asChild ref={ref} {...props}>
-					{isMobile ? (
-						<div className={cn(toastVariants({ variant }), className)}>
-							{props.children}
-						</div>
-					) : (
-						<motion.div
-							initial={{ opacity: 0, y: 0, scale: 0.1 }}
-							animate={{
-								opacity: 1,
-								y: headerBottom + (isHeaderMoved ? 24 : 0),
-								scale: 1,
-							}}
-							exit={{ opacity: 0, y: -200, scale: 0.1 }}
-							transition={{ type: "spring", stiffness: 300, damping: 30 }}
-							className={cn(toastVariants({ variant }), className)}
-						>
-							{props.children}
-						</motion.div>
-					)}
-				</ToastPrimitives.Root>
-			)}
-		</AnimatePresence>
-	);
-});
+		const icons = {
+			default: null,
+			info: <Info className="w-8 h-8 text-blue-500" />,
+			success: <CheckCircle2 className="w-8 h-8 text-green-500" />,
+			warning: <AlertTriangle className="w-8 h-8 text-yellow-500" />,
+			destructive: <AlertCircle className="w-8 h-8 text-red-500" />,
+		};
+
+		const icon = showIcon && variant ? icons[variant] : null;
+
+		const content = (
+			<div className="flex items-center gap-4 w-full">
+				{icon && <div className="flex-shrink-0">{icon}</div>}
+				<div className="flex-grow">{props.children}</div>
+			</div>
+		);
+
+		return (
+			<AnimatePresence>
+				{props.open && (
+					<ToastPrimitives.Root asChild ref={ref} {...props}>
+						{isMobile ? (
+							<div className={cn(toastVariants({ variant }), className)}>
+								{content}
+							</div>
+						) : (
+							<motion.div
+								initial={{ opacity: 0, y: 0, scale: 0.1 }}
+								animate={{
+									opacity: 1,
+									y: headerBottom + (isHeaderMoved ? 24 : 0),
+									scale: 1,
+								}}
+								exit={{ opacity: 0, y: -200, scale: 0.1 }}
+								transition={{ type: "spring", stiffness: 300, damping: 30 }}
+								className={cn(toastVariants({ variant }), className)}
+							>
+								{content}
+							</motion.div>
+						)}
+					</ToastPrimitives.Root>
+				)}
+			</AnimatePresence>
+		);
+	}
+);
 Toast.displayName = ToastPrimitives.Root.displayName;
 
 const ToastAction = React.forwardRef<
