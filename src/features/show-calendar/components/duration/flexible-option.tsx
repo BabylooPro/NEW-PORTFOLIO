@@ -4,7 +4,10 @@ import { Switch } from "@/components/ui/switch";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { flexibleOptionSchema, type FlexibleOptionValues } from "./schema";
+import {
+	flexibleOptionSchema,
+	type FlexibleOptionValues,
+} from "@/features/show-calendar/utils/schema";
 
 interface FlexibleOptionProps {
 	value: FlexibleOptionValues;

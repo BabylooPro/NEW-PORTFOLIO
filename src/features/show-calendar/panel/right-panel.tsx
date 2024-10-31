@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Form, FormField, FormControl } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { timePickerSchema, type TimePickerFormData } from "../components/right-panel/schema";
+import { timePickerSchema, type TimePickerFormData } from "@/features/show-calendar/utils/schema";
 
 interface RightPanelProps {
 	readonly timeZone: string;

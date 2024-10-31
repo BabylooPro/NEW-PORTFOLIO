@@ -5,7 +5,10 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
-import { physicalLocationSchema, type PhysicalLocationValues } from "./schema";
+import {
+	physicalLocationSchema,
+	type PhysicalLocationValues,
+} from "@/features/show-calendar/utils/schema";
 import { useSearchParams, useRouter } from "next/navigation";
 
 interface PhysicalLocationOptionProps {

@@ -7,7 +7,10 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
-import { virtualMeetingSchema, type VirtualMeetingValues } from "./schema";
+import {
+	virtualMeetingSchema,
+	type VirtualMeetingValues,
+} from "@/features/show-calendar/utils/schema";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 interface VirtualMeetingOptionsProps {

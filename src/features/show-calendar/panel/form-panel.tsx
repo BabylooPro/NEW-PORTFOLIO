@@ -6,7 +6,7 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import * as React from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormValues, formSchema } from "./schema";
+import { FormValues, formSchema } from "@/features/show-calendar/utils/schema";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Label } from "@/components/ui/label";

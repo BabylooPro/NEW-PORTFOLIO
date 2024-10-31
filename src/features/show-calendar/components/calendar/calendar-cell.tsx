@@ -13,7 +13,7 @@ import type { CalendarState } from "@react-stately/calendar";
 import { useRef } from "react";
 import { getStatus, getStatusColor } from "@/features/show-calendar/utils/status";
 import { UseFormReturn } from "react-hook-form";
-import { CalendarFormData } from "./schema";
+import { CalendarFormData } from "@/features/show-calendar/utils/schema";
 
 interface CalendarCellProps {
 	readonly state: CalendarState;

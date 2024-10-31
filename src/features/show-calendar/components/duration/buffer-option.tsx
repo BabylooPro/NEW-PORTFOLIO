@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { bufferOptionSchema, type BufferOptionValues } from "./schema";
+import { bufferOptionSchema, type BufferOptionValues } from "@/features/show-calendar/utils/schema";
 
 interface BufferOptionProps {
 	value: BufferOptionValues;

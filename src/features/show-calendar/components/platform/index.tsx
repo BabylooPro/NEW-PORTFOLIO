@@ -15,7 +15,7 @@ import type {
 	PhoneOptionValues,
 	PhysicalLocationValues,
 	VirtualMeetingValues,
-} from "./schema";
+} from "@/features/show-calendar/utils/schema";
 
 interface PlatformProps {
 	readonly onPlatformChange: (platform: string, data?: Partial<PlatformValues>) => void;

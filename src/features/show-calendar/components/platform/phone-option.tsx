@@ -4,7 +4,7 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
-import { phoneOptionSchema, type PhoneOptionValues } from "./schema";
+import { phoneOptionSchema, type PhoneOptionValues } from "@/features/show-calendar/utils/schema";
 import { useSearchParams, useRouter } from "next/navigation";
 
 interface PhoneOptionProps {

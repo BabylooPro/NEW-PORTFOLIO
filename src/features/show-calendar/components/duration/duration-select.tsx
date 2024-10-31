@@ -14,7 +14,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { durationSelectSchema, type DurationSelectValues } from "./schema";
+import {
+	durationSelectSchema,
+	type DurationSelectValues,
+} from "@/features/show-calendar/utils/schema";
 
 // GENERATE DURATIONS ARRAY
 const durations = Array.from({ length: 32 }, (_, i) => {

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { breakOptionSchema, type BreakOptionValues } from "./schema";
+import { breakOptionSchema, type BreakOptionValues } from "@/features/show-calendar/utils/schema";
 
 interface BreakOptionProps {
 	value: BreakOptionValues;

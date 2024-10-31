@@ -4,7 +4,7 @@ import type { CalendarState } from "@react-stately/calendar";
 import { CalendarCell } from "./calendar-cell";
 import { CalendarData } from "../../hooks/useCalendarData";
 import { UseFormReturn } from "react-hook-form";
-import { CalendarFormData } from "./schema";
+import { CalendarFormData } from "@/features/show-calendar/utils/schema";
 
 interface CalendarGridProps {
 	state: CalendarState;

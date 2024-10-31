@@ -9,7 +9,7 @@ import { CalendarGrid } from "./calendar-grid";
 import { CalendarHeader } from "./calendar-header";
 import { CalendarData } from "../../hooks/useCalendarData";
 import { Form } from "@/components/ui/form";
-import { calendarSchema, type CalendarFormData } from "./schema";
+import { calendarSchema, type CalendarFormData } from "@/features/show-calendar/utils/schema";
 
 interface ExtendedCalendarProps extends CalendarProps<DateValue> {
 	calendarData: CalendarData;

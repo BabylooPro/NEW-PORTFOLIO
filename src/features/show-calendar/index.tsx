@@ -12,7 +12,7 @@ import { useCalendarData } from "./hooks/useCalendarData";
 import { RightPanel } from "./panel/right-panel";
 import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
-import { TimePickerFormData } from "./components/right-panel/schema";
+import { TimePickerFormData } from "@/features/show-calendar/utils/schema";
 
 export function ShowCalendarIndex() {
 	const calendarData = useCalendarData();

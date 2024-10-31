@@ -11,7 +11,11 @@ import { FlexibleOption } from "./flexible-option";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
-import { durationSchema, defaultDurationValues, type DurationValues } from "./schema";
+import {
+	durationSchema,
+	defaultDurationValues,
+	type DurationValues,
+} from "@/features/show-calendar/utils/schema";
 import { useSearchParams } from "next/navigation";
 
 export function Duration() {
