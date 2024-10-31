@@ -1,10 +1,10 @@
-import { ChevronLeft, ChevronRight, Clock4, Phone, MapPin, Monitor } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock4 } from "lucide-react";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { FaDiscord, FaMicrosoft } from "react-icons/fa";
-import { SiGooglemeet, SiZoom } from "react-icons/si";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { platforms } from "../components/platform/constants";
 
 function formatDuration(minutes: number): string {
 	const hours = Math.floor(minutes / 60); // GET HOURS
@@ -20,48 +20,66 @@ function formatDuration(minutes: number): string {
 	}
 }
 
-// MAP PLATFORMS TO THEIR ICONS
-const platformIcons = {
-	"Phone call": Phone,
-	"Microsoft Teams": FaMicrosoft,
-	"Google Meet": SiGooglemeet,
-	Zoom: SiZoom,
-	Discord: FaDiscord,
-	Other: Monitor,
-	"Physical Location": MapPin,
-};
+interface LeftPanelProps {
+	showForm: boolean;
+	currentView: string;
+	onViewChange: (view: string) => void;
+	selectedDateTime: Date;
+}
 
 export function LeftPanel({
 	showForm,
 	currentView,
 	onViewChange,
-	selectedPlatform,
 	selectedDateTime,
-}: {
-	showForm: boolean;
-	currentView: string;
-	onViewChange: (view: string) => void;
-	selectedPlatform: string;
-	selectedDateTime: Date;
-}) {
-	const [selectedDuration, setSelectedDuration] = useState("15"); // STATE FOR SELECTED DURATION
+}: LeftPanelProps) {
+	const searchParams = useSearchParams(); // GET SEARCH PARAMS
+	const [selectedDuration, setSelectedDuration] = useState(searchParams.get("duration") ?? "15"); // STATE FOR SELECTED DURATION
+	const [selectedPlatform, setSelectedPlatform] = useState(
+		searchParams.get("platform") ?? "phone"
+	); // STATE FOR SELECTED PLATFORM
 
 	// EFFECT TO LISTEN FOR CHANGES IN DURATION
 	useEffect(() => {
+		// UPDATE SELECTED
 		const handleDurationChange = (event: CustomEvent) => {
-			setSelectedDuration(event.detail.duration); // UPDATE SELECTED DURATION
+			setSelectedDuration(event.detail.duration);
 		};
-		window.addEventListener("durationChanged", handleDurationChange as EventListener); // ADD EVENT LISTENER
+		const handlePlatformChange = (event: CustomEvent) => {
+			setSelectedPlatform(event.detail.platform);
+		};
+
+		// ADD EVENT LISTENER
+		window.addEventListener("durationChanged", handleDurationChange as EventListener);
+		window.addEventListener("platformChanged", handlePlatformChange as EventListener);
+
 		return () => {
-			window.removeEventListener("durationChanged", handleDurationChange as EventListener); // REMOVE EVENT LISTENER
+			// REMOVE EVENT LISTENER
+			window.removeEventListener("durationChanged", handleDurationChange as EventListener);
+			window.removeEventListener("platformChanged", handlePlatformChange as EventListener);
 		};
 	}, []);
+
+	// EFFECT TO UPDATE DURATION FROM URL PARAMS
+	useEffect(() => {
+		// GET VALUES FROM URL PARAMS
+		const durationFromParams = searchParams.get("duration");
+		const platformFromParams = searchParams.get("platform");
+
+		// UPDATE SELECTED
+		if (durationFromParams) {
+			setSelectedDuration(durationFromParams);
+		}
+		if (platformFromParams) {
+			setSelectedPlatform(platformFromParams);
+		}
+	}, [searchParams]);
 
 	// CAPITALIZE FIRST LETTER OF CURRENT VIEW
 	const capitalizedView = currentView.charAt(0).toUpperCase() + currentView.slice(1);
 
 	// GET PLATFORM ICON
-	const PlatformIcon = platformIcons[selectedPlatform as keyof typeof platformIcons] || Monitor;
+	const PlatformIcon = platforms.find((p) => p.value === selectedPlatform)?.icon;
 
 	return (
 		<div className="flex flex-col gap-4 w-[280px] border-r border-neutral-200 dark:border-neutral-800 pr-6">
@@ -133,9 +151,11 @@ export function LeftPanel({
 					>
 						{/* PLATFORM */}
 						<div className="flex items-center gap-3">
-							<PlatformIcon className="size-5" />
+							{PlatformIcon && <PlatformIcon className="size-5" />}
 							<div>
-								<span>{selectedPlatform}</span>
+								<span>
+									{platforms.find((p) => p.value === selectedPlatform)?.label}
+								</span>
 								<div className="text-xs text-muted-foreground hidden">
 									(Platform)
 								</div>

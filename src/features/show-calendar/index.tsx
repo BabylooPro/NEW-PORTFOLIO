@@ -27,7 +27,6 @@ export function ShowCalendarIndex() {
 		date,
 		focusedDate,
 		currentView,
-		selectedPlatform,
 		handleChangeDate,
 		setFocusedDate,
 		setSelectedPlatform,
@@ -91,7 +90,6 @@ export function ShowCalendarIndex() {
 						showForm={showFormState}
 						currentView={currentView}
 						onViewChange={handleViewChange}
-						selectedPlatform={selectedPlatform}
 						selectedDateTime={selectedDateTime}
 					/>
 

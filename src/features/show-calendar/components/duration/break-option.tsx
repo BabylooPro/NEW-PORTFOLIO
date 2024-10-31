@@ -2,49 +2,89 @@ import * as React from "react";
 import { Coffee } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { breakOptionSchema, type BreakOptionValues } from "./schema";
 
-export function BreakOption() {
-	const [isBreakChecked, setIsBreakChecked] = React.useState(false); // STATE FOR BREAK CHECKBOX
+interface BreakOptionProps {
+	value: BreakOptionValues;
+	onBreakOptionChange?: (values: BreakOptionValues) => void;
+}
+
+export function BreakOption({ value, onBreakOptionChange }: BreakOptionProps) {
+	// INITIALIZE FORM WITH ZOD SCHEMA
+	const form = useForm<BreakOptionValues>({
+		resolver: zodResolver(breakOptionSchema),
+		defaultValues: value,
+	});
+
+	// UPDATE FORM WHEN EXTERNAL VALUES CHANGE
+	React.useEffect(() => {
+		form.reset(value);
+	}, [value, form]);
+
+	// WATCH FOR CHANGES AND NOTIFY PARENT
+	React.useEffect(() => {
+		const subscription = form.watch((value) => {
+			onBreakOptionChange?.(value as BreakOptionValues);
+		});
+		return () => subscription.unsubscribe();
+	}, [form, form.watch, onBreakOptionChange]);
 
 	return (
-		<div className="space-y-4">
-			{/* BREAK CHECKBOX */}
-			<div className="flex items-center justify-between">
-				<div className="flex items-center space-x-2">
-					<Coffee className="w-4 h-4" />
-					<label
-						htmlFor="break"
-						className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-					>
-						Add a break
-					</label>
-				</div>
-				<Switch id="break" checked={isBreakChecked} onCheckedChange={setIsBreakChecked} />
-			</div>
+		<Form {...form}>
+			<form className="space-y-4">
+				{/* BREAK TOGGLE */}
+				<FormField
+					control={form.control}
+					name="hasBreak"
+					render={({ field }) => (
+						<FormItem className="flex items-center justify-between">
+							<div className="flex items-center space-x-2">
+								<Coffee className="w-4 h-4" />
+								<FormLabel className="text-sm font-medium leading-none">
+									Add a break
+								</FormLabel>
+							</div>
+							<FormControl>
+								<Switch checked={field.value} onCheckedChange={field.onChange} />
+							</FormControl>
+						</FormItem>
+					)}
+				/>
 
-			{/* BREAK DURATION */}
-			{isBreakChecked && (
-				<div className="ml-6">
-					<label htmlFor="break-duration" className="text-sm font-medium mb-1 block">
-						Break duration
-					</label>
-					<div className="relative">
-						<Input
-							id="break-duration"
-							type="number"
-							placeholder="5"
-							defaultValue="5"
-							max={30}
-							min={5}
-							step={5}
-							className="w-full pr-20 bg-neutral-100 dark:bg-neutral-900"
-						/>
-						<span className="absolute top-0 right-3 h-full flex items-center text-sm text-neutral-500">
-							minutes
-						</span>
-					</div>
-				</div>
-			)}
-		</div>
+				{/* BREAK DURATION */}
+				{form.watch("hasBreak") && (
+					<FormField
+						control={form.control}
+						name="breakDuration"
+						render={({ field }) => (
+							<FormItem className="ml-6">
+								<FormLabel className="text-sm font-medium mb-1 block">
+									Break duration
+								</FormLabel>
+								<div className="relative">
+									<FormControl>
+										<Input
+											type="number"
+											{...field}
+											onChange={(e) => field.onChange(Number(e.target.value))}
+											max={30}
+											min={5}
+											step={5}
+											className="w-full pr-20 bg-neutral-100 dark:bg-neutral-900"
+										/>
+									</FormControl>
+									<span className="absolute top-0 right-3 h-full flex items-center text-sm text-neutral-500">
+										minutes
+									</span>
+								</div>
+							</FormItem>
+						)}
+					/>
+				)}
+			</form>
+		</Form>
 	);
 }

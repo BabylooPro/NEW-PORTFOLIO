@@ -1,29 +1,58 @@
 import * as React from "react";
 import { CalendarClock } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { flexibleOptionSchema, type FlexibleOptionValues } from "./schema";
 
-export function FlexibleOption() {
-	const [isFlexibleChecked, setIsFlexibleChecked] = React.useState(false); // STATE FOR FLEXIBLE CHECKBOX
+interface FlexibleOptionProps {
+	value: FlexibleOptionValues;
+	onFlexibleOptionChange?: (values: FlexibleOptionValues) => void;
+}
+
+export function FlexibleOption({ value, onFlexibleOptionChange }: FlexibleOptionProps) {
+	// INITIALIZE FORM WITH ZOD SCHEMA
+	const form = useForm<FlexibleOptionValues>({
+		resolver: zodResolver(flexibleOptionSchema),
+		defaultValues: value,
+	});
+
+	// UPDATE FORM WHEN EXTERNAL VALUES CHANGE
+	React.useEffect(() => {
+		form.reset(value);
+	}, [value, form]);
+
+	// WATCH FOR CHANGES AND NOTIFY PARENT
+	React.useEffect(() => {
+		const subscription = form.watch((value) => {
+			onFlexibleOptionChange?.(value as FlexibleOptionValues);
+		});
+		return () => subscription.unsubscribe();
+	}, [form, form.watch, onFlexibleOptionChange]);
 
 	return (
-		<div className="flex items-center justify-between">
-			{/* FLEXIBLE CHECKBOX */}
-			<div className="flex items-center space-x-2">
-				<CalendarClock className="w-4 h-4" />
-				<label
-					htmlFor="flexible"
-					className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-				>
-					Flexible duration
-				</label>
-			</div>
-
-			{/* FLEXIBLE SWITCH */}
-			<Switch
-				id="flexible"
-				checked={isFlexibleChecked}
-				onCheckedChange={setIsFlexibleChecked}
-			/>
-		</div>
+		<Form {...form}>
+			<form>
+				{/* FLEXIBLE TOGGLE */}
+				<FormField
+					control={form.control}
+					name="isFlexible"
+					render={({ field }) => (
+						<FormItem className="flex items-center justify-between">
+							<div className="flex items-center space-x-2">
+								<CalendarClock className="w-4 h-4" />
+								<FormLabel className="text-sm font-medium leading-none">
+									Flexible duration
+								</FormLabel>
+							</div>
+							<FormControl>
+								<Switch checked={field.value} onCheckedChange={field.onChange} />
+							</FormControl>
+						</FormItem>
+					)}
+				/>
+			</form>
+		</Form>
 	);
 }

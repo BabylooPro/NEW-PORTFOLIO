@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { platforms } from "./constants";
+import { useSearchParams, useRouter } from "next/navigation";
 
 interface PlatformSelectorProps {
 	id?: string;
@@ -30,6 +31,58 @@ export function PlatformSelector({
 	onOpenChange,
 	open,
 }: PlatformSelectorProps) {
+	// GET URL PARAMS
+	const searchParams = useSearchParams();
+	const router = useRouter();
+
+	const isInitialMount = React.useRef(true); // CHECK IF IT'S THE FIRST MOUNT
+
+	// UPDATE URL PARAMS WHEN PLATFORM CHANGES
+	const updateUrlParams = React.useCallback(
+		(newValue: string) => {
+			const params = new URLSearchParams(searchParams.toString());
+			params.set("platform", newValue);
+
+			// CLEAN UP RELATED PARAMS WHEN PLATFORM CHANGES
+			if (newValue === "phone") {
+				params.delete("customLink");
+				params.delete("webcam");
+				params.delete("location");
+			} else if (newValue === "physical") {
+				params.delete("customLink");
+				params.delete("webcam");
+				params.delete("phoneNumber");
+			} else {
+				params.delete("location");
+				params.delete("phoneNumber");
+			}
+
+			router.replace(`?${params.toString()}`);
+		},
+		[searchParams, router]
+	);
+
+	// HANDLE PLATFORM SELECTION
+	const handlePlatformSelect = (currentValue: string) => {
+		const platform = platforms.find(
+			(p) => p.label.toLowerCase() === currentValue.toLowerCase()
+		);
+		const newValue = platform?.value ?? "phone";
+		onValueChange(newValue);
+		updateUrlParams(newValue);
+	};
+
+	// RESTORE VALUE FROM URL PARAMS ONLY ON INITIAL MOUNT
+	React.useEffect(() => {
+		if (isInitialMount.current) {
+			const platformFromUrl = searchParams.get("platform");
+			if (platformFromUrl && platformFromUrl !== value) {
+				onValueChange(platformFromUrl);
+			}
+			isInitialMount.current = false;
+		}
+	}, [searchParams, value, onValueChange]);
+
 	return (
 		<Popover open={open} onOpenChange={onOpenChange}>
 			{/* POPOVER TRIGGER */}
@@ -68,15 +121,7 @@ export function PlatformSelector({
 								<CommandItem
 									key={platform.value}
 									value={platform.label}
-									onSelect={(currentValue) => {
-										onValueChange(
-											platforms.find(
-												(p) =>
-													p.label.toLowerCase() ===
-													currentValue.toLowerCase()
-											)?.value ?? "phone"
-										);
-									}}
+									onSelect={handlePlatformSelect}
 								>
 									<Check
 										className={cn(

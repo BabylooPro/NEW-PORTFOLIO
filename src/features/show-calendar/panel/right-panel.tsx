@@ -67,7 +67,6 @@ export function RightPanel({
 	useEffect(() => {
 		setIsLoading(true); // ACTIVATE LOADING
 		setResetKey((prev) => prev + 1);
-		console.log("Date changed, resetting PickerWheel with resetKey:", resetKey + 1);
 
 		// SIMULATE LOADING DELAY
 		const loadingTimeout = setTimeout(() => {

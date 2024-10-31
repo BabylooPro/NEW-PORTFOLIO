@@ -4,6 +4,9 @@ import { Duration } from "../components/duration";
 import { DateValue, getWeeksInMonth } from "@internationalized/date";
 import { CalendarData } from "../hooks/useCalendarData";
 import { useEffect, useState, useCallback } from "react";
+import type { DurationValues } from "../components/duration/schema";
+import type { PlatformValues } from "../components/platform/schema";
+import { useSearchParams, useRouter } from "next/navigation";
 
 interface CenterPanelProps {
 	readonly date: DateValue;
@@ -11,7 +14,8 @@ interface CenterPanelProps {
 	readonly calendarData: CalendarData;
 	readonly handleChangeDate: (newDate: DateValue) => void;
 	readonly setFocusedDate: (date: DateValue | undefined) => void;
-	readonly setSelectedPlatform: (platform: string) => void;
+	readonly setSelectedPlatform: (platform: string, data?: Partial<PlatformValues>) => void;
+	readonly setSelectedDuration?: (duration: DurationValues) => void;
 	readonly currentView: string;
 }
 
@@ -22,9 +26,14 @@ export function CenterPanel({
 	handleChangeDate,
 	setFocusedDate,
 	setSelectedPlatform,
+	setSelectedDuration,
 	currentView,
 }: CenterPanelProps) {
-	const [panelHeight, setPanelHeight] = useState("h-[400px]"); // STATE TO HOLD PANEL HEIGHT
+	const [panelHeight, setPanelHeight] = useState("h-[400px]");
+
+	// GET URL PARAMS
+	const searchParams = useSearchParams();
+	const router = useRouter();
 
 	// CUSTOM HOOK TO UPDATE PANEL HEIGHT
 	const updatePanelHeight = useCallback((currentDate: DateValue) => {
@@ -48,6 +57,89 @@ export function CenterPanel({
 	const handleMonthChange = (newDate: DateValue) => {
 		updatePanelHeight(newDate);
 	};
+
+	// FUNCTION TO UPDATE DURATION URL PARAMS
+	const updateDurationParams = useCallback(
+		(values: DurationValues) => {
+			const params = new URLSearchParams(searchParams.toString()); // GET URL PARAMS
+
+			// UPDATE DURATION PARAM
+			params.set("duration", values.duration);
+
+			// BREAK PARAMS
+			if (values.break.hasBreak) {
+				params.set("hasBreak", "true");
+				params.set("breakDuration", values.break.breakDuration.toString());
+			} else {
+				params.delete("hasBreak");
+				params.delete("breakDuration");
+			}
+
+			// BUFFER PARAMS
+			if (values.buffer.hasBuffer) {
+				params.set("hasBuffer", "true");
+				params.set("bufferDuration", values.buffer.bufferDuration.toString());
+			} else {
+				params.delete("hasBuffer");
+				params.delete("bufferDuration");
+			}
+
+			// DELAY PARAMS
+			if (values.delay.hasDelay) {
+				params.set("hasDelay", "true");
+				params.set("delayDuration", values.delay.delayDuration.toString());
+			} else {
+				params.delete("hasDelay");
+				params.delete("delayDuration");
+			}
+
+			// FLEXIBLE PARAMS
+			if (values.flexible.isFlexible) {
+				params.set("isFlexible", "true");
+			} else {
+				params.delete("isFlexible");
+			}
+
+			router.replace(`?${params.toString()}`);
+		},
+		[searchParams, router]
+	);
+
+	// HANDLE DURATION CHANGE
+	useEffect(() => {
+		if (currentView === "duration") {
+			const handleDurationChange = (event: Event) => {
+				const customEvent = event as CustomEvent<DurationValues>;
+				const values = customEvent.detail;
+				setSelectedDuration?.(values);
+				updateDurationParams(values);
+			};
+
+			window.addEventListener("durationChanged", handleDurationChange as EventListener);
+			return () => {
+				window.removeEventListener(
+					"durationChanged",
+					handleDurationChange as EventListener
+				);
+			};
+		}
+	}, [currentView, setSelectedDuration, updateDurationParams]);
+
+	// HANDLE PLATFORM CHANGE
+	useEffect(() => {
+		if (currentView === "platform") {
+			const platformFromUrl = searchParams.get("platform");
+			if (platformFromUrl) {
+				const platformData: Partial<PlatformValues> = {
+					platform: platformFromUrl,
+					customLink: searchParams.get("customLink") === "true",
+					webcam: searchParams.get("webcam") === "true",
+					isPhysical: searchParams.get("isPhysical") === "true",
+				};
+				setSelectedPlatform(platformFromUrl, platformData);
+			}
+		}
+	}, [currentView, searchParams, setSelectedPlatform]);
 
 	return (
 		<div className={`flex-1 flex flex-col ${panelHeight}`}>

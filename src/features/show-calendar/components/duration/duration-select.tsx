@@ -11,87 +11,117 @@ import {
 	CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { durationSelectSchema, type DurationSelectValues } from "./schema";
 
+// GENERATE DURATIONS ARRAY
 const durations = Array.from({ length: 32 }, (_, i) => {
-	const minutes = (i + 1) * 15; // CALCULATE MINUTES
-	const hours = Math.floor(minutes / 60); // CALCULATE HOURS
-	const remainingMinutes = minutes % 60; // CALCULATE REMAINING MINUTES
+	const minutes = (i + 1) * 15;
+	const hours = Math.floor(minutes / 60);
+	const remainingMinutes = minutes % 60;
 	const label = `${hours.toString().padStart(2, "0")}:${remainingMinutes
 		.toString()
-		.padStart(2, "0")}`; // FORMAT LABEL
+		.padStart(2, "0")}`;
 	return {
-		value: minutes.toString(), // VALUE
-		label, // LABEL
+		value: minutes.toString(),
+		label,
 	};
 });
 
-export function DurationSelect({
-	value,
-	setValue,
-}: {
+interface DurationSelectProps {
 	value: string;
 	setValue: (value: string) => void;
-}) {
-	const [open, setOpen] = React.useState(false); // STATE FOR POPOVER
+}
+
+export function DurationSelect({ value, setValue }: DurationSelectProps) {
+	const [open, setOpen] = React.useState(false);
+
+	// INITIALIZE FORM WITH ZOD SCHEMA
+	const form = useForm<DurationSelectValues>({
+		resolver: zodResolver(durationSelectSchema),
+		defaultValues: {
+			duration: value,
+		},
+	});
+
+	// UPDATE PARENT WHEN FORM VALUE CHANGES
+	React.useEffect(() => {
+		const subscription = form.watch((values) => {
+			if (values.duration) {
+				setValue(values.duration);
+			}
+		});
+		return () => subscription.unsubscribe();
+	}, [form, form.watch, setValue]);
 
 	return (
-		<div className="space-y-2">
-			{/* LABEL */}
-			<label htmlFor="duration-select" className="text-sm font-medium">
-				Select duration
-			</label>
+		<Form {...form}>
+			<form>
+				{/* DURATION SELECT */}
+				<FormField
+					control={form.control}
+					name="duration"
+					render={({ field }) => (
+						<FormItem className="space-y-2">
+							<FormLabel className="text-sm font-medium">Select duration</FormLabel>
+							<Popover open={open} onOpenChange={setOpen}>
+								<PopoverTrigger asChild>
+									<FormControl>
+										<Button
+											variant="outline"
+											role="combobox"
+											aria-expanded={open}
+											className="w-full justify-between bg-neutral-100 dark:bg-neutral-900"
+										>
+											{durations.find(
+												(duration) => duration.value === field.value
+											)?.label ?? "00:15"}
+											<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+										</Button>
+									</FormControl>
+								</PopoverTrigger>
 
-			{/* POPOVER TRIGGER */}
-			<Popover open={open} onOpenChange={setOpen}>
-				<PopoverTrigger asChild>
-					<Button
-						id="duration-select"
-						variant="outline"
-						role="combobox"
-						aria-expanded={open}
-						className="w-full justify-between bg-neutral-100 dark:bg-neutral-900"
-					>
-						{/* DURATION LABEL */}
-						{durations.find((duration) => duration.value === value)?.label ?? "00:15"}
-						<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-					</Button>
-				</PopoverTrigger>
-
-				{/* POPOVER CONTENT WITH COMMAND */}
-				<PopoverContent className="w-full p-0">
-					<Command>
-						<CommandInput placeholder="Search duration..." />
-						<CommandList>
-							<CommandEmpty>No duration found.</CommandEmpty>
-							<CommandGroup>
-								{durations.map((duration) => (
-									<CommandItem
-										key={duration.value}
-										value={duration.label}
-										onSelect={(currentValue) => {
-											setValue(
-												durations.find((d) => d.label === currentValue)
-													?.value ?? "15"
-											);
-											setOpen(false);
-										}}
-									>
-										<Check
-											className={cn(
-												"mr-2 h-4 w-4",
-												value === duration.value
-													? "opacity-100"
-													: "opacity-0"
-											)}
-										/>
-										{duration.label}
-									</CommandItem>
-								))}
-							</CommandGroup>
-						</CommandList>
-					</Command>
-				</PopoverContent>
-			</Popover>
-		</div>
+								{/* DURATION OPTIONS */}
+								<PopoverContent className="w-full p-0">
+									<Command>
+										<CommandInput placeholder="Search duration..." />
+										<CommandList>
+											<CommandEmpty>No duration found.</CommandEmpty>
+											<CommandGroup>
+												{durations.map((duration) => (
+													<CommandItem
+														key={duration.value}
+														value={duration.label}
+														onSelect={() => {
+															form.setValue(
+																"duration",
+																duration.value
+															);
+															setOpen(false);
+														}}
+													>
+														<Check
+															className={cn(
+																"mr-2 h-4 w-4",
+																field.value === duration.value
+																	? "opacity-100"
+																	: "opacity-0"
+															)}
+														/>
+														{duration.label}
+													</CommandItem>
+												))}
+											</CommandGroup>
+										</CommandList>
+									</Command>
+								</PopoverContent>
+							</Popover>
+						</FormItem>
+					)}
+				/>
+			</form>
+		</Form>
 	);
 }
