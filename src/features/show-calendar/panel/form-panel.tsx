@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 
 interface FormPanelProps {
-	onBack: () => void;
+	readonly onBack: () => void;
 }
 
 export function FormPanel({ onBack }: FormPanelProps) {
@@ -64,9 +64,23 @@ export function FormPanel({ onBack }: FormPanelProps) {
 	});
 
 	// HANDLE FORM SUBMISSION
-	const onSubmit = (data: FormValues) => {
-		console.log(data);
-		// HANDLE SUBMISSION LOGIC HERE
+	const onSubmit = async (formData: FormValues) => {
+		setIsLoading(true);
+		try {
+			// SIMULATE API CALL WITH FORM DATA
+			await new Promise((resolve) => setTimeout(resolve, 2000));
+			console.log("Form submitted with data:", formData);
+			// REDIRECT TO SUCCESS PAGE
+			router.push("/showcalendar/success");
+		} catch (error) {
+			// SIMULATE API CALL ERROR
+			await new Promise((resolve) => setTimeout(resolve, 2000));
+			console.error(error);
+			// REDIRECT TO ERROR PAGE
+			router.push("/showcalendar/error");
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	return (
@@ -217,15 +231,6 @@ export function FormPanel({ onBack }: FormPanelProps) {
 						Icon={<ArrowRightIcon className="size-4" />}
 						iconPlacement="right"
 						disabled={isLoading}
-						onClick={async (e) => {
-							e.preventDefault();
-							const isValid = await form.trigger();
-							if (isValid) {
-								setIsLoading(true);
-								await new Promise((resolve) => setTimeout(resolve, 2000)); // SIMULATE API CALL
-								router.push("/");
-							}
-						}}
 					>
 						{isLoading ? <Loader2 className="size-4 animate-spin" /> : "Continue"}
 					</Button>
