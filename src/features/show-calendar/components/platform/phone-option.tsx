@@ -75,7 +75,7 @@ export function PhoneOption({ onPhoneOptionChange }: PhoneOptionProps) {
 									placeholder="Enter phone number"
 									defaultCountry="CH"
 									value={field.value}
-									onChange={(e) => field.onChange(e.target.value)}
+									onChange={(value) => field.onChange(value)}
 								/>
 							</FormControl>
 						</FormItem>

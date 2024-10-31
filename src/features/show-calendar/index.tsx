@@ -14,15 +14,6 @@ import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import { TimePickerFormData } from "./components/right-panel/schema";
 
-// FORM DATA INTERFACE FOR BOOKING FORM
-interface BookingFormData {
-	name: string;
-	email: string;
-	phone: string;
-	notes: string;
-	guests: { email: string }[];
-}
-
 export function ShowCalendarIndex() {
 	const calendarData = useCalendarData();
 	const {
@@ -45,15 +36,6 @@ export function ShowCalendarIndex() {
 		now.setSeconds(0);
 		now.setMilliseconds(0);
 		return now;
-	});
-
-	// STATE FOR BOOKING FORM DATA
-	const [bookingFormData, setBookingFormData] = useState<BookingFormData>({
-		name: "",
-		email: "",
-		phone: "",
-		notes: "",
-		guests: [],
 	});
 
 	// STATE FOR SELECTED TIME
@@ -107,11 +89,7 @@ export function ShowCalendarIndex() {
 
 					{/* SHOW FORM OR CALENDAR */}
 					{showFormState ? (
-						<FormPanel
-							formData={bookingFormData}
-							setFormData={setBookingFormData}
-							onBack={handleFormBack}
-						/>
+						<FormPanel onBack={handleFormBack} />
 					) : (
 						// SHOW CENTER PANEL AND RIGHT PANEL
 						<>

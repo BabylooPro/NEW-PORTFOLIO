@@ -1,159 +1,236 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRightIcon, UserPlus, X } from "lucide-react";
-import Link from "next/link";
+import { ArrowRightIcon, Loader2, UserPlus, X } from "lucide-react";
 import { PhoneInput } from "@/components/ui/phone-input";
 import * as React from "react";
-import { ChangeEvent } from "react";
-
-interface FormData {
-	name: string;
-	email: string;
-	phone: string;
-	notes: string;
-	guests: { email: string }[];
-}
+import { useFieldArray, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FormValues, formSchema } from "./schema";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
 
 interface FormPanelProps {
-	formData: FormData;
-	setFormData: React.Dispatch<React.SetStateAction<FormData>>;
 	onBack: () => void;
 }
 
-export function FormPanel({ formData, setFormData, onBack }: FormPanelProps) {
-	// ADD GUEST
-	const addGuest = () => {
-		setFormData((prev) => ({
-			...prev,
-			guests: [...prev.guests, { email: "" }],
-		}));
-	};
+export function FormPanel({ onBack }: FormPanelProps) {
+	const router = useRouter(); // NAVIGATE BETWEEN PAGES
+	const [isLoading, setIsLoading] = useState(false); // STATE FOR LOADING
+	const searchParams = useSearchParams(); // GET URL PARAMS
 
-	// REMOVE GUEST
-	const removeGuest = (index: number) => {
-		setFormData((prev) => ({
-			...prev,
-			guests: prev.guests.filter((_, i) => i !== index),
-		}));
-	};
+	// UPDATE URL PARAMS WHEN PHONE CHANGES
+	const updatePhoneUrlParam = React.useCallback(
+		(phone: string) => {
+			const params = new URLSearchParams(searchParams.toString());
 
-	// HANDLE CHANGE
-	const handleChange = (field: keyof FormData, value: string | ChangeEvent<HTMLInputElement>) => {
-		const newValue = typeof value === "string" ? value : value.target.value;
-		setFormData((prev) => ({ ...prev, [field]: newValue }));
-	};
+			if (phone) {
+				params.set("phoneNumber", phone);
+			} else {
+				params.delete("phoneNumber");
+			}
 
-	// HANDLE GUEST CHANGE
-	const handleGuestChange = (index: number, email: string) => {
-		setFormData((prev) => ({
-			...prev,
-			guests: prev.guests.map((guest, i) => (i === index ? { email } : guest)),
-		}));
-	};
+			router.replace(`?${params.toString()}`);
+		},
+		[searchParams, router]
+	);
 
-	const hasGuests = formData.guests.length > 0; // CHECK IF THERE ARE GUESTS
+	// INITIALIZE FORM WITH PHONE FROM URL PARAMS
+	const form = useForm<FormValues>({
+		resolver: zodResolver(formSchema),
+		defaultValues: {
+			name: "",
+			email: "",
+			phone: searchParams.get("phoneNumber") ?? "", // GET PHONE FROM URL PARAMS
+			notes: "",
+			guests: [],
+		},
+	});
+
+	// SYNC FORM WITH URL PARAMS WHEN THEY CHANGE
+	React.useEffect(() => {
+		const phoneNumber = searchParams.get("phoneNumber");
+		if (phoneNumber) {
+			form.setValue("phone", phoneNumber);
+		}
+	}, [searchParams, form]);
+
+	// INITIALIZE FIELD ARRAY FOR GUESTS
+	const { fields, append, remove } = useFieldArray({
+		control: form.control,
+		name: "guests",
+	});
+
+	// HANDLE FORM SUBMISSION
+	const onSubmit = (data: FormValues) => {
+		console.log(data);
+		// HANDLE SUBMISSION LOGIC HERE
+	};
 
 	return (
-		<form className="flex flex-col gap-5 w-screen">
-			{/* FORM CONTENT */}
-			<div className="flex flex-col space-y-1.5">
-				{/* NAME */}
-				<Label htmlFor="name">Your name *</Label>
-				<Input
-					id="name"
-					placeholder="Name"
-					className="bg-neutral-100 dark:bg-neutral-900"
-					value={formData.name}
-					onChange={(e) => handleChange("name", e.target.value)}
-				/>
-			</div>
-			<div className="flex flex-col space-y-1.5">
-				{/* EMAIL */}
-				<Label htmlFor="email">Email address *</Label>
-				<Input
-					id="email"
-					type="email"
-					placeholder="exemple@email.com"
-					className="bg-neutral-100 dark:bg-neutral-900"
-					value={formData.email}
-					onChange={(e) => handleChange("email", e.target.value)}
-				/>
-			</div>
-			<div className="flex flex-col space-y-1.5">
-				{/* PHONE */}
-				<Label htmlFor="phone">Phone number *</Label>
-				<PhoneInput
-					id="phone"
-					defaultCountry="CH"
-					value={formData.phone}
-					onChange={(value) => handleChange("phone", value)}
-				/>
-			</div>
-			<div className="flex flex-col space-y-1.5">
-				{/* NOTES */}
-				<Label htmlFor="notes">Additional notes</Label>
-				<Textarea
-					id="notes"
-					placeholder="Please share anything that will help prepare for our meeting"
-					className="bg-neutral-100 dark:bg-neutral-900"
-					value={formData.notes}
-					onChange={(e) => handleChange("notes", e.target.value)}
-				/>
-			</div>
-			{hasGuests && (
-				<>
-					{/* GUESTS */}
-					<Label htmlFor="email">Add guests</Label>
-					<div className="flex flex-col gap-1">
-						{formData.guests.map((guest, index) => (
-							<div key={index} className="flex items-center space-x-2 relative">
+		<Form {...form}>
+			<form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5 w-screen">
+				{/* NAME FIELD */}
+				<FormField
+					control={form.control}
+					name="name"
+					render={({ field }) => (
+						<FormItem>
+							<Label>Your name</Label>
+							<FormControl>
 								<Input
-									id="guest"
-									type="email"
-									placeholder="guest@email.com"
-									value={guest.email}
-									onChange={(e) => handleGuestChange(index, e.target.value)}
+									placeholder="Name"
 									className="bg-neutral-100 dark:bg-neutral-900"
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				{/* EMAIL FIELD */}
+				<FormField
+					control={form.control}
+					name="email"
+					render={({ field }) => (
+						<FormItem>
+							<Label>Email address</Label>
+							<FormControl>
+								<Input
+									type="email"
+									placeholder="exemple@email.com"
+									className="bg-neutral-100 dark:bg-neutral-900"
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				{/* PHONE FIELD */}
+				<FormField
+					control={form.control}
+					name="phone"
+					render={({ field }) => (
+						<FormItem>
+							<Label>Phone number</Label>
+							<FormControl>
+								<PhoneInput
+									defaultCountry="CH"
+									value={field.value}
+									onChange={(e) => {
+										const value = e.target.value;
+										field.onChange(value);
+										updatePhoneUrlParam(value);
+									}}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				{/* NOTES FIELD */}
+				<FormField
+					control={form.control}
+					name="notes"
+					render={({ field }) => (
+						<FormItem>
+							<Label>
+								Additional notes{" "}
+								<span className="text-xs text-neutral-500 dark:text-neutral-400">
+									(optional)
+								</span>
+							</Label>
+							<FormControl>
+								<Textarea
+									placeholder="Please share anything that will help prepare for our meeting"
+									className="bg-neutral-100 dark:bg-neutral-900"
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				{/* GUESTS SECTION */}
+				{fields.length > 0 && (
+					<div className="space-y-4">
+						<Label>Add guests</Label>
+						{fields.map((field, index) => (
+							<div key={field.id} className="flex items-center space-x-2 relative">
+								<FormField
+									control={form.control}
+									name={`guests.${index}.email`}
+									render={({ field }) => (
+										<FormItem className="flex-1">
+											<FormControl>
+												<Input
+													placeholder="guest@email.com"
+													className="bg-neutral-100 dark:bg-neutral-900"
+													{...field}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
 								/>
 								<X
 									className="cursor-pointer absolute right-2 top-1/2 transform -translate-y-1/2 size-4 text-neutral-500 dark:text-neutral-400"
-									onClick={() => removeGuest(index)}
+									onClick={() => remove(index)}
 								/>
 							</div>
 						))}
 					</div>
-				</>
-			)}
+				)}
 
-			{/* ADD GUEST */}
-			<Button type="button" variant="ghost" onClick={addGuest} className="w-fit">
-				<UserPlus className="mr-2 size-4" />
-				Add guests
-			</Button>
-
-			{/* TERMS AND PRIVACY POLICY */}
-			<p className="text-neutral-500 dark:text-neutral-400 text-xs my-4">
-				By proceeding, you agree to our <span className="font-bold">Terms</span> and{" "}
-				<span className="font-bold">Privacy Policy</span>.
-			</p>
-
-			{/* BACK AND CONTINUE BUTTONS */}
-			<div className="flex justify-end gap-2">
-				<Button variant="ghost" onClick={onBack}>
-					Back
-				</Button>
+				{/* ADD GUEST BUTTON */}
 				<Button
-					asChild
 					type="button"
-					variant={["default", "expandIcon"]}
-					Icon={<ArrowRightIcon className="size-4" />}
-					iconPlacement="right"
+					variant="ghost"
+					onClick={() => append({ email: "" })}
+					className="w-fit"
 				>
-					<Link href="/">Continue</Link>
+					<UserPlus className="mr-2 size-4" />
+					Add guests
 				</Button>
-			</div>
-		</form>
+
+				{/* TERMS AND PRIVACY */}
+				<p className="text-neutral-500 dark:text-neutral-400 text-xs my-4">
+					By proceeding, you agree to our <span className="font-bold">Terms</span> and{" "}
+					<span className="font-bold">Privacy Policy</span>.
+				</p>
+
+				{/* ACTIONS */}
+				<div className="flex justify-end gap-2">
+					<Button variant="ghost" onClick={onBack} disabled={isLoading}>
+						Back
+					</Button>
+					<Button
+						type="submit"
+						variant={["default", "expandIcon"]}
+						Icon={<ArrowRightIcon className="size-4" />}
+						iconPlacement="right"
+						disabled={isLoading}
+						onClick={async (e) => {
+							e.preventDefault();
+							const isValid = await form.trigger();
+							if (isValid) {
+								setIsLoading(true);
+								await new Promise((resolve) => setTimeout(resolve, 2000)); // SIMULATE API CALL
+								router.push("/");
+							}
+						}}
+					>
+						{isLoading ? <Loader2 className="size-4 animate-spin" /> : "Continue"}
+					</Button>
+				</div>
+			</form>
+		</Form>
 	);
 }
