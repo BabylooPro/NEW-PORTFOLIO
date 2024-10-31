@@ -12,8 +12,10 @@ import { useCalendarData } from "./hooks/useCalendarData";
 import { RightPanel } from "./panel/right-panel";
 import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
+import { TimePickerFormData } from "./components/right-panel/schema";
 
-interface FormData {
+// FORM DATA INTERFACE FOR BOOKING FORM
+interface BookingFormData {
 	name: string;
 	email: string;
 	phone: string;
@@ -32,7 +34,9 @@ export function ShowCalendarIndex() {
 		setSelectedPlatform,
 		handleViewChange,
 	} = useShowCalendar();
-	const [showFormState, setShowFormState] = useState(false); // STATE FOR SHOW FORM
+
+	// STATE FOR SHOW FORM
+	const [showFormState, setShowFormState] = useState(false);
 
 	// STATE FOR SELECTED DATE TIME
 	const [selectedDateTime, setSelectedDateTime] = useState(() => {
@@ -43,8 +47,8 @@ export function ShowCalendarIndex() {
 		return now;
 	});
 
-	// STATE FOR FORM DATA
-	const [formData, setFormData] = useState<FormData>({
+	// STATE FOR BOOKING FORM DATA
+	const [bookingFormData, setBookingFormData] = useState<BookingFormData>({
 		name: "",
 		email: "",
 		phone: "",
@@ -52,14 +56,22 @@ export function ShowCalendarIndex() {
 		guests: [],
 	});
 
-	// FUNCTION TO HANDLE TIME SELECT
-	const handleTimeSelect = () => {
-		setShowFormState(true);
-	};
+	// STATE FOR SELECTED TIME
+	const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
-	// FUNCTION TO HANDLE DATE TIME CHANGE
-	const handleDateTimeChange = (newDateTime: Date) => {
+	// HANDLE TIME SELECTION - MODIFIED TO HANDLE PRESELECTED TIME
+	const handleTimeSelection = (data: TimePickerFormData) => {
+		const [hours, minutes] = data.selectedTime.split(":").map(Number);
+		const newDateTime = new Date(date.toDate(getLocalTimeZone()));
+		newDateTime.setHours(hours, minutes);
 		setSelectedDateTime(newDateTime);
+
+		// IF THE SAME TIME IS SELECTED, SHOW THE FORM PANEL
+		if (selectedTime === data.selectedTime) {
+			setShowFormState(true);
+		}
+		// UPDATE SELECTED TIME
+		setSelectedTime(data.selectedTime);
 	};
 
 	// FUNCTION TO HANDLE FORM BACK BUTTON
@@ -93,11 +105,11 @@ export function ShowCalendarIndex() {
 						selectedDateTime={selectedDateTime}
 					/>
 
-					{/* SHOW FORM */}
+					{/* SHOW FORM OR CALENDAR */}
 					{showFormState ? (
 						<FormPanel
-							formData={formData}
-							setFormData={setFormData}
+							formData={bookingFormData}
+							setFormData={setBookingFormData}
 							onBack={handleFormBack}
 						/>
 					) : (
@@ -116,8 +128,8 @@ export function ShowCalendarIndex() {
 								timeZone={getLocalTimeZone()}
 								date={date}
 								calendarData={calendarData}
-								onTimeSelect={handleTimeSelect}
-								onDateTimeChange={handleDateTimeChange}
+								onTimeSelect={handleTimeSelection}
+								onDateTimeChange={setSelectedDateTime}
 							/>
 						</>
 					)}

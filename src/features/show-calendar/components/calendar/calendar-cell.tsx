@@ -12,12 +12,15 @@ import { mergeProps } from "@react-aria/utils";
 import type { CalendarState } from "@react-stately/calendar";
 import { useRef } from "react";
 import { getStatus, getStatusColor } from "@/features/show-calendar/utils/status";
+import { UseFormReturn } from "react-hook-form";
+import { CalendarFormData } from "./schema";
 
 interface CalendarCellProps {
 	readonly state: CalendarState;
 	readonly date: CalendarDate;
 	readonly currentMonth: CalendarDate;
 	readonly availableTimesCount: number;
+	readonly form: UseFormReturn<CalendarFormData>;
 }
 
 export function CalendarCell({
@@ -25,6 +28,7 @@ export function CalendarCell({
 	date,
 	currentMonth,
 	availableTimesCount,
+	form,
 }: CalendarCellProps) {
 	const ref = useRef<HTMLDivElement>(null); // CREATE REF
 	const isUnavailable = availableTimesCount === 0; // CHECK IF DATE IS UNAVAILABLE
@@ -45,6 +49,13 @@ export function CalendarCell({
 	const status = getStatus(availableTimesCount);
 	const statusColor = getStatusColor(status);
 
+	// HANDLE CELL SELECTION
+	const handleSelection = () => {
+		if (!isDisabled) {
+			form.setValue("selectedDate", date.toString());
+		}
+	};
+
 	return (
 		<td
 			{...cellProps}
@@ -56,6 +67,7 @@ export function CalendarCell({
 				ref={ref}
 				hidden={isOutsideMonth}
 				className="size-14 outline-none group rounded-md"
+				onClick={handleSelection}
 			>
 				{/* DATE CONTAINER */}
 				<div

@@ -7,6 +7,7 @@ import { useEffect, useState, useCallback } from "react";
 import type { DurationValues } from "../components/duration/schema";
 import type { PlatformValues } from "../components/platform/schema";
 import { useSearchParams, useRouter } from "next/navigation";
+import type { CalendarFormData } from "../components/calendar/schema";
 
 interface CenterPanelProps {
 	readonly date: DateValue;
@@ -56,6 +57,16 @@ export function CenterPanel({
 	// HANDLE MONTH CHANGE
 	const handleMonthChange = (newDate: DateValue) => {
 		updatePanelHeight(newDate);
+	};
+
+	// HANDLE CALENDAR FORM SUBMIT
+	const handleCalendarSubmit = (data: CalendarFormData) => {
+		const params = new URLSearchParams(searchParams.toString());
+		params.set("selectedDate", data.selectedDate);
+		if (data.selectedTime) {
+			params.set("selectedTime", data.selectedTime);
+		}
+		router.replace(`?${params.toString()}`);
 	};
 
 	// FUNCTION TO UPDATE DURATION URL PARAMS
@@ -154,6 +165,7 @@ export function CenterPanel({
 						calendarData={calendarData}
 						focusedValue={focusedDate}
 						onFocusChange={setFocusedDate}
+						onSubmit={handleCalendarSubmit}
 					/>
 				)}
 

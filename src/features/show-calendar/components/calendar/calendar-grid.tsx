@@ -3,14 +3,17 @@ import { useCalendarGrid } from "@react-aria/calendar";
 import type { CalendarState } from "@react-stately/calendar";
 import { CalendarCell } from "./calendar-cell";
 import { CalendarData } from "../../hooks/useCalendarData";
+import { UseFormReturn } from "react-hook-form";
+import { CalendarFormData } from "./schema";
 
 interface CalendarGridProps {
 	state: CalendarState;
 	offset?: DateDuration;
 	calendarData: CalendarData;
+	form: UseFormReturn<CalendarFormData>;
 }
 
-export function CalendarGrid({ state, offset = {}, calendarData }: CalendarGridProps) {
+export function CalendarGrid({ state, offset = {}, calendarData, form }: CalendarGridProps) {
 	const startDate = state.visibleRange.start.add(offset); // GET START DATE
 	const endDate = endOfMonth(startDate); // GET END DATE
 
@@ -66,6 +69,7 @@ export function CalendarGrid({ state, offset = {}, calendarData }: CalendarGridP
 									date={date}
 									currentMonth={startDate}
 									availableTimesCount={calendarData[date.toString()] || 0}
+									form={form}
 								/>
 							);
 						})}
