@@ -11,12 +11,14 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { useRouter, useSearchParams } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface FormPanelProps {
 	readonly onBack: () => void;
 }
 
 export function FormPanel({ onBack }: FormPanelProps) {
+	const { toast } = useToast();
 	const router = useRouter(); // NAVIGATE BETWEEN PAGES
 	const [isLoading, setIsLoading] = useState(false); // STATE FOR LOADING
 	const searchParams = useSearchParams(); // GET URL PARAMS
@@ -72,6 +74,17 @@ export function FormPanel({ onBack }: FormPanelProps) {
 		}
 	}, [form]);
 
+	React.useEffect(() => {
+		toast({
+			title: "Demo Version - Work in Progress",
+			variant: "warning",
+			showIcon: true,
+			description:
+				"This is a demonstration of how the booking system will work. Currently, no actual appointments are being processed.",
+			duration: 60000, // 60 SECONDS
+		});
+	}, [toast]);
+
 	// HANDLE FORM SUBMISSION
 	const onSubmit = async (formData: FormValues) => {
 		setIsLoading(true);
@@ -82,18 +95,15 @@ export function FormPanel({ onBack }: FormPanelProps) {
 				: {};
 
 			const finalData = {
-				...formData,
-				scheduling: combinedData,
+				formData,
+				combinedData,
 			};
 
-			// STORE FINAL DATA IN SESSION STORAGE
-			sessionStorage.setItem("finalSubmissionData", JSON.stringify(finalData));
+			// STORE THE DATA FOR PROCESSING
+			sessionStorage.setItem("preFilledFormData", JSON.stringify(finalData));
 
-			await new Promise((resolve) => setTimeout(resolve, 2000));
-			console.log("Complete submission data:", finalData);
-
-			sessionStorage.removeItem("preFilledFormData");
-			router.push("/showcalendar/success");
+			// REDIRECT TO PROCESSING PAGE
+			router.push("/showcalendar/process");
 		} catch (error) {
 			console.error(error);
 			router.push("/showcalendar/error");
