@@ -1,4 +1,8 @@
+"use client";
+
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { generateStructuredSnippetPatterns, SnippetPatternBackground } from "./snippet-pattern";
 
 // ANIMATION VARIANTS FOR BACKGROUND CIRCLE
 const backgroundVariants = {
@@ -74,76 +78,133 @@ interface SuccessAnimationProps {
 }
 
 export const SuccessAnimation = ({ size = 100, color = "#22c55e" }: SuccessAnimationProps) => {
-	// CALCULATE PADDING FOR SCALE ANIMATION
+	// CALCULATE DIMENSIONS FOR ICON
 	const padding = size * 0.5;
-	const totalSize = size + padding * 2;
+	const iconTotalSize = size + padding * 2;
+
+	// CALCULATE BACKGROUND DIMENSIONS
+	const backgroundPadding = size * 0.2;
+	const backgroundTotalSize = size + backgroundPadding * 2;
+	const backgroundWidth = backgroundTotalSize * 1.5;
+	const backgroundHeight = backgroundTotalSize * 1;
+
 	const viewBoxSize = 100;
 	const center = viewBoxSize / 2;
 	const radius = viewBoxSize * 0.23;
 
-	// CALCULATE CHECKMARK DIMENSIONS (REDUCED SIZES)
+	// CALCULATE CHECKMARK DIMENSIONS
 	const checkWidth = viewBoxSize * 0.12;
 	const checkHeight = viewBoxSize * 0.08;
 	const checkStrokeWidth = viewBoxSize * 0.035;
 
+	// STATE FOR CODE BLOCKS
+	const [snippetPatterns, setSnippetPatterns] = useState<
+		Array<Array<{ indent: number; width: number; color: string }>>
+	>([]);
+
+	useEffect(() => {
+		const initialBlocks = Array(24)
+			.fill(null)
+			.flatMap(() => generateStructuredSnippetPatterns());
+		setSnippetPatterns(initialBlocks);
+
+		const interval = setInterval(() => {
+			setSnippetPatterns((prevBlocks) => {
+				const additionalBlocks = generateStructuredSnippetPatterns();
+				const newBlocks = [...prevBlocks];
+				newBlocks.push(...additionalBlocks);
+				return newBlocks.slice(-1000);
+			});
+		}, 2000);
+
+		return () => clearInterval(interval);
+	}, []);
+
 	return (
-		<motion.div
-			initial="hidden"
-			animate="visible"
+		<div
 			style={{
-				width: totalSize,
-				height: totalSize,
-				display: "flex",
-				justifyContent: "center",
-				alignItems: "center",
-				margin: -padding,
-				overflow: "visible",
-				filter: "drop-shadow(0 0 4px rgba(34, 197, 94, 0.2))",
+				position: "relative",
+				width: backgroundWidth,
+				height: backgroundHeight,
 			}}
 		>
-			<svg
-				width={totalSize}
-				height={totalSize}
-				viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
+			{/* BACKGROUND LAYER */}
+			<div style={{ position: "absolute", inset: 0, zIndex: 1 }}>
+				<SnippetPatternBackground
+					snippetPatterns={snippetPatterns}
+					width={backgroundWidth}
+					height={backgroundHeight}
+				/>
+			</div>
+
+			{/* SUCCESS ICON LAYER */}
+			<div
 				style={{
-					overflow: "visible",
-					filter: "drop-shadow(0 0 5px rgba(34, 197, 94, 0.15))",
+					position: "absolute",
+					inset: 0,
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					pointerEvents: "none",
+					zIndex: 2,
 				}}
 			>
-				{/* BACKGROUND FILL CIRCLE */}
-				<motion.circle
-					cx={center}
-					cy={center}
-					r={radius}
-					fill={color}
-					variants={backgroundVariants}
-					style={{ opacity: 0.2 }}
-				/>
+				<motion.div
+					initial="hidden"
+					animate="visible"
+					style={{
+						width: size,
+						height: size,
+						display: "flex",
+						justifyContent: "center",
+						alignItems: "center",
+						overflow: "visible",
+					}}
+				>
+					<svg
+						width={iconTotalSize}
+						height={iconTotalSize}
+						viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
+						style={{
+							overflow: "visible",
+						}}
+					>
+						{/* BACKGROUND FILL CIRCLE */}
+						<motion.circle
+							cx={center}
+							cy={center}
+							r={radius}
+							fill={color}
+							variants={backgroundVariants}
+							style={{ opacity: 0.2 }}
+						/>
 
-				{/* CIRCLE OUTLINE */}
-				<motion.path
-					d={`M ${center - radius},${center} A ${radius},${radius} 0 1,1 ${
-						center - radius
-					},${center + 0.01}`}
-					fill="none"
-					stroke={color}
-					strokeWidth={checkStrokeWidth}
-					variants={circleVariants}
-					strokeLinecap="round"
-				/>
+						{/* CIRCLE OUTLINE */}
+						<motion.path
+							d={`M ${center - radius},${center} A ${radius},${radius} 0 1,1 ${
+								center - radius
+							},${center + 0.01}`}
+							fill="none"
+							stroke={color}
+							strokeWidth={checkStrokeWidth}
+							variants={circleVariants}
+							strokeLinecap="round"
+						/>
 
-				{/* CHECKMARK */}
-				<motion.path
-					d={`M ${center - checkWidth} ${center} L ${center - checkWidth * 0.3} ${
-						center + checkHeight
-					} L ${center + checkWidth} ${center - checkHeight}`}
-					fill="none"
-					stroke={color}
-					strokeWidth={checkStrokeWidth}
-					variants={checkVariants}
-					style={{ transformOrigin: "center" }}
-				/>
-			</svg>
-		</motion.div>
+						{/* CHECKMARK */}
+						<motion.path
+							d={`M ${center - checkWidth} ${center} L ${center - checkWidth * 0.3} ${
+								center + checkHeight
+							} L ${center + checkWidth} ${center - checkHeight}`}
+							fill="none"
+							stroke={color}
+							strokeWidth={checkStrokeWidth}
+							variants={checkVariants}
+							style={{ transformOrigin: "center" }}
+						/>
+					</svg>
+				</motion.div>
+			</div>
+		</div>
 	);
 };

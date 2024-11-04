@@ -1,4 +1,8 @@
+"use client";
+
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { generateStructuredSnippetPatterns, SnippetPatternBackground } from "./snippet-pattern";
 
 // ANIMATION VARIANTS FOR BACKGROUND CIRCLE
 const backgroundVariants = {
@@ -91,90 +95,143 @@ interface ErrorAnimationProps {
 }
 
 export const ErrorAnimation = ({ size = 100, color = "#ef4444" }: ErrorAnimationProps) => {
-	// CALCULATE PADDING FOR SCALE ANIMATION
+	// CALCULATE DIMENSIONS FOR ICON
 	const padding = size * 0.5;
-	const totalSize = size + padding * 2;
+	const iconTotalSize = size + padding * 2;
+
+	// CALCULATE BACKGROUND DIMENSIONS
+	const backgroundPadding = size * 0.2;
+	const backgroundTotalSize = size + backgroundPadding * 2;
+	const backgroundWidth = backgroundTotalSize * 1.5;
+	const backgroundHeight = backgroundTotalSize * 1;
+
 	const viewBoxSize = 100;
 	const center = viewBoxSize / 2;
 	const radius = viewBoxSize * 0.23;
 
-	// CALCULATE EXCLAMATION MARK DIMENSIONS
-	const exclamationHeight = viewBoxSize * 0.3;
-	const exclamationWidth = viewBoxSize * 0.06;
-	const dotSize = viewBoxSize * 0.06;
-	const strokeWidth = viewBoxSize * 0.035;
+	// STATE FOR CODE BLOCKS
+	const [snippetPatterns, setSnippetPatterns] = useState<
+		Array<Array<{ indent: number; width: number; color: string }>>
+	>([]);
+
+	// GENERATE CODE BLOCKS
+	useEffect(() => {
+		const initialBlocks = Array(24)
+			.fill(null)
+			.flatMap(() => generateStructuredSnippetPatterns());
+		setSnippetPatterns(initialBlocks);
+
+		const interval = setInterval(() => {
+			setSnippetPatterns((prevBlocks) => {
+				const additionalBlocks = generateStructuredSnippetPatterns();
+				const newBlocks = [...prevBlocks];
+				newBlocks.push(...additionalBlocks);
+				return newBlocks.slice(-1000);
+			});
+		}, 2000);
+
+		return () => clearInterval(interval);
+	}, []);
 
 	return (
-		<motion.div
-			initial="hidden"
-			animate="visible"
+		<div
 			style={{
-				width: totalSize,
-				height: totalSize,
-				display: "flex",
-				justifyContent: "center",
-				alignItems: "center",
-				margin: -padding,
-				overflow: "visible",
-				filter: "drop-shadow(0 0 4px rgba(239, 68, 68, 0.2))",
+				position: "relative",
+				width: backgroundWidth,
+				height: backgroundHeight,
 			}}
 		>
-			<motion.svg
-				width={totalSize}
-				height={totalSize}
-				viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
+			{/* BACKGROUND LAYER */}
+			<div style={{ position: "absolute", inset: 0, zIndex: 1 }}>
+				<SnippetPatternBackground
+					snippetPatterns={snippetPatterns}
+					width={backgroundWidth}
+					height={backgroundHeight}
+					showErrors={true}
+				/>
+			</div>
+
+			{/* ERROR ICON LAYER */}
+			<div
 				style={{
-					overflow: "visible",
-					filter: "drop-shadow(0 0 5px rgba(239, 68, 68, 0.15))",
+					position: "absolute",
+					inset: 0,
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					pointerEvents: "none",
+					zIndex: 2,
 				}}
-				initial="hidden"
-				animate={["visible", "pulse"]}
-				variants={pulseVariants}
 			>
-				{/* BACKGROUND FILL CIRCLE */}
-				<motion.circle
-					cx={center}
-					cy={center}
-					r={radius}
-					fill={color}
-					variants={backgroundVariants}
-					style={{ opacity: 0.2 }}
-				/>
+				<motion.div
+					initial="hidden"
+					animate="visible"
+					style={{
+						width: size,
+						height: size,
+						display: "flex",
+						justifyContent: "center",
+						alignItems: "center",
+						overflow: "visible",
+					}}
+				>
+					<motion.svg
+						width={iconTotalSize}
+						height={iconTotalSize}
+						viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
+						style={{
+							overflow: "visible",
+						}}
+						initial="hidden"
+						animate={["visible", "pulse"]}
+						variants={pulseVariants}
+					>
+						{/* BACKGROUND FILL CIRCLE */}
+						<motion.circle
+							cx={center}
+							cy={center}
+							r={radius}
+							fill={color}
+							variants={backgroundVariants}
+							style={{ opacity: 0.5 }}
+						/>
 
-				{/* CIRCLE OUTLINE */}
-				<motion.path
-					d={`M ${center - radius},${center} A ${radius},${radius} 0 1,1 ${
-						center - radius
-					},${center + 0.01}`}
-					fill="none"
-					stroke={color}
-					strokeWidth={strokeWidth}
-					variants={circleVariants}
-					strokeLinecap="round"
-				/>
+						{/* CIRCLE OUTLINE */}
+						<motion.path
+							d={`M ${center - radius},${center} A ${radius},${radius} 0 1,1 ${
+								center - radius
+							},${center + 0.01}`}
+							fill="none"
+							stroke={color}
+							strokeWidth={viewBoxSize * 0.035}
+							variants={circleVariants}
+							strokeLinecap="round"
+						/>
 
-				{/* EXCLAMATION MARK GROUP */}
-				<motion.g variants={exclamationVariants}>
-					{/* EXCLAMATION MARK LINE */}
-					<motion.rect
-						x={center - exclamationWidth / 2}
-						y={center - exclamationHeight / 2}
-						width={exclamationWidth}
-						height={exclamationHeight - dotSize - 4}
-						fill={color}
-						rx={exclamationWidth / 2}
-						ry={exclamationWidth / 2}
-					/>
+						{/* EXCLAMATION MARK GROUP */}
+						<motion.g variants={exclamationVariants}>
+							{/* EXCLAMATION MARK LINE */}
+							<motion.rect
+								x={center - (viewBoxSize * 0.06) / 2}
+								y={center - (viewBoxSize * 0.3) / 2}
+								width={viewBoxSize * 0.06}
+								height={viewBoxSize * 0.3 - (viewBoxSize * 0.06) / 2 - 8}
+								fill={color}
+								rx={(viewBoxSize * 0.06) / 2}
+								ry={(viewBoxSize * 0.06) / 2}
+							/>
 
-					{/* EXCLAMATION MARK DOT */}
-					<motion.circle
-						cx={center}
-						cy={center + exclamationHeight / 2 - dotSize / 2}
-						r={dotSize / 2}
-						fill={color}
-					/>
-				</motion.g>
-			</motion.svg>
-		</motion.div>
+							{/* EXCLAMATION MARK DOT */}
+							<motion.circle
+								cx={center}
+								cy={center + (viewBoxSize * 0.3) / 2 - (viewBoxSize * 0.06) / 2}
+								r={(viewBoxSize * 0.06) / 2}
+								fill={color}
+							/>
+						</motion.g>
+					</motion.svg>
+				</motion.div>
+			</div>
+		</div>
 	);
 };
