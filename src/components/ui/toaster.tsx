@@ -19,7 +19,7 @@ interface ToasterProps {
 
 export function Toaster({ showTestToast = false }: ToasterProps) {
 	const { toasts, toast } = useToast();
-	const { headerBottom, isHeaderMoved } = useHeaderPosition();
+	const { headerBottom, headerHeight, isHeaderMoved, isCompact } = useHeaderPosition();
 
 	const showTestToastMessage = useCallback(() => {
 		toast({
@@ -47,7 +47,9 @@ export function Toaster({ showTestToast = false }: ToasterProps) {
 						key={id}
 						{...props}
 						headerBottom={headerBottom}
+						headerHeight={headerHeight}
 						isHeaderMoved={isHeaderMoved}
+						isCompact={isCompact}
 						showIcon={showIcon}
 					>
 						<div className="grid gap-1">
@@ -59,7 +61,7 @@ export function Toaster({ showTestToast = false }: ToasterProps) {
 					</Toast>
 				);
 			})}
-			<ToastViewport className="sm:max-w-[420px] sm:left-1/2 sm:-translate-x-1/2 z-[100] md:z-[97] " />
+			<ToastViewport className="sm:max-w-[420px] sm:left-1/2 sm:-translate-x-1/2 z-[100] md:z-[97]" />
 		</ToastProvider>
 	);
 }

@@ -53,12 +53,14 @@ const Toast = React.forwardRef<
 	React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
 		VariantProps<typeof toastVariants> & {
 			headerBottom?: number;
+			headerHeight?: number;
 			isHeaderMoved?: boolean;
+			isCompact?: boolean;
 			showIcon?: boolean;
 		}
 >(
 	(
-		{ className, variant, headerBottom = 0, isHeaderMoved = false, showIcon = false, ...props },
+		{ className, variant, headerBottom = 0, isCompact = false, showIcon = false, ...props },
 		ref
 	) => {
 		const isMobile = useMediaQuery("(max-width: 640px)");
@@ -80,6 +82,16 @@ const Toast = React.forwardRef<
 			</div>
 		);
 
+		const getToastPosition = () => {
+			if (isMobile) return 0;
+
+			if (isCompact) {
+				return headerBottom + 24;
+			} else {
+				return headerBottom + 48;
+			}
+		};
+
 		return (
 			<AnimatePresence>
 				{props.open && (
@@ -93,7 +105,7 @@ const Toast = React.forwardRef<
 								initial={{ opacity: 0, y: 0, scale: 0.1 }}
 								animate={{
 									opacity: 1,
-									y: headerBottom + (isHeaderMoved ? 24 : 0),
+									y: getToastPosition(),
 									scale: 1,
 								}}
 								exit={{ opacity: 0, y: -200, scale: 0.1 }}
