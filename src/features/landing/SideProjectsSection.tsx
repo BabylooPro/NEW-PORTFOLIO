@@ -40,7 +40,7 @@ import {
 } from "@/components/ui/select";
 
 const SideProjectsSection = () => {
-	const { projects, error, loading, lastUpdate } = useGitHubProjects();
+	const { projects, error, loading } = useGitHubProjects();
 	const scrollAreaRef = useRef<ScrollAreaRef>(null);
 	const [filterTechnology, setFilterTechnology] = useState<string>("All");
 	const [filterYear, setFilterYear] = useState<string>("All");
@@ -138,9 +138,6 @@ const SideProjectsSection = () => {
 								<span className="text-xs text-muted-foreground">
 									<strong>Main technologies : </strong>
 									{technologies.slice(1, 4).join(", ")}
-								</span>
-								<span className="text-xs text-muted-foreground">
-									<strong>Last updated : </strong> {lastUpdate}
 								</span>
 							</div>
 						}
