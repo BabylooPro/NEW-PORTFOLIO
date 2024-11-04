@@ -22,8 +22,8 @@ export default function Home() {
 			<Header />
 			<HeroSection />
 			<SocialSection />
-			<ExperienceSection />
 			<SkillSection />
+			<ExperienceSection />
 			<SideProjectsSection />
 			<WhatIDoSection />
 			{/* <TestimonialSection /> */} {/* NEED DESIGN */}
