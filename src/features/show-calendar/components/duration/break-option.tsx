@@ -32,7 +32,7 @@ export function BreakOption({ value, onBreakOptionChange }: BreakOptionProps) {
 					? 5
 					: value.breakDuration ?? 5,
 		});
-	}, [value]);
+	}, [value, form]);
 
 	// WATCH FOR CHANGES AND NOTIFY PARENT
 	React.useEffect(() => {
