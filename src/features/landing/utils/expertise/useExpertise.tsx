@@ -7,35 +7,38 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import "devicon";
 import { ShowInfo } from "@/components/ui/show-info";
 import ScrollIndicator from "@/components/ui/scroll-indicator";
-import ExperienceItem from "./experienceItem";
+import ExperienceItem, { ExperienceItemProps } from "./experienceItem";
 import SkillItem from "./skillsItems";
 import DotTimeline from "@/components/ui/dot-timeline";
 import { Badge } from "@/components/ui/badge";
 import { Skill } from "@/features/landing/data/skills";
 
-interface ExperienceItem {
-	date?: string;
-	title: string;
-	company?: string;
-	description?: string;
-	skills?: string[] | string;
+interface SkillYearGroup {
+	year: string;
+	skills: Skill[];
 }
+
+type ExpertiseItem = ExperienceItemProps | SkillYearGroup; // UNION TYPE FOR POSSIBLE ITEM TYPES
 
 interface UseExpertiseProps {
 	title: string;
-	items: (ExperienceItem | { year: string; skills: Skill[] })[];
-	showCompany?: boolean;
-	showSkills?: boolean;
+	items: ExpertiseItem[];
+	showCompany: boolean;
+	showSkills: boolean;
 	scrollHeight?: string;
 	allColorIcon?: string;
 	infoSkills?: string;
 	infoExperiences?: string;
 }
 
-const isExperienceItem = (
-	item: ExperienceItem | { year: string; skills: Skill[] }
-): item is ExperienceItem => {
+// TYPE GUARD WITH PROPER RETURN TYPE ANNOTATION
+const isExperienceItem = (item: ExpertiseItem): item is ExperienceItemProps => {
 	return "title" in item;
+};
+
+// TYPE GUARD FOR SKILL ITEMS
+const isSkillYearGroup = (item: ExpertiseItem): item is SkillYearGroup => {
+	return "year" in item && "skills" in item;
 };
 
 const UseExpertise: React.FC<UseExpertiseProps> = ({
@@ -58,7 +61,6 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 					<h2 className="text-2xl font-bold flex items-center -mb-5">
 						{title}
 						<ShowInfo
-							// title={title}
 							description={
 								isSkillSection ? (
 									`Here are some of my ${infoSkills}.`
@@ -93,9 +95,9 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 										year={isExperienceItem(item) ? item.date : item.year}
 										showBadge={!isExperienceItem(item)}
 									>
-										{!isExperienceItem(item) && (
+										{isSkillYearGroup(item) && (
 											<div className="flex flex-col space-y-2">
-												{item.skills.map((skill) => (
+												{item.skills.map((skill: Skill) => (
 													<SkillItem
 														key={skill.name}
 														skill={skill}
@@ -134,8 +136,8 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 																	: "items-start"
 															}`}
 														>
-															{!isExperienceItem(item) &&
-																item.skills.map((skill) => (
+															{isSkillYearGroup(item) &&
+																item.skills.map((skill: Skill) => (
 																	<SkillItem
 																		key={skill.name}
 																		skill={skill}
