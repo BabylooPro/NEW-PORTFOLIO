@@ -61,9 +61,24 @@ const config: Config = {
 					from: { backgroundPosition: "200% 0" },
 					to: { backgroundPosition: "-200% 0" },
 				},
+				"show-hide-first": {
+					"0%, 45%": { opacity: "1" },
+					"50%, 95%": { opacity: "0" },
+					"100%": { opacity: "1" },
+				},
+				"show-hide-second": {
+					"0%, 45%": { opacity: "0" },
+					"50%, 95%": { opacity: "1" },
+					"100%": { opacity: "0" },
+				},
 			},
 			animation: {
 				shine: "shine 8s ease-in-out infinite",
+				"show-hide-first": "show-hide-first 30s infinite cubic-bezier(0.83, 0, 0.17, 1)",
+				"show-hide-second": "show-hide-second 30s infinite cubic-bezier(0.83, 0, 0.17, 1)",
+			},
+			fontFamily: {
+				"press-start": ["var(--font-press-start)"],
 			},
 		},
 	},
