@@ -1,7 +1,14 @@
-import fetch from "node-fetch";
+import 'isomorphic-fetch';
 
 const fromEmail = "portfolio@maxremy.dev";
 const toEmail = "maxremy.dev@gmail.com";
+
+interface ResendResponse {
+	id: string;
+	from: string;
+	to: string[];
+	created_at: string;
+}
 
 // TESTS - CONTACT API
 describe("Contact API Integration", () => {
@@ -38,7 +45,7 @@ describe("Contact API Integration", () => {
 		});
 
 		// ASSERTIONS
-		const result = await response.json();
+		const result = (await response.json()) as ResendResponse;
 		expect(response.status).toBe(200);
 		expect(result.id).toBeTruthy();
 	}, 10000); // 10 SECONDS TIMEOUT

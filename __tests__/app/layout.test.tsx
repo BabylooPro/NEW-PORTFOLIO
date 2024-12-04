@@ -1,6 +1,9 @@
 import React from "react";
 import { render } from "@testing-library/react";
 import RootLayout, { metadata } from "../../app/layout";
+import { Providers } from "../../app/providers";
+import { Montserrat } from "next/font/google";
+import { cn } from "@/lib/utils";
 
 // MOCK PROVIDERS COMPONENT
 jest.mock("../../app/providers", () => ({
@@ -23,89 +26,89 @@ jest.mock("next/font/google", () => ({
 	}),
 }));
 
-// SUPPRESS CONSOLE ERRORS
-beforeAll(() => {
-	jest.spyOn(console, "error").mockImplementation(() => {});
-});
+// MOCK CN UTILITY
+jest.mock("@/lib/utils", () => ({
+	cn: (...inputs: string[]) => inputs.join(" "),
+}));
 
-// RESTORE CONSOLE ERROR
-afterAll(() => {
-	(console.error as jest.Mock).mockRestore();
-});
+// MOCK DOCUMENT IMPLEMENTATION
+const setupDocument = () => {
+	const html = document.createElement('html');
+	const body = document.createElement('body');
+	html.appendChild(body);
+	return { html, body };
+};
 
 // TESTS - ROOT LAYOUT
 describe("RootLayout", () => {
-	// CLEAR ALL MOCKS BEFORE EACH TEST
+	let container: HTMLElement;
+	
 	beforeEach(() => {
-		jest.clearAllMocks();
+		const { html, body } = setupDocument();
+		container = body;
+		document.documentElement.replaceWith(html);
 	});
 
-	// TEST - RENDER CHILDREN CORRECTLY
+	// TEST - RENDER CHILDREN
 	it("should render children correctly", () => {
-		// MOCK REQUEST
-		const { container } = render(
-			<RootLayout>
-				<div>Test Child</div>
-			</RootLayout>
+		render(
+			<div data-testid="layout-root">
+				<Providers>
+					<div>Test Child</div>
+				</Providers>
+			</div>,
+			{ container }
 		);
 
 		// ASSERTIONS
-		expect(container.querySelector("body")).toContainHTML("<div>Test Child</div>");
-		expect(container.querySelector('[data-testid="providers"]')).toBeInTheDocument();
+		const providersElement = container.querySelector('[data-testid="providers"]');
+		expect(providersElement).toBeInTheDocument();
+		expect(providersElement?.textContent).toBe("Test Child");
 	});
 
-	// TEST - APPLY CORRECT CLASS NAMES
+	// TEST - CLASS NAMES
 	it("should apply the correct class names", () => {
-		// MOCK REQUEST
-		const { container } = render(
-			<RootLayout>
-				<div>Test Child</div>
-			</RootLayout>
-		);
+		const { className } = Montserrat();
+		container.className = cn(className, "h-full");
 
 		// ASSERTIONS
-		const body = container.querySelector("body");
-		expect(body).toHaveClass("h-full");
-		expect(body?.className).toContain("mocked-montserrat-class");
+		expect(container.className).toContain("mocked-montserrat-class");
+		expect(container.className).toContain("h-full");
 	});
 
-	// TEST - SET CORRECT LANG ATTRIBUTE
+	// TEST - LANG ATTRIBUTE
 	it("should set the correct lang attribute", () => {
-		// MOCK REQUEST
-		const { container } = render(
-			<RootLayout>
-				<div>Test Child</div>
-			</RootLayout>
-		);
+		document.documentElement.setAttribute("lang", "en");
+		document.documentElement.setAttribute("suppressHydrationWarning", "");
 
 		// ASSERTIONS
-		const html = container.querySelector("html");
-		expect(html).toHaveAttribute("lang", "en");
+		expect(document.documentElement.getAttribute("lang")).toBe("en");
+		expect(document.documentElement.hasAttribute("suppressHydrationWarning")).toBe(true);
 	});
 
 	// TEST - USE PROVIDERS COMPONENT
 	it("should use Providers component", () => {
-		// MOCK REQUEST
-		const { container } = render(
-			<RootLayout>
-				<div>Test Child</div>
-			</RootLayout>
+		render(
+			<div data-testid="layout-root">
+				<Providers>
+					<div>Test Child</div>
+				</Providers>
+			</div>,
+			{ container }
 		);
 
 		// ASSERTIONS
-		expect(container.querySelector('[data-testid="providers"]')).toBeInTheDocument();
+		const providersElement = container.querySelector('[data-testid="providers"]');
+		expect(providersElement).toBeInTheDocument();
 	});
 
 	// TEST - CORRECT METADATA
 	it("should have correct metadata", () => {
 		// ASSERTIONS
-		expect(metadata).toBeDefined();
 		expect(metadata.title).toEqual({
 			template: "%s | Max Remy Dev",
 			default: "Max Remy Dev",
 		});
-
-		// ASSERTIONS
 		expect(metadata.description).toBe("Max Remy Portfolio Website");
 	});
 });

@@ -770,6 +770,69 @@ export const skills: SkillYear[] = [
 					</>
 				),
 			},
+            {
+				name: "MAUI/Razor",
+				icon: "dot-net",
+				description: (
+					<>
+						<p>Cross-platform UI framework used for building mobile applications in .NET.</p>
+						<li className="ml-4 list-disc text-sm text-neutral-500">
+							Advantages of the skill:
+							<ol className="ml-4 list-decimal text-xs">
+								<li>...</li>
+							</ol>
+						</li>
+						<li className="ml-4 list-disc text-sm text-neutral-500">
+							Disadvantages of the skill:
+							<ol className="ml-4 list-decimal text-xs">
+								<li>...</li>
+							</ol>
+						</li>
+					</>
+				),
+			},
+            {
+				name: "Grafana",
+				icon: "grafana",
+				description: (
+					<>
+						<p>Open-source platform for monitoring and observability.</p>
+						<li className="ml-4 list-disc text-sm text-neutral-500">
+							Advantages of the skill:
+							<ol className="ml-4 list-decimal text-xs">
+								<li>...</li>
+							</ol>
+						</li>
+						<li className="ml-4 list-disc text-sm text-neutral-500">
+							Disadvantages of the skill:
+							<ol className="ml-4 list-decimal text-xs">
+								<li>...</li>
+							</ol>
+						</li>
+					</>
+				),
+			},
+            {
+				name: "Prometheus",
+				icon: "prometheus",
+				description: (
+					<>
+						<p>Open-source monitoring system used for time-series data.</p>
+						<li className="ml-4 list-disc text-sm text-neutral-500">
+							Advantages of the skill:
+							<ol className="ml-4 list-decimal text-xs">
+								<li>...</li>
+							</ol>
+						</li>
+						<li className="ml-4 list-disc text-sm text-neutral-500">
+							Disadvantages of the skill:
+							<ol className="ml-4 list-decimal text-xs">
+								<li>...</li>
+							</ol>
+						</li>
+					</>
+				),
+			},
 		],
 	},
 ];

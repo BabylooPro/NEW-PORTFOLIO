@@ -87,7 +87,7 @@ const DEFAULT_STYLES: DockStyleProps = {
 // HELPER FUNCTIONS
 const useIconAnimation = (
 	mouseX: MotionValue<number>,
-	ref: React.RefObject<HTMLDivElement>,
+	ref: React.RefObject<HTMLDivElement | null>,
 	styles?: DockStyleProps
 ) => {
 	const config = {

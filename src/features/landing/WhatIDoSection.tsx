@@ -181,28 +181,29 @@ const TypedSyntaxHighlighter: React.FC<{ code: string; language: string }> = ({
 	}, [code]);
 
 	return (
-		<SyntaxHighlighter
-			language={language}
-			style={resolvedTheme === "dark" ? vscDarkPlus : vs}
-			customStyle={{
-				// background: resolvedTheme === "dark" ? "#1E1E1E" : "#F5F5F5",
-				background: "transparent",
-				color: resolvedTheme === "dark" ? "#D4D4D4" : "#333333",
-				padding: 0,
-				margin: 0,
-				fontSize: "0.875rem",
-				// border: resolvedTheme === "dark" ? "1px solid #2D2D2D" : "1px solid #E0E0E0",
-				border: "none",
-				overflowX: "auto",
-			}}
-			codeTagProps={{
-				style: {
-					background: "transparent",
-				},
-			}}
-		>
-			{displayedCode + (showCursor ? "|" : " ")}
-		</SyntaxHighlighter>
+		<div className={resolvedTheme === "dark" ? "bg-neutral-900" : "bg-white"}>
+			<SyntaxHighlighter
+				language={language}
+				style={resolvedTheme === "dark" ? vscDarkPlus : vs}
+				customStyle={{
+					color: resolvedTheme === "dark" ? "#D4D4D4" : "#333333",
+					padding: 0,
+					margin: 0,
+					fontSize: "0.875rem",
+					border: "none",
+					overflowX: "auto",
+					backgroundColor: resolvedTheme === "dark" ? "#171717" : "#ffffff",
+				}}
+				codeTagProps={{
+					style: {
+						fontFamily: "inherit",
+						backgroundColor: resolvedTheme === "dark" ? "#171717" : "#ffffff",
+					}
+				}}
+			>
+				{displayedCode + (showCursor ? "|" : " ")}
+			</SyntaxHighlighter>
+		</div>
 	);
 };
 

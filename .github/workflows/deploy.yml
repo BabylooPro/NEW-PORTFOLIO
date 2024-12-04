@@ -27,10 +27,26 @@ jobs:
                       ${{ runner.os }}-node_modules-
 
             - name: Install dependencies
-              run: npm ci
+              run: npm ci --legacy-peer-deps
 
-            - name: Run tests
+            - name: Run unit tests
               run: npm test
+              env:
+                  GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+                  RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+                  WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
+                  COUNTRY_STATE_CITY_API_KEY: ${{ secrets.COUNTRY_STATE_CITY_API_KEY }}
+                  TEST_ENV: jsdom
+
+            - name: Run integration tests
+              run: npm run test:integration
+              env:
+                  GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+                  RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+                  WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
+                  COUNTRY_STATE_CITY_API_KEY: ${{ secrets.COUNTRY_STATE_CITY_API_KEY }}
+                  TEST_TYPE: integration
+                  TEST_ENV: node
 
             - name: Deploy to EC2
               uses: appleboy/ssh-action@v0.1.5
@@ -54,7 +70,7 @@ jobs:
                       WAKATIME_API_KEY=${{ secrets.WAKATIME_API_KEY }} \
                       COUNTRY_STATE_CITY_API_KEY=${{ secrets.COUNTRY_STATE_CITY_API_KEY }} \
                       NODE_OPTIONS="--max-old-space-size=3072" \
-                      npm ci --prefix .
+                      npm ci --legacy-peer-deps --prefix .
 
                       RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} \
                       GIT_HUB_ACCESS_TOKEN=${{ secrets.GIT_HUB_ACCESS_TOKEN }} \

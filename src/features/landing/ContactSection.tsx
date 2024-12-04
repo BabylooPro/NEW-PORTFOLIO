@@ -14,13 +14,13 @@ import { Mail, Phone, Send } from "lucide-react";
 import {
 	Form,
 	FormItem,
-	FormLabel,
 	FormControl,
 	FormMessage,
 	FormDescription,
 	FormField,
 } from "@/components/ui/form";
 import { ClipboardButton } from "@/components/ui/clipboard-button";
+import { Label } from "@/components/ui/label";
 
 // ZOD SCHEMA FOR VALIDATION
 const contactSchema = z.object({
@@ -38,6 +38,12 @@ const ContactSection: React.FC = () => {
 	const [hasError, setHasError] = useState(false);
 	const [hasTemporaryError, setHasTemporaryError] = useState(false);
 	const developerContact = "Please contact me at 'maxremy.dev@gmail.com'";
+
+	const formIds = {
+		name: "contact-name-field",
+		email: "contact-email-field", 
+		message: "contact-message-field"
+	};
 
 	const form = useForm<ContactFormValues>({
 		resolver: zodResolver(contactSchema),
@@ -193,64 +199,58 @@ const ContactSection: React.FC = () => {
 				Please fill in the form below to get in touch.
 			</p>
 			<Form {...form}>
-				<form onSubmit={form.handleSubmit(onSubmit)} className="">
-					<div className="flex flex-col md:flex-row justify-between gap-4">
-						{/* NAME FIELD */}
-						<FormField
-							control={form.control}
-							name="name"
-							render={({ field }) => (
-								<FormItem className="w-full">
-									<FormLabel className="text-neutral-900 dark:text-neutral-100">
-										Name
-									</FormLabel>
-									<FormControl>
-										<Input
-											{...field}
-											placeholder="Your Name"
-											className="w-full"
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+				<form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">
+					<FormField
+						control={form.control}
+						name="name"
+						render={({ field }) => (
+							<FormItem id={formIds.name}>
+								<Label>Your name</Label>
+								<FormControl>
+									<Input
+										placeholder="Name"
+										className="bg-card"
+										{...field}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 
-						{/* EMAIL FIELD */}
-						<FormField
-							control={form.control}
-							name="email"
-							render={({ field }) => (
-								<FormItem className="w-full">
-									<FormLabel className="text-neutral-900 dark:text-neutral-100">
-										Email
-									</FormLabel>
-									<FormControl>
-										<Input
-											{...field}
-											placeholder="Your Email"
-											className="w-full"
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-					</div>
+					<FormField
+						control={form.control}
+						name="email" 
+						render={({ field }) => (
+							<FormItem id={formIds.email}>
+								<Label>Email</Label>
+								<FormControl>
+									<Input
+										placeholder="Email"
+										className="bg-card"
+										{...field}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 
-					{/* MESSAGE FIELD */}
 					<FormField
 						control={form.control}
 						name="message"
 						render={({ field }) => (
-							<FormItem className="mt-6">
-								<FormLabel className="text-neutral-900 dark:text-neutral-100">
-									Message
-								</FormLabel>
+							<FormItem id={formIds.message}>
+								<Label>Message</Label>
 								<FormControl>
-									<Textarea {...field} placeholder="Your Message" rows={10} />
+									<Textarea
+										className="flex min-h-[80px] w-full rounded-md border border-input bg-card px-3 py-2"
+										placeholder="Your Message"
+										rows={10}
+										{...field}
+									/>
 								</FormControl>
-								<FormDescription className="text-neutral-500 dark:text-neutral-400">
+								<FormDescription>
 									Describe your project or inquiry in detail.
 								</FormDescription>
 								<FormMessage />

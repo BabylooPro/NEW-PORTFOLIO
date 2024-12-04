@@ -17,6 +17,8 @@ type FormDataValue =
 	| Record<string, unknown>
 	| Record<string, unknown>[];
 
+type JSXElement = ReactElement<HTMLElement>;
+
 export function SuccessAppointment() {
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(false);
@@ -35,9 +37,9 @@ export function SuccessAppointment() {
 	const formatDataForDisplay = (
 		data: Record<string, FormDataValue>,
 		prefix = ""
-	): ReactElement[] => {
+	): JSXElement[] => {
 		return Object.entries(data)
-			.map(([key, value]): ReactElement | ReactElement[] | null => {
+			.map(([key, value]): JSXElement | JSXElement[] | null => {
 				const displayKey = `${prefix}${key}`;
 
 				// SKIP NULL, UNDEFINED, AND EMPTY VALUES
@@ -81,7 +83,7 @@ export function SuccessAppointment() {
 
 				return <li key={displayKey}>{`${displayKey}: ${String(value)}`}</li>;
 			})
-			.filter((element): element is ReactElement => element !== null)
+			.filter((element): element is JSXElement => element !== null)
 			.flat();
 	};
 

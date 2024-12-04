@@ -6,6 +6,11 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "./tool
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
+type ShowInfoChildProps = {
+	children: React.ReactNode;
+	className?: string;
+};
+
 interface ShowInfoProps {
 	title?: string | React.ReactNode;
 	description?: React.ReactNode;
@@ -22,17 +27,17 @@ interface ShowInfoProps {
 	disableToast?: boolean;
 }
 
-const ShowInfoTitle: React.FC<{ children: React.ReactNode; className?: string }> = ({
+const ShowInfoTitle: React.FC<ShowInfoChildProps> = ({
 	children,
 	className,
 }) => <div className={className}>{children}</div>;
 
-const ShowInfoDescription: React.FC<{ children: React.ReactNode; className?: string }> = ({
+const ShowInfoDescription: React.FC<ShowInfoChildProps> = ({
 	children,
 	className,
 }) => <div className={className}>{children}</div>;
 
-const ShowInfoContent: React.FC<{ children: React.ReactNode; className?: string }> = ({
+const ShowInfoContent: React.FC<ShowInfoChildProps> = ({
 	children,
 	className,
 }) => <div className={className}>{children}</div>;
@@ -46,13 +51,13 @@ const ShowInfo = React.forwardRef<HTMLSpanElement, ShowInfoProps>(
 			position = "top",
 			icon,
 			children,
-			wrapMode,
-			sideOffset = 4,
-			iconSize = 24,
-			iconColor = "text-current",
-			iconFill = false,
-			disableTooltip = false,
-			disableToast = false,
+				wrapMode,
+				sideOffset = 4,
+				iconSize = 24,
+				iconColor = "text-current",
+				iconFill = false,
+				disableTooltip = false,
+				disableToast = false,
 		},
 		ref
 	) => {
@@ -70,22 +75,23 @@ const ShowInfo = React.forwardRef<HTMLSpanElement, ShowInfoProps>(
 
 		const handleClick = () => {
 			if (isMobile && !disableToast) {
+				const titleContent = wrapMode
+					? (
+							React.Children.toArray(children).find(
+								(child): child is React.ReactElement<ShowInfoChildProps> =>
+									React.isValidElement(child) && child.type === ShowInfoTitle
+							) as React.ReactElement<ShowInfoChildProps>
+					  )?.props?.children || title
+					: title;
+
 				toast({
-					title: wrapMode
-						? (
-								React.Children.toArray(children).find(
-									(child): child is React.ReactElement =>
-										React.isValidElement(child) && child.type === ShowInfoTitle
-								) as React.ReactElement
-						  )?.props?.children || title
-						: title,
+					title: titleContent?.toString() ?? "",
 					description: wrapMode
 						? (
 								React.Children.toArray(children).find(
-									(child): child is React.ReactElement =>
-										React.isValidElement(child) &&
-										child.type === ShowInfoDescription
-								) as React.ReactElement
+									(child): child is React.ReactElement<ShowInfoChildProps> =>
+										React.isValidElement(child) && child.type === ShowInfoDescription
+								) as React.ReactElement<ShowInfoChildProps>
 						  )?.props?.children || description
 						: description,
 				});
@@ -120,10 +126,12 @@ const ShowInfo = React.forwardRef<HTMLSpanElement, ShowInfoProps>(
 						handleClick();
 					}
 				}}
+				aria-label={typeof title === 'string' ? title : 'Info'}
 			>
 				{wrapMode
 					? React.Children.toArray(children).find(
-							(child) => React.isValidElement(child) && child.type === ShowInfoContent
+							(child): child is React.ReactElement<ShowInfoChildProps> =>
+								React.isValidElement(child) && child.type === ShowInfoContent
 					  )
 					: icon || <InfoIcon {...iconProps} />}
 			</span>
@@ -135,17 +143,17 @@ const ShowInfo = React.forwardRef<HTMLSpanElement, ShowInfoProps>(
 					wrapMode
 						? (
 								React.Children.toArray(children).find(
-									(child): child is React.ReactElement =>
+									(child): child is React.ReactElement<ShowInfoChildProps> =>
 										React.isValidElement(child) && child.type === ShowInfoTitle
-								) as React.ReactElement
+								) as React.ReactElement<ShowInfoChildProps>
 						  )?.props?.children || title
 						: title,
 					wrapMode
 						? (
 								React.Children.toArray(children).find(
-									(child): child is React.ReactElement =>
+									(child): child is React.ReactElement<ShowInfoChildProps> =>
 										React.isValidElement(child) && child.type === ShowInfoTitle
-								) as React.ReactElement
+								) as React.ReactElement<ShowInfoChildProps>
 						  )?.props?.className
 						: undefined
 				)}
@@ -153,10 +161,10 @@ const ShowInfo = React.forwardRef<HTMLSpanElement, ShowInfoProps>(
 					wrapMode
 						? (
 								React.Children.toArray(children).find(
-									(child): child is React.ReactElement =>
+									(child): child is React.ReactElement<ShowInfoChildProps> =>
 										React.isValidElement(child) &&
 										child.type === ShowInfoDescription
-								) as React.ReactElement
+								) as React.ReactElement<ShowInfoChildProps>
 						  )?.props?.children || description
 						: description,
 					cn(
@@ -164,10 +172,10 @@ const ShowInfo = React.forwardRef<HTMLSpanElement, ShowInfoProps>(
 						wrapMode
 							? (
 									React.Children.toArray(children).find(
-										(child): child is React.ReactElement =>
+										(child): child is React.ReactElement<ShowInfoChildProps> =>
 											React.isValidElement(child) &&
 											child.type === ShowInfoDescription
-									) as React.ReactElement
+									) as React.ReactElement<ShowInfoChildProps>
 							  )?.props?.className
 							: undefined
 					)

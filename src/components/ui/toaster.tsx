@@ -42,10 +42,14 @@ export function Toaster({ showTestToast = false }: ToasterProps) {
 	return (
 		<ToastProvider swipeDirection="up">
 			{toasts.map(function ({ id, title, description, action, showIcon, ...props }) {
+				const { headerBottom: _, headerHeight: __, isHeaderMoved: ___, ...toastProps } = props;
+				
+				console.log("DEBUG_TOASTER:", { _, __, ___ });
+				
 				return (
 					<Toast
 						key={id}
-						{...props}
+						{...toastProps}
 						headerBottom={headerBottom}
 						headerHeight={headerHeight}
 						isHeaderMoved={isHeaderMoved}

@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 
 export function useAudioAnalyser(
-	audioRef: React.RefObject<HTMLAudioElement>,
+	audioRef: React.RefObject<HTMLAudioElement | null>,
 	audioContext: AudioContext | null
 ) {
 	const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);

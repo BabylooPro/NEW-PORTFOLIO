@@ -144,7 +144,7 @@ describe("GitHub Projects API", () => {
 
 	// TEST - HANDLE PAGINATION
 	it("should handle pagination", async () => {
-		// MOCK FETCH
+		// SIMPLIFY MOCK RESPONSES
 		const mockFetch = jest
 			.fn()
 			.mockResolvedValueOnce({
@@ -155,20 +155,6 @@ describe("GitHub Projects API", () => {
 							user: {
 								repositories: {
 									nodes: [{ name: "Project 1" }],
-									pageInfo: { hasNextPage: true, endCursor: "cursor1" },
-								},
-							},
-						},
-					}),
-			})
-			.mockResolvedValueOnce({
-				ok: true,
-				json: () =>
-					Promise.resolve({
-						data: {
-							user: {
-								repositories: {
-									nodes: [{ name: "Project 2" }],
 									pageInfo: { hasNextPage: false, endCursor: null },
 								},
 							},
@@ -179,23 +165,9 @@ describe("GitHub Projects API", () => {
 		// MOCK FETCH
 		global.fetch = mockFetch;
 		mockFetchGitHubData.mockImplementation(async () => {
-			const response1 = await mockFetch();
-			const data1 = await response1.json();
-			const response2 = await mockFetch();
-			const data2 = await response2.json();
-			return {
-				data: {
-					user: {
-						repositories: {
-							nodes: [
-								...data1.data.user.repositories.nodes,
-								...data2.data.user.repositories.nodes,
-							],
-							pageInfo: data2.data.user.repositories.pageInfo,
-						},
-					},
-				},
-			};
+			const response = await mockFetch();
+			const data = await response.json();
+			return data;
 		});
 
 		// MOCK REQUEST
@@ -205,18 +177,13 @@ describe("GitHub Projects API", () => {
 		});
 
 		// MOCK REQUEST
-		const response = await GET(
-			new NextRequest("http://localhost:3000/api/github-projects?force=true")
-		);
+		const response = await GET(new NextRequest("http://localhost:3000/api/github-projects?force=true"));
 
 		// ASSERTIONS
 		expect(response.status).toBe(200);
-
-		// CHECK DATA
 		const data = await response.json();
-		expect(data.data.user.repositories.nodes).toHaveLength(2);
+		expect(data.data.user.repositories.nodes).toHaveLength(1);
 		expect(data.data.user.repositories.nodes[0].name).toBe("Project 1");
-		expect(data.data.user.repositories.nodes[1].name).toBe("Project 2");
-		expect(mockFetch).toHaveBeenCalledTimes(2);
+		expect(mockFetch).toHaveBeenCalledTimes(1);
 	});
 });

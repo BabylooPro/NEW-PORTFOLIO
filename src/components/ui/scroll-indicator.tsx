@@ -4,7 +4,7 @@ import { GalleryVerticalEnd } from "lucide-react";
 import { ScrollAreaRef } from "@/components/ui/scroll-area";
 
 interface ScrollIndicatorProps {
-	scrollAreaRef: React.RefObject<ScrollAreaRef>;
+	scrollAreaRef: React.RefObject<ScrollAreaRef | null>;
 	className?: string;
 	position?: "top" | "bottom" | "both";
 	topIcon?: React.ReactNode;

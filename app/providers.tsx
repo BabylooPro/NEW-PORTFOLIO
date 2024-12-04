@@ -3,9 +3,10 @@
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/features/themes/ThemeProvider";
 import { WakaTimeProvider } from "@/utils/WakaTimeProvider";
-import { PropsWithChildren } from "react";
 
-export type ProvidersProps = PropsWithChildren;
+export type ProvidersProps = {
+	children: React.ReactNode;
+};
 
 export const Providers = (props: ProvidersProps) => {
 	return (

@@ -48,19 +48,32 @@ const toastVariants = cva(
 	}
 );
 
+type CustomToastProps = {
+	headerBottom?: number;
+	headerHeight?: number;
+	isHeaderMoved?: boolean;
+	isCompact?: boolean;
+	showIcon?: boolean;
+};
+
 const Toast = React.forwardRef<
 	React.ElementRef<typeof ToastPrimitives.Root>,
 	React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
-		VariantProps<typeof toastVariants> & {
-			headerBottom?: number;
-			headerHeight?: number;
-			isHeaderMoved?: boolean;
-			isCompact?: boolean;
-			showIcon?: boolean;
-		}
+		VariantProps<typeof toastVariants> &
+		CustomToastProps
 >(
 	(
-		{ className, variant, headerBottom = 0, isCompact = false, showIcon = false, ...props },
+		{
+			className,
+			variant,
+			headerBottom = 0,
+			headerHeight,
+			isHeaderMoved,
+			isCompact = false,
+			showIcon = false,
+			children,
+			...props
+		},
 		ref
 	) => {
 		const isMobile = useMediaQuery("(max-width: 640px)");
@@ -78,7 +91,7 @@ const Toast = React.forwardRef<
 		const content = (
 			<div className="flex items-center gap-4 w-full">
 				{icon && <div className="flex-shrink-0">{icon}</div>}
-				<div className="flex-grow">{props.children}</div>
+				<div className="flex-grow">{children}</div>
 			</div>
 		);
 
@@ -92,10 +105,17 @@ const Toast = React.forwardRef<
 			}
 		};
 
+		const { open, ...restProps } = props;
+
+		console.log("DEBUG_TOAST:", { headerHeight, isHeaderMoved });
+
 		return (
 			<AnimatePresence>
-				{props.open && (
-					<ToastPrimitives.Root asChild ref={ref} {...props}>
+				{open && (
+					<ToastPrimitives.Root
+						ref={ref}
+						{...restProps}
+					>
 						{isMobile ? (
 							<div className={cn(toastVariants({ variant }), className)}>
 								{content}

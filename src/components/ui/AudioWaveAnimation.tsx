@@ -5,7 +5,7 @@ import { useAudioAnalyser } from "./useAudioAnalyser";
 interface WaveAnimationProps {
 	isPlaying: boolean;
 	isEnded: boolean;
-	audioRef: React.RefObject<HTMLAudioElement>;
+	audioRef: React.RefObject<HTMLAudioElement | null>;
 	audioContext: AudioContext | null;
 }
 

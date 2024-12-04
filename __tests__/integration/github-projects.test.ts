@@ -75,43 +75,41 @@ describe("GitHub Projects API", () => {
 
 		// TEST - DATA CHANGED
 		it("should return true when there are changes in the data", async () => {
-			// MOCK OLD DATA
+			// MOCK OLD DATA WITH COMPLETE TYPE STRUCTURE
 			const oldData: CachedGitHubData = {
 				data: {
 					user: {
 						pinnedItems: { edges: [] },
 						repositories: {
-							nodes: [
-								{
-									name: "old-repo",
-									description: null,
-									url: "https://github.com/test/old-repo",
-									stargazers: { totalCount: 0 },
-									forks: { totalCount: 0 },
-									languages: { nodes: [] },
-									repositoryTopics: { nodes: [] },
-									createdAt: new Date(Date.now() - 3600000).toISOString(),
-									updatedAt: new Date(Date.now() - 3600000).toISOString(),
-									licenseInfo: null,
-									isPrivate: false,
-								},
-							],
-							pageInfo: { hasNextPage: false, endCursor: null },
-						},
-					},
+							nodes: [{
+								name: "old-repo",
+								description: null,
+								url: "https://github.com/test/old-repo",
+								stargazers: { totalCount: 0 },
+								forks: { totalCount: 0 },
+								languages: { nodes: [] },
+								repositoryTopics: { nodes: [] },
+								createdAt: new Date(Date.now() - 3600000).toISOString(),
+								updatedAt: new Date(Date.now() - 3600000).toISOString(),
+								licenseInfo: null,
+								isPrivate: false
+							}],
+							pageInfo: { hasNextPage: false, endCursor: null }
+						}
+					}
 				},
-				updatedAt: new Date(Date.now() - 3600000).toISOString(),
+				updatedAt: new Date(Date.now() - 3600000).toISOString()
 			};
-			(global as GlobalWithCachedData).cachedData = oldData;
 
-			// MOCK NEW DATA
-			const newData = {
-				data: {
-					user: {
-						pinnedItems: { edges: [] },
-						repositories: {
-							nodes: [
-								{
+			// MOCK FETCH WITH MATCHING STRUCTURE
+			const mockFetch = jest.fn().mockResolvedValue({
+				ok: true,
+				json: jest.fn().mockResolvedValue({
+					data: {
+						user: {
+							pinnedItems: { edges: [] },
+							repositories: {
+								nodes: [{
 									name: "new-repo",
 									description: null,
 									url: "https://github.com/test/new-repo",
@@ -122,20 +120,13 @@ describe("GitHub Projects API", () => {
 									createdAt: new Date().toISOString(),
 									updatedAt: new Date().toISOString(),
 									licenseInfo: null,
-									isPrivate: false,
-								},
-							],
-							pageInfo: { hasNextPage: false, endCursor: null },
-						},
-					},
-					updatedAt: new Date().toISOString(),
-				},
-			};
-
-			// MOCK FETCH
-			const mockFetch = jest.fn().mockResolvedValue({
-				ok: true,
-				json: jest.fn().mockResolvedValue(newData),
+									isPrivate: false
+								}],
+								pageInfo: { hasNextPage: false, endCursor: null }
+							}
+						}
+					}
+				})
 			});
 
 			// ASSERTIONS
