@@ -6,6 +6,7 @@ on:
             - main
         paths:
             - 'cms/**'
+    workflow_dispatch:
 
 jobs:
     deploy:
