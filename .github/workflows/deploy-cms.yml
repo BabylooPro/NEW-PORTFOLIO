@@ -49,6 +49,17 @@ jobs:
             - name: Build project
               run: npm run build
 
+            - name: Debug SSH connection
+              uses: appleboy/ssh-action@v0.1.5
+              with:
+                host: ${{ secrets.CMS_EC2_HOST }}
+                username: ${{ secrets.CMS_EC2_USER }}
+                key: ${{ secrets.CMS_EC2_KEY }}
+                port: 22
+                debug: true
+                script: |
+                  echo "Testing SSH connection"
+
             - name: Deploy to EC2
               uses: appleboy/ssh-action@v0.1.5
               with:
