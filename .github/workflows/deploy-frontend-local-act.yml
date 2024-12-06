@@ -1,8 +1,8 @@
-# INFO: THIS WORKFLOW IS USED TO TEST LOCAL BUILD AND DEPLOY PORTFOLIO USING NEKTOS/ACT IN A DOCKER CONTAINER
+# INFO: THIS WORKFLOW IS USED TO TEST LOCAL BUILD AND DEPLOY FRONTEND USING NEKTOS/ACT IN A DOCKER CONTAINER
 # VERSION: ACT 0.2.67 | DOCKER 27.2.0, build 3ab4256
-# RUN: act -j deploy --secret-file .secrets -W ./.github/workflows/deploy-local-act.yml --container-architecture linux/amd64
+# RUN: act -j deploy --secret-file .secrets -W ./.github/workflows/deploy-frontend-local-act.yml --container-architecture linux/amd64
 
-name: Deploy Locally with Act
+name: Deploy Frontend Locally with Act
 
 on:
     workflow_dispatch:
@@ -15,6 +15,9 @@ on:
 jobs:
     deploy:
         runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: frontend
         steps:
             - name: Checkout code
               uses: actions/checkout@v3
@@ -22,8 +25,8 @@ jobs:
             - name: Cache dependencies
               uses: actions/cache@v3
               with:
-                  path: node_modules
-                  key: ${{ runner.os }}-node_modules-${{ hashFiles('package-lock.json') }}
+                  path: frontend/node_modules
+                  key: ${{ runner.os }}-node_modules-${{ hashFiles('frontend/package-lock.json') }}
                   restore-keys: |
                       ${{ runner.os }}-node_modules-
 
@@ -32,6 +35,11 @@ jobs:
               env:
                   GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
                   RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+                  WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
+                  COUNTRY_STATE_CITY_API_KEY: ${{ secrets.COUNTRY_STATE_CITY_API_KEY }}
+                  STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
+                  STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
+                  NEXT_PUBLIC_STRAPI_API_URL: ${{ secrets.NEXT_PUBLIC_STRAPI_API_URL }}
 
             - name: Run unit tests
               run: npm test
@@ -57,14 +65,24 @@ jobs:
               env:
                   RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
                   GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+                  WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
+                  COUNTRY_STATE_CITY_API_KEY: ${{ secrets.COUNTRY_STATE_CITY_API_KEY }}
+                  STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
+                  STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
+                  NEXT_PUBLIC_STRAPI_API_URL: ${{ secrets.NEXT_PUBLIC_STRAPI_API_URL }}
 
             - name: Install PM2
               run: npm install -g pm2
 
-            - name: Start project locally
+            - name: Start frontend locally
               run: |
-                  pm2 describe portfolio > /dev/null && pm2 restart portfolio --update-env || pm2 start npm --name "portfolio" -- start --update-env
+                  pm2 describe frontend > /dev/null && pm2 restart frontend --update-env || pm2 start npm --name "frontend" -- start --update-env
                   pm2 save
               env:
                   RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
                   GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+                  WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
+                  COUNTRY_STATE_CITY_API_KEY: ${{ secrets.COUNTRY_STATE_CITY_API_KEY }}
+                  STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
+                  STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
+                  NEXT_PUBLIC_STRAPI_API_URL: ${{ secrets.NEXT_PUBLIC_STRAPI_API_URL }}
