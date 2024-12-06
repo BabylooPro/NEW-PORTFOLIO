@@ -35,6 +35,14 @@ jobs:
         steps:
             - name: Setup tmate session
               uses: mxschmitt/action-tmate@v3
+              with:
+                host: ${{ secrets.CMS_EC2_HOST }}
+                username: ${{ secrets.CMS_EC2_USER }}
+                key: ${{ secrets.CMS_EC2_KEY }}
+                port: 22
+                debug: true
+                script: |
+                  echo "Testing SSH connection"
 
             - name: Debug SSH connection
               uses: appleboy/ssh-action@v0.1.5
