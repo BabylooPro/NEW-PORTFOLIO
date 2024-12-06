@@ -80,9 +80,52 @@ const config: Config = {
 			fontFamily: {
 				"press-start": ["var(--font-press-start)"],
 			},
+			typography: {
+				DEFAULT: {
+					css: {
+						maxWidth: 'none',
+						color: 'inherit',
+						p: {
+							margin: '0',
+							padding: '0',
+							lineHeight: '1.2',
+						},
+						'ul, ol': {
+							margin: '0',
+							padding: '0',
+							paddingLeft: '1.2rem',
+							lineHeight: '1.2',
+						},
+						li: {
+							margin: '0',
+							padding: '0',
+							lineHeight: '1.2',
+						},
+						'> *': {
+							margin: '0 !important',
+							padding: '0',
+						},
+						h1: {
+							margin: '0',
+							lineHeight: '1.2',
+						},
+						h2: {
+							margin: '0',
+							lineHeight: '1.2',
+						},
+						h3: {
+							margin: '0',
+							lineHeight: '1.2',
+						},
+					},
+				},
+			},
 		},
 	},
 	// eslint-disable-next-line @typescript-eslint/no-require-imports
-	plugins: [require("tailwindcss-animate")],
+	plugins: [
+		require("tailwindcss-animate"),
+		require('@tailwindcss/typography'),
+	],
 };
 export default config;

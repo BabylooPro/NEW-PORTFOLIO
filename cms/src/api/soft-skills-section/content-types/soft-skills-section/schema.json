@@ -1,0 +1,29 @@
+{
+  "kind": "singleType",
+  "collectionName": "soft_skills_sections",
+  "info": {
+    "singularName": "soft-skills-section",
+    "pluralName": "soft-skills-sections",
+    "displayName": "Soft Skills Section",
+    "description": "Content for the Soft Skills section"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "titleDescription": {
+      "type": "string",
+      "required": true
+    },
+    "softSkills": {
+      "type": "component",
+      "component": "shared.soft-skill",
+      "required": true,
+      "repeatable": true
+    }
+  }
+} 

@@ -1,0 +1,27 @@
+{
+  "kind": "singleType",
+  "collectionName": "projects_sections",
+  "info": {
+    "singularName": "projects-section",
+    "pluralName": "projects-sections",
+    "displayName": "Projects Section",
+    "description": "Content for the projects section"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "titleDescription": {
+      "type": "string",
+      "required": true
+    },
+    "mainTechnologies": {
+      "type": "text",
+      "required": false
+    }
+  }
+} 

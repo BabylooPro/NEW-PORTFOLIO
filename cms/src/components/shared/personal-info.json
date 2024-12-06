@@ -1,0 +1,46 @@
+{
+  "collectionName": "components_shared_personal_infos",
+  "info": {
+    "displayName": "PersonalInfo",
+    "description": "Personal information fields"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "age": {
+      "type": "date",
+      "required": true
+    },
+    "location": {
+      "type": "string",
+      "required": true
+    },
+    "city": {
+      "type": "string",
+      "required": true
+    },
+    "phone": {
+      "type": "string",
+      "required": true
+    },
+    "workMode": {
+      "type": "string",
+      "required": true
+    },
+    "contractType": {
+      "type": "string",
+      "required": true
+    },
+    "company": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "email",
+      "required": true
+    }
+  }
+} 

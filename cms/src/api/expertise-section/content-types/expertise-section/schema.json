@@ -1,0 +1,29 @@
+{
+  "kind": "singleType",
+  "collectionName": "expertise_sections",
+  "info": {
+    "singularName": "expertise-section",
+    "pluralName": "expertise-sections",
+    "displayName": "Expertise Section",
+    "description": "Content for the Expertise section"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "titleDescription": {
+      "type": "string",
+      "required": true
+    },
+    "expertises": {
+      "type": "component",
+      "component": "shared.expertise",
+      "required": true,
+      "repeatable": true
+    }
+  }
+} 

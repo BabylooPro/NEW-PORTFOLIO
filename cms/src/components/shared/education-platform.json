@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_shared_education_platforms",
+  "info": {
+    "displayName": "EducationPlatform",
+    "description": "Individual education platform"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "url": {
+      "type": "string",
+      "required": true
+    }
+  }
+} 

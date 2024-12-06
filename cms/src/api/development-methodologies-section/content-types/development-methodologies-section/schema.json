@@ -1,0 +1,29 @@
+{
+  "kind": "singleType",
+  "collectionName": "development_methodologies_sections",
+  "info": {
+    "singularName": "development-methodologies-section",
+    "pluralName": "development-methodologies-sections",
+    "displayName": "Methodologies Section",
+    "description": "Content for the Development Methodologies section"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "titleDescription": {
+      "type": "string",
+      "required": true
+    },
+    "methodologies": {
+      "type": "component",
+      "component": "shared.methodology",
+      "required": true,
+      "repeatable": true
+    }
+  }
+} 

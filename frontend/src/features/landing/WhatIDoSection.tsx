@@ -9,6 +9,7 @@ import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { useTheme } from "next-themes";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { useWhatIDoSection } from "./utils/useWhatIDoSection";
 
 const WhatIDoData = [
 	// BACKEND PROJECT: USER MANAGEMENT WITH AN ENDPOINT TO FETCH USERS
@@ -211,16 +212,13 @@ const WhatIDoSection: React.FC = () => {
 	const { resolvedTheme } = useTheme();
 	const [activeTab, setActiveTab] = useState(WhatIDoData[0].file);
 	const [isMounted, setIsMounted] = useState(false);
+	const { data: sectionData, isLoading } = useWhatIDoSection();
 
 	useEffect(() => {
 		setIsMounted(true);
 	}, []);
 
-	if (!resolvedTheme) {
-		return null;
-	}
-
-	if (!isMounted) {
+	if (!resolvedTheme || !isMounted || isLoading) {
 		return null;
 	}
 
@@ -230,10 +228,16 @@ const WhatIDoSection: React.FC = () => {
 	return (
 		<Section>
 			<h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
-				What I Do
+				{sectionData?.title || "What I Do"}
 				<ShowInfo
-					title={"What I Do"}
-					description={"You can see how I work and what I do. This is my world."}
+					description={
+						<>
+							{sectionData?.titleDescription} <br />{" "}
+							<span className="text-xs text-neutral-500">
+								{sectionData?.paragraphDescription}
+							</span>
+						</>
+					}
 				/>
 			</h2>
 

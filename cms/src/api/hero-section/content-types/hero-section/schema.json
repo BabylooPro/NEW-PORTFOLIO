@@ -1,0 +1,54 @@
+{
+  "kind": "singleType",
+  "collectionName": "hero_sections",
+  "info": {
+    "singularName": "hero-section",
+    "pluralName": "hero-sections",
+    "displayName": "Hero Section",
+    "description": "Hero section content for the landing page"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "greeting": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "swissArmyKnifeText": {
+      "type": "string",
+      "required": true
+    },
+    "swissArmyKnifeDescription": {
+      "type": "string",
+      "required": true
+    },
+    "learnMoreText": {
+      "type": "string",
+      "required": true
+    },
+    "aboutMeText": {
+      "type": "string",
+      "required": true
+    },
+    "audioTitle": {
+      "type": "string",
+      "required": true
+    },
+    "audioDescription": {
+      "type": "string",
+      "required": true
+    },
+    "audioFile": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["audios"]
+    }
+  }
+} 

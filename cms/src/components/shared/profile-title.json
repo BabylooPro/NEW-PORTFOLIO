@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_shared_profile_titles",
+  "info": {
+    "displayName": "ProfileTitle",
+    "description": "Animated titles in profile description"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "order": {
+      "type": "integer",
+      "required": true,
+      "min": 1,
+      "max": 2
+    }
+  }
+} 

@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_shared_languages_sections",
+  "info": {
+    "displayName": "LanguagesSection",
+    "description": "Languages section content"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "string",
+      "required": true
+    },
+    "languages": {
+      "type": "component",
+      "component": "shared.language",
+      "required": true,
+      "repeatable": true
+    }
+  }
+} 

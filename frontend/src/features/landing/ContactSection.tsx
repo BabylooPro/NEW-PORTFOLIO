@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/form";
 import { ClipboardButton } from "@/components/ui/clipboard-button";
 import { Label } from "@/components/ui/label";
+import { useContactSection } from "./hooks/useContactSection";
 
 // ZOD SCHEMA FOR VALIDATION
 const contactSchema = z.object({
@@ -38,6 +39,8 @@ const ContactSection: React.FC = () => {
 	const [hasError, setHasError] = useState(false);
 	const [hasTemporaryError, setHasTemporaryError] = useState(false);
 	const developerContact = "Please contact me at 'maxremy.dev@gmail.com'";
+
+	const { data: sectionData } = useContactSection();
 
 	const formIds = {
 		name: "contact-name-field",
@@ -152,11 +155,15 @@ const ContactSection: React.FC = () => {
 		<Section>
 			<h2 className="text-2xl font-bold flex items-center justify-between">
 				<div className="flex flex-row gap-2">
-					Contact me
+					{sectionData?.title ?? "Contact me"}
 					<ShowInfo
-						title={"Contact"}
 						description={
-							"If you contact me, I will get back to you as soon as possible."
+							<>
+								{sectionData?.titleDescription} <br />{" "}
+								<span className="text-xs text-neutral-500">
+									{sectionData?.paragraphDescription}
+								</span>
+							</>
 						}
 					/>
 				</div>

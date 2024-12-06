@@ -5,7 +5,7 @@ import { Section } from "@/components/ui/section";
 import { ShowInfo } from "@/components/ui/show-info";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
-import { skills } from "@/features/landing/data/skills";
+import { useSkills } from "@/features/landing/utils/expertise/useSkills";
 import "devicon";
 import {
 	UserRound,
@@ -23,10 +23,123 @@ import {
 	GraduationCap,
 } from "lucide-react";
 import AudioReader from "@/components/ui/AudioReader";
+import { FavoriteSkillsSkeleton } from "@/features/landing/utils/expertise/FavoriteSkillsSkeleton";
+import { useAboutSection } from './hooks/useAboutSection';
+import { Skeleton } from "@/components/ui/skeleton";
+
+const AboutSectionSkeleton: React.FC<{
+	status?: 'loading' | 'error' | 'no-data';
+}> = ({ status }) => {
+	const getStatusContent = () => {
+		switch (status) {
+			case 'error':
+				return (
+					<div className="flex items-center gap-2 text-red-500">
+						<Skeleton className="h-8 w-8 bg-red-200" />
+						<span>Error loading about section. Please try again later.</span>
+					</div>
+				);
+			case 'no-data':
+				return (
+					<div className="flex items-center gap-2 text-yellow-500">
+						<Skeleton className="h-8 w-8 bg-yellow-200" />
+						<span>No data available at the moment.</span>
+					</div>
+				);
+			default:
+				return <Skeleton className="h-8 w-8" />;
+		}
+	};
+
+	return (
+		<Section>
+			<div className="space-y-4">
+				{/* TITLE WITH STATUS */}
+				<div className="flex items-center justify-between">
+					<h2 className="text-xl md:text-2xl font-bold flex items-center gap-2 mb-4 justify-between">
+						<div className="flex items-center gap-2">
+							About me
+							<ShowInfo
+								title="About me"
+							/>
+						</div>
+					</h2>
+					{getStatusContent()}
+				</div>
+
+				{/* INFO GRID SKELETON */}
+				<div className="grid md:grid-cols-2 gap-4">
+					<div className="space-y-4">
+						{[...Array(5)].map((_, i) => (
+							<div key={i} className="flex items-center gap-2">
+								<Skeleton className="h-6 w-6" />
+								<Skeleton className="h-6 w-32" />
+							</div>
+						))}
+					</div>
+					<div className="space-y-4">
+						{[...Array(4)].map((_, i) => (
+							<div key={i} className="flex items-center gap-2">
+								<Skeleton className="h-6 w-6" />
+								<Skeleton className="h-6 w-48" />
+							</div>
+						))}
+					</div>
+				</div>
+
+				<Separator className="h-1 my-4" />
+
+				{/* STORY SKELETON */}
+				<div className="space-y-4">
+					{[...Array(3)].map((_, i) => (
+						<Skeleton key={i} className="h-4 w-full" />
+					))}
+				</div>
+
+				<Separator className="h-1 my-4" />
+
+				{/* LANGUAGES & EDUCATION SKELETON */}
+				<div className="grid md:grid-cols-3 gap-4">
+					<div className="md:col-span-2 space-y-4">
+						<Skeleton className="h-6 w-32" />
+						{[...Array(3)].map((_, i) => (
+							<Skeleton key={i} className="h-4 w-48" />
+						))}
+					</div>
+					<div className="space-y-4">
+						<Skeleton className="h-6 w-32" />
+						{[...Array(3)].map((_, i) => (
+							<Skeleton key={i} className="h-4 w-36" />
+						))}
+					</div>
+				</div>
+
+				<Separator className="h-1 my-4" />
+
+				{/* FAVORITE SKILLS SKELETON */}
+				<div className="space-y-4">
+					<Skeleton className="h-6 w-40" />
+					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+						{[...Array(6)].map((_, i) => (
+							<div key={i} className="flex items-center gap-2">
+								<Skeleton className="h-8 w-8" />
+								<Skeleton className="h-8 w-24" />
+							</div>
+						))}
+					</div>
+				</div>
+			</div>
+		</Section>
+	);
+};
 
 const AboutSection: React.FC = () => {
+	const { data: aboutData, isLoading, error } = useAboutSection();
+	const { skills, loading: skillsLoading } = useSkills();
+
 	const calculateAge = () => {
-		const birthDate = new Date(2002, 9, 4); // NOTE: MONTH IS 0-INDEXED, SO 9 IS OCTOBER
+		if (!aboutData?.data?.personalInfo?.age) return 0;
+		const birthDate = new Date(aboutData.data.personalInfo.age);
 		const today = new Date();
 		let age = today.getFullYear() - birthDate.getFullYear();
 		const m = today.getMonth() - birthDate.getMonth();
@@ -36,21 +149,35 @@ const AboutSection: React.FC = () => {
 		return age;
 	};
 
+	if (isLoading || skillsLoading) {
+		return <AboutSectionSkeleton status="loading" />;
+	}
+
+	if (error) {
+		return <AboutSectionSkeleton status="error" />;
+	}
+
+	if (!aboutData?.data) {
+		return <AboutSectionSkeleton status="no-data" />;
+	}
+
+	const { data } = aboutData;
+
 	return (
 		<Section>
 			<h2 className="text-xl md:text-2xl font-bold flex items-center gap-2 mb-4 justify-between">
 				<div className="flex items-center gap-2">
-					About me
+					{data.title ?? "About me"}
 					<ShowInfo
-						title={"About Me"}
-						description={"This section provides personal information about me"}
+						title={data.title ?? "About me"}
+						description={data.titleDescription}
 					/>
 				</div>
 				<ShowInfo wrapMode>
-					<ShowInfo.Title>Audio version </ShowInfo.Title>
-					<ShowInfo.Description>Listen to my story</ShowInfo.Description>
+					<ShowInfo.Title>{data.audioTitle}</ShowInfo.Title>
+					<ShowInfo.Description>{data.audioDescription}</ShowInfo.Description>
 					<ShowInfo.Content>
-						<AudioReader src="/assets/audio/AboutTextAudio.mp3" />
+						<AudioReader src={`${process.env.NEXT_PUBLIC_STRAPI_API_URL}${data.audioFile.url}`} />
 					</ShowInfo.Content>
 				</ShowInfo>
 			</h2>
@@ -61,7 +188,9 @@ const AboutSection: React.FC = () => {
 					<div className="flex flex-col gap-2">
 						<div className="flex items-center gap-2">
 							<UserRound strokeWidth={3} className="w-6 h-6" />
-							<span className="text-neutral-500 dark:text-neutral-400">Max Remy</span>
+							<span className="text-neutral-500 dark:text-neutral-400">
+								{data.personalInfo.name}
+							</span>
 						</div>
 						<div className="flex items-center gap-2">
 							<Calendar strokeWidth={3} className="w-6 h-6" />
@@ -72,22 +201,22 @@ const AboutSection: React.FC = () => {
 						<div className="flex items-center gap-2">
 							<Flag strokeWidth={3} className="w-6 h-6" />
 							<span className="text-neutral-500 dark:text-neutral-400">
-								Switzerland, Vaud
+								{data.personalInfo.location}
 							</span>
 						</div>
 						<div className="flex items-center gap-2">
 							<MapPin strokeWidth={3} className="w-6 h-6" />
 							<span className="text-neutral-500 dark:text-neutral-400">
-								1510 Moudon
+								{data.personalInfo.city}
 							</span>
 						</div>
 						<div className="flex items-center gap-2">
 							<Phone strokeWidth={3} className="w-6 h-6" />
 							<a
 								className="text-neutral-500 dark:text-neutral-400"
-								href="tel:+41798730605"
+								href={`tel:${data.personalInfo.phone}`}
 							>
-								+41 79 873 06 05
+								{data.personalInfo.phone}
 							</a>
 						</div>
 					</div>
@@ -95,28 +224,28 @@ const AboutSection: React.FC = () => {
 						<div className="flex items-center gap-2">
 							<Briefcase strokeWidth={3} className="w-6 h-6" />
 							<span className="text-neutral-500 dark:text-neutral-400">
-								<strong>On-site or Remote : </strong>Acceptable
+								<strong>On-site or Remote : </strong>{data.personalInfo.workMode}
 							</span>
 						</div>
 						<div className="flex items-center gap-2">
 							<FileText strokeWidth={3} className="w-6 h-6" />
 							<span className="text-neutral-500 dark:text-neutral-400">
-								<strong>Contract : </strong>Freelance or Salaried
+								<strong>Contract : </strong>{data.personalInfo.contractType}
 							</span>
 						</div>
 						<div className="flex items-center gap-2">
 							<Building strokeWidth={3} className="w-6 h-6" />
 							<span className="text-neutral-500 dark:text-neutral-400">
-								<strong>Company Individual : </strong>Max Remy Dev
+								<strong>Company Individual : </strong>{data.personalInfo.company}
 							</span>
 						</div>
 						<div className="flex items-center gap-2">
 							<Mail strokeWidth={3} className="w-6 h-6" />
 							<a
 								className="text-neutral-500 dark:text-neutral-400"
-								href="mailto:maxremy.dev@gmail.com"
+								href={`mailto:${data.personalInfo.email}`}
 							>
-								maxremy.dev@gmail.com
+								{data.personalInfo.email}
 							</a>
 						</div>
 					</div>
@@ -126,45 +255,9 @@ const AboutSection: React.FC = () => {
 
 				{/* MY STORY */}
 				<div className="text-base md:text-xl space-y-4 text-neutral-700 dark:text-neutral-300">
-					<p>
-						Since 2015, when I was 13, video games really pushed me to become a
-						developer. I started by creating mods to improve the experience on games
-						like ArmA, DayZ, or GTA 4 and 5. These mods were a way to make the games
-						more fun, and random players could download them to have even more fun since
-						they were open-source.
-					</p>
-					<p>
-						My real career started around 2016-2017 when I specialized in C#. And I
-						don&apos;t just code mods, I also create my own small video games with
-						Unity, and especially model 3D assets with Blender. Honestly, seeing the
-						final result with better quality is always a thrill. Not like a mod limited
-						by the power of the game architecture itself.
-					</p>
-					<p>
-						Over time, I became more professional. I started selling my mods and
-						automation software or client project like basic missions, and that&apos;s
-						when my career really took off.
-					</p>
-					<p>
-						In 2020, I became a freelance developer with salary management through a
-						cool agency. They found me projects based on my resume, connected me with
-						clients, and gave me a lot of financial and accounting advice. I worked with
-						them or through them for two years, giving them a small percentage of my
-						earnings as a semi-independent worker.
-					</p>
-					<p>
-						Before Covid, I specialized in backend development, and during Covid, I
-						became a FullStack developer. So, I also improved my frontend skills, which
-						I had basic knowledge of through XML, HTML, CSS, and JS. I boosted my
-						skills, which now allows me to offer fully customized solutions for my side
-						projects or clients. Plus, I can even create design mockups with Figma since
-						I trained myself in UI/UX design in under a month.
-					</p>
-					<p>
-						Whether it&apos;s for games, backend, or frontend, my goal is always the
-						same: to create innovative stuff in IT that adds real value to my clients
-						projects or to others through my open-source projects.
-					</p>
+					{data.story.split('\n\n').map((paragraph: string, index: number) => (
+						<p key={index}>{paragraph}</p>
+					))}
 				</div>
 
 				<Separator className="h-1 my-4" />
@@ -173,66 +266,43 @@ const AboutSection: React.FC = () => {
 				<div className="flex flex-col md:grid md:grid-cols-3 gap-4 md:gap-x-8 text-base md:text-xl text-neutral-800 dark:text-neutral-200">
 					<div className="md:col-span-2">
 						<h3 className="text-lg md:text-xl font-bold mb-4 flex items-center gap-2">
-							Languages
+							{data.languages.title}
 							<ShowInfo
-								title={"Languages"}
-								description={
-									"I'll give you a quick overview of the languages I'm fluent in"
-								}
+								title={data.languages.title}
+								description={data.languages.description}
 								icon={<Languages className="w-5 h-5" />}
 							/>
 						</h3>
 						<ul className="list-disc list-inside space-y-1">
-							<li>
-								French : C2{" "}
-								<span className="text-neutral-500">| Native language</span>
-							</li>
-							<li>
-								English : B1+{" "}
-								<span className="text-neutral-500">| Intermediate Plus</span>
-							</li>
-							<li>
-								German : A1 <span className="text-neutral-500">| Beginner</span>
-							</li>
+							{data.languages.languages.map((lang) => (
+								<li key={lang.id}>
+									{lang.name} : {lang.level}{" "}
+									<span className="text-neutral-500">| {lang.description}</span>
+								</li>
+							))}
 						</ul>
 					</div>
 					<div className="md:justify-self-end">
 						<h3 className="text-lg md:text-xl font-bold mb-4 flex items-center gap-2">
-							Education
+							{data.education.title}
 							<ShowInfo
-								title={"Education"}
-								description={"So, a bit about my education..."}
+								title={data.education.title}
+								description={data.education.description}
 								icon={<GraduationCap className="w-5 h-5" />}
 							/>
 						</h3>
 						<ul className="list-disc list-inside space-y-1">
-							<li>
-								<Link
-									href="https://openclassrooms.com/"
-									target="_blank"
-									className="hover:text-neutral-400 dark:hover:text-neutral-600"
-								>
-									OpenClassRooms.com
-								</Link>
-							</li>
-							<li>
-								<Link
-									href="https://www.codecademy.com/"
-									target="_blank"
-									className="hover:text-neutral-400 dark:hover:text-neutral-600"
-								>
-									Codecademy.com
-								</Link>
-							</li>
-							<li>
-								<Link
-									href="https://www.udemy.com/"
-									target="_blank"
-									className="hover:text-neutral-400 dark:hover:text-neutral-600"
-								>
-									Udemy.com
-								</Link>
-							</li>
+							{data.education.platforms.map((platform) => (
+								<li key={platform.id}>
+									<Link
+										href={platform.url}
+										target="_blank"
+										className="hover:text-neutral-400 dark:hover:text-neutral-600"
+									>
+										{platform.name}
+									</Link>
+								</li>
+							))}
 						</ul>
 					</div>
 				</div>
@@ -251,32 +321,36 @@ const AboutSection: React.FC = () => {
 						/>
 					</h3>
 					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:grid-rows-4 md:grid-flow-col">
-						{skills
-							.flatMap((yearSkills) =>
-								yearSkills.skills.filter((skill) => skill.favorite)
-							)
-							.map((skill) => (
-								<ShowInfo wrapMode key={skill.name}>
-									<ShowInfo.Content>
-										<div className="flex items-center space-x-2">
-											{skill.icon ? (
-												<i
-													className={`devicon-${skill.icon}-plain text-neutral-700 dark:text-neutral-300 text-2xl`}
-												/>
-											) : (
-												<CodeXml size={24} />
-											)}
-											<span className="text-neutral-700 dark:text-neutral-300">
-												{skill.name}
-											</span>
-										</div>
-									</ShowInfo.Content>
-									<ShowInfo.Title>{skill.name}</ShowInfo.Title>
-									<ShowInfo.Description>
-										{skill.description ?? "Description not available"}
-									</ShowInfo.Description>
-								</ShowInfo>
-							))}
+						{skillsLoading ? (
+							<FavoriteSkillsSkeleton />
+						) : (
+							skills
+								.flatMap((yearSkills) =>
+									yearSkills.skills.filter((skill) => skill.favorite)
+								)
+								.map((skill) => (
+									<ShowInfo wrapMode key={skill.id}>
+										<ShowInfo.Content>
+											<div className="flex items-center space-x-2">
+												{skill.icon ? (
+													<i
+														className={`devicon-${skill.icon}-plain text-neutral-700 dark:text-neutral-300 text-2xl`}
+													/>
+												) : (
+													<CodeXml size={24} />
+												)}
+												<span className="text-neutral-700 dark:text-neutral-300">
+													{skill.name}
+												</span>
+											</div>
+										</ShowInfo.Content>
+										<ShowInfo.Title>{skill.name}</ShowInfo.Title>
+										<ShowInfo.Description>
+											{skill.description ?? "Description not available"}
+										</ShowInfo.Description>
+									</ShowInfo>
+								))
+						)}
 					</div>
 				</div>
 			</div>

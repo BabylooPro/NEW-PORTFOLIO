@@ -1,0 +1,32 @@
+{
+  "collectionName": "components_shared_soft_skills",
+  "info": {
+    "displayName": "SoftSkill",
+    "description": "Individual soft skill entry"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "icon": {
+      "type": "enumeration",
+      "enum": [
+        "MessageSquare",
+        "Users",
+        "Lightbulb",
+        "RefreshCw",
+        "BookOpen",
+        "Timer",
+        "Crosshair",
+        "Sparkles"
+      ],
+      "required": true
+    },
+    "description": {
+      "type": "string",
+      "required": true
+    }
+  }
+} 

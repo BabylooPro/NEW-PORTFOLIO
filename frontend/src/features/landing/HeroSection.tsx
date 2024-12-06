@@ -7,16 +7,75 @@ import { motion, useMotionValue, useSpring } from "framer-motion";
 import Link from "next/link";
 import { PocketKnife } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { useRef } from "react";
 import { ShowInfo } from "@/components/ui/show-info";
 import AudioReader from "@/components/ui/AudioReader";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useHeroSection } from '@/hooks/useHeroSection';
+import { Skeleton } from "@/components/ui/skeleton";
+
+const HeroSectionSkeleton: React.FC<{
+	status?: 'loading' | 'error' | 'no-data';
+}> = ({ status }) => {
+	const getStatusContent = () => {
+		switch (status) {
+			case 'error':
+				return (
+					<div className="flex items-center gap-2 text-red-500">
+						<Skeleton className="h-8 w-8 bg-red-200" />
+						<span>Error loading hero section. Please try again later.</span>
+					</div>
+				);
+			case 'no-data':
+				return (
+					<div className="flex items-center gap-2 text-yellow-500">
+						<Skeleton className="h-8 w-8 bg-yellow-200" />
+						<span>No data available.</span>
+					</div>
+				);
+			default:
+				return null;
+		}
+	};
+
+	return (
+		<Section className="px-4 md:px-8">
+			<div className="space-y-8">
+				{/* TITLE SKELETON */}
+				<div className="flex items-center">
+					<Skeleton className="h-12 w-3/4" />
+					<Skeleton className="h-12 w-12 ml-2" />
+				</div>
+
+				{/* DESCRIPTION SKELETON */}
+				<Skeleton className="h-6 w-full" />
+
+				{/* SWISS ARMY KNIFE SKELETON */}
+				<div className="space-y-2">
+					<Skeleton className="h-6 w-1/2" />
+					<Skeleton className="h-6 w-3/4" />
+				</div>
+
+				{/* LEARN MORE SKELETON */}
+				<div className="flex justify-between items-center">
+					<div className="flex items-center gap-2">
+						<Skeleton className="h-6 w-32" />
+						<Skeleton className="h-6 w-24" />
+					</div>
+					<Skeleton className="h-10 w-10" />
+				</div>
+
+				{getStatusContent()}
+			</div>
+		</Section>
+	);
+};
 
 export default function HeroSection() {
 	const ref = useRef<HTMLSpanElement>(null);
 	const mouseX = useMotionValue(0);
 	const springX = useSpring(mouseX, { stiffness: 500, damping: 50 });
 	const [isCardVisible, setIsCardVisible] = useState(false);
+	const { heroData, isLoading, error } = useHeroSection();
 
 	const handleMouseMove = (e: React.MouseEvent<HTMLSpanElement>) => {
 		const element = ref.current;
@@ -32,11 +91,15 @@ export default function HeroSection() {
 		setIsCardVisible(!isCardVisible);
 	};
 
+	if (isLoading) return <HeroSectionSkeleton status="loading" />;
+	if (error) return <HeroSectionSkeleton status="error" />;
+	if (!heroData) return <HeroSectionSkeleton status="no-data" />;
+
 	return (
 		<Section className="px-4 md:px-8">
 			{/* TITLE */}
 			<h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 flex items-center">
-				Hello,
+				{heroData.greeting}
 				<motion.div
 					initial={{ rotate: 0 }}
 					animate={{ rotate: [0, 10, -10, 10, -10, 0] }}
@@ -53,13 +116,7 @@ export default function HeroSection() {
 			</h1>
 
 			{/* DESCRIPTION */}
-			<p className="md:text-xl">
-				I’m a Developer or Software Engineer, call me what you want, but I’m a “young-old”
-				C# specialist. You could say I’m a FullStack Developer with 9 years of experience. I
-				work on everything that interests me. As a Swiss Freelance Developer, I do a bit of
-				everything: building CLI, RESTful API, web or mobile application, and even DevOps
-				for deployment.
-			</p>
+			<p className="md:text-xl">{heroData.description}</p>
 
 			{/* SWISS ARMY KNIFE */}
 			<div className="md:text-xl mt-4">
@@ -70,7 +127,7 @@ export default function HeroSection() {
 					onMouseMove={handleMouseMove}
 					onClick={handleClick}
 				>
-					<span>Swiss Army Knife</span>
+					<span>{heroData.swissArmyKnifeText}</span>
 					{isCardVisible && (
 						<motion.div
 							className="absolute top-full left-0 md:-top-12 md:left-1/2 z-10 w-auto"
@@ -82,23 +139,26 @@ export default function HeroSection() {
 						</motion.div>
 					)}
 				</span>{" "}
-				for any development needs.
+				{heroData.swissArmyKnifeDescription}
 			</div>
 
 			{/* LEARN MORE REDIRECT */}
 			<div className="text-base md:text-xl mt-4 flex justify-between items-center">
 				<div>
-					Learn more
+					{heroData.learnMoreText}
 					<Button variant="linkHover1" className="text-base md:text-xl -ml-3">
-						<Link href="/about">about me.</Link>
+						<Link href="/about">{heroData.aboutMeText}</Link>
 					</Button>
 				</div>
 
 				<ShowInfo wrapMode>
-					<ShowInfo.Title>Audio version</ShowInfo.Title>
-					<ShowInfo.Description>Listen to my resume</ShowInfo.Description>
+					<ShowInfo.Title>{heroData.audioTitle}</ShowInfo.Title>
+					<ShowInfo.Description>{heroData.audioDescription}</ShowInfo.Description>
 					<ShowInfo.Content>
-						<AudioReader src="/assets/audio/HeroTextAudio.mp3" />
+						<AudioReader 
+							src={`${process.env.NEXT_PUBLIC_STRAPI_API_URL}${heroData.audioFile.url}`} 
+							onError={(error: Error) => console.error('Audio error:', error)}
+							/>
 					</ShowInfo.Content>
 				</ShowInfo>
 			</div>

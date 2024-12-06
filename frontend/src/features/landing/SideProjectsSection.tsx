@@ -38,9 +38,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useProjectsSection } from "./hooks/useProjectsSection";
 
 const SideProjectsSection = () => {
-	const { projects, error, loading } = useGitHubProjects();
+	const { projects, error: projectsError, loading: projectsLoading } = useGitHubProjects();
+	const { data: sectionData, error: sectionError, isLoading: sectionLoading } = useProjectsSection();
+	
 	const scrollAreaRef = useRef<ScrollAreaRef>(null);
 	const [filterTechnology, setFilterTechnology] = useState<string>("All");
 	const [filterYear, setFilterYear] = useState<string>("All");
@@ -77,12 +80,14 @@ const SideProjectsSection = () => {
 		return ["All", ...Array.from(yearSet).sort((a, b) => b.localeCompare(a))];
 	}, [projects]);
 
-	// DISPLAY ERROR MESSAGE IF REQUEST FAILS
-	if (error) {
+	// HANDLE ERRORS
+	if (projectsError || sectionError) {
 		return (
 			<Section>
 				<h2 className="text-2xl font-bold mb-6">Error Loading Projects</h2>
-				<p className="text-red-500">An error occurred : {error}</p>
+				<p className="text-red-500">
+					An error occurred: {(projectsError ?? sectionError)?.toString()}
+				</p>
 				<div className="flex pb-4 px-4 justify-between sm:justify-center lg:justify-end gap-2 sm:gap-6 md:gap-4 lg:gap-[0.6rem] sm:px-4">
 					<Skeleton className="h-10 w-[calc(50%-4px)] sm:w-full lg:w-[145px]" />
 					<Skeleton className="h-10 w-[calc(50%-4px)] sm:w-full lg:w-[145px]" />
@@ -98,8 +103,8 @@ const SideProjectsSection = () => {
 		);
 	}
 
-	// IF PROJECTS ARE STILL LOADING, DISPLAY SKELETON
-	if (loading) {
+	// HANDLE LOADING
+	if (projectsLoading || sectionLoading) {
 		return (
 			<Section>
 				<h2 className="text-2xl font-bold mb-6">Projects</h2>
@@ -123,21 +128,18 @@ const SideProjectsSection = () => {
 			{/* HEADER */}
 			<div className="relative mb-10">
 				<h2 className="text-2xl font-bold flex items-center gap-2 -mb-5">
-					Projects ({filteredProjects.length})
+					{sectionData?.title ?? "Projects"} ({filteredProjects.length})
 					<ShowInfo
-						title={"Projects"}
+						title={sectionData?.title ?? "Projects"}
 						description={
 							<div className="flex flex-col gap-2">
-								<p>
-									Explore my public GitHub repositories. No client or private
-									projects are shown here.
-								</p>
-								<span className="text-xs text-muted-foreground">
-									<strong>Total projects : </strong> {projects?.length || 0}
-								</span>
+								<p>{sectionData?.titleDescription}</p>
 								<span className="text-xs text-muted-foreground">
 									<strong>Main technologies : </strong>
-									{technologies.slice(1, 4).join(", ")}
+									{sectionData?.mainTechnologies?.join(", ") ?? "N/A"}
+								</span>
+								<span className="text-xs text-muted-foreground">
+									<strong>Total projects : </strong> {projects?.length ?? 0}
 								</span>
 							</div>
 						}

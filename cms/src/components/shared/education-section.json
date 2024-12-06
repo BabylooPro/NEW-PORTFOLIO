@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_shared_education_sections",
+  "info": {
+    "displayName": "EducationSection",
+    "description": "Education section content"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "string",
+      "required": true
+    },
+    "platforms": {
+      "type": "component",
+      "component": "shared.education-platform",
+      "required": true,
+      "repeatable": true
+    }
+  }
+} 

@@ -1,0 +1,25 @@
+{
+  "kind": "collectionType",
+  "collectionName": "skill_years",
+  "info": {
+    "singularName": "skill-year",
+    "pluralName": "skill-years",
+    "displayName": "Skill Year Data"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "year": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "skills": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::skill.skill",
+      "mappedBy": "skillYear"
+    }
+  }
+} 

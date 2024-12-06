@@ -1,0 +1,27 @@
+{
+  "kind": "singleType",
+  "collectionName": "what-i-do-sections",
+  "info": {
+    "singularName": "what-i-do-section",
+    "pluralName": "what-i-do-sections",
+    "displayName": "What I Do Section",
+    "description": "Content for the What I Do section"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "titleDescription": {
+      "type": "string",
+      "required": true
+    },
+    "paragraphDescription": {
+      "type": "string",
+      "required": false
+    }
+  }
+} 

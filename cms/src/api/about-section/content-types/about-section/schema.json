@@ -1,0 +1,56 @@
+{
+  "kind": "singleType",
+  "collectionName": "about_sections",
+  "info": {
+    "singularName": "about-section",
+    "pluralName": "about-sections",
+    "displayName": "About Section",
+    "description": "Content for the About section"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "titleDescription": {
+      "type": "string",
+      "required": true
+    },
+    "audioTitle": {
+      "type": "string",
+      "required": true
+    },
+    "audioDescription": {
+      "type": "string",
+      "required": true
+    },
+    "audioFile": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["audios"]
+    },
+    "personalInfo": {
+      "type": "component",
+      "component": "shared.personal-info",
+      "required": true
+    },
+    "story": {
+      "type": "richtext",
+      "required": true
+    },
+    "languages": {
+      "type": "component",
+      "component": "shared.languages-section",
+      "required": true
+    },
+    "education": {
+      "type": "component",
+      "component": "shared.education-section",
+      "required": true
+    }
+  }
+} 

@@ -1,0 +1,27 @@
+{
+  "kind": "singleType",
+  "collectionName": "header_sections",
+  "info": {
+    "singularName": "header-section",
+    "pluralName": "header-sections",
+    "displayName": "Header Section",
+    "description": "Content for the Header section"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "profile": {
+      "type": "component",
+      "component": "shared.profile-description",
+      "required": true
+    },
+    "socialLinks": {
+      "type": "component",
+      "component": "shared.social-link",
+      "required": true,
+      "repeatable": true,
+      "min": 1
+    }
+  }
+} 

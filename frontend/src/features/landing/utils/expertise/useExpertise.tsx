@@ -11,24 +11,25 @@ import ExperienceItem, { ExperienceItemProps } from "./experienceItem";
 import SkillItem from "./skillsItems";
 import DotTimeline from "@/components/ui/dot-timeline";
 import { Badge } from "@/components/ui/badge";
-import { Skill } from "@/features/landing/data/skills";
+import { Skill, SkillYear } from "./types";
+import { SkillsSkeleton } from "./SkillSkeleton";
 
-interface SkillYearGroup {
-	year: string;
-	skills: Skill[];
-}
+interface SkillYearGroup extends SkillYear {}
 
 type ExpertiseItem = ExperienceItemProps | SkillYearGroup; // UNION TYPE FOR POSSIBLE ITEM TYPES
 
 interface UseExpertiseProps {
 	title: string;
+	titleDescription: string;
+	paragraphDescription: string;
 	items: ExpertiseItem[];
 	showCompany: boolean;
 	showSkills: boolean;
 	scrollHeight?: string;
 	allColorIcon?: string;
-	infoSkills?: string;
-	infoExperiences?: string;
+	loading?: boolean;
+	error?: string;
+	statusContent?: React.ReactNode;
 }
 
 // TYPE GUARD WITH PROPER RETURN TYPE ANNOTATION
@@ -43,13 +44,16 @@ const isSkillYearGroup = (item: ExpertiseItem): item is SkillYearGroup => {
 
 const UseExpertise: React.FC<UseExpertiseProps> = ({
 	title,
+	titleDescription,
+	paragraphDescription,
 	items,
 	showCompany = true,
 	showSkills = true,
 	scrollHeight = "h-[400px]",
 	allColorIcon,
-	infoSkills = "skills",
-	infoExperiences = "experiences",
+	loading = false,
+	error,
+	statusContent,
 }) => {
 	const scrollAreaRef = React.useRef<ScrollAreaRef>(null);
 	const isSkillSection = title.toLowerCase().includes("skill");
@@ -57,31 +61,17 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 	return (
 		<TooltipProvider>
 			<Section>
-				<div className="relative mb-10">
-					<h2 className="text-2xl font-bold flex items-center -mb-5">
-						{title}
-						<ShowInfo
-							description={
-								isSkillSection ? (
-									`Here are some of my ${infoSkills}.`
-								) : (
-									<>
-										Check out my {infoExperiences} professional. <br />{" "}
-										<span className="text-xs text-neutral-500 italic">
-											Soon, connected with my Linkedin profile.
-										</span>
-									</>
-								)
-							}
-							className="ml-2"
-						/>
+				<div className="flex items-center justify-between mb-4">
+					<h2 className="text-2xl font-bold flex items-center gap-2">
+						<div className="flex items-center gap-2">
+							{title || "My Skills"}
+							<ShowInfo
+								title={title}
+								description={titleDescription}
+							/>
+						</div>
 					</h2>
-
-					<ScrollIndicator
-						scrollAreaRef={scrollAreaRef}
-						className="absolute left-1/2 transform -translate-x-1/2"
-						position="top"
-					/>
+					{statusContent}
 				</div>
 
 				<ScrollArea showShadows ref={scrollAreaRef} className={scrollHeight}>
@@ -89,25 +79,41 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 						<>
 							{/* VERSION MOBILE */}
 							<ol className="md:hidden m-4 relative border-l border-neutral-400 dark:border-neutral-600">
-								{items.map((item) => (
-									<DotTimeline
-										key={isExperienceItem(item) ? item.title : item.year}
-										year={isExperienceItem(item) ? item.date : item.year}
-										showBadge={!isExperienceItem(item)}
-									>
-										{isSkillYearGroup(item) && (
-											<div className="flex flex-col space-y-2">
-												{item.skills.map((skill: Skill) => (
-													<SkillItem
-														key={skill.name}
-														skill={skill}
-														allColorIcon={allColorIcon}
-													/>
-												))}
-											</div>
-										)}
+								{loading ? (
+									// MOBILE SKELETON
+									<DotTimeline year="2024" showBadge>
+										<div className="flex flex-col space-y-2">
+											{[...Array(6)].map((_, i) => (
+												<SkillItem
+													key={i}
+													skill={{} as Skill}
+													isLoading={true}
+												/>
+											))}
+										</div>
 									</DotTimeline>
-								))}
+								) : (
+									// NORMAL MOBILE CONTENT
+									items.map((item) => (
+										<DotTimeline
+											key={isExperienceItem(item) ? item.title : item.year}
+											year={isExperienceItem(item) ? item.date : item.year}
+											showBadge={!isExperienceItem(item)}
+										>
+											{isSkillYearGroup(item) && (
+												<div className="flex flex-col space-y-2">
+													{item.skills.map((skill: Skill) => (
+														<SkillItem
+															key={skill.name}
+															skill={skill}
+															allColorIcon={allColorIcon}
+														/>
+													))}
+												</div>
+											)}
+										</DotTimeline>
+									))
+								)}
 							</ol>
 
 							{/* VERSION DESKTOP */}
@@ -115,70 +121,110 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 								<div className="relative w-full max-w-[700px]">
 									<div className="absolute top-0 bottom-0 left-1/2 w-px bg-neutral-400 dark:bg-neutral-600"></div>
 									<ol className="relative space-y-16">
-										{items.map((item, index) => (
-											<DotTimeline
-												key={
-													isExperienceItem(item) ? item.title : item.year
-												}
-												year={
-													isExperienceItem(item) ? item.date : item.year
-												}
-												showBadge={true}
-												isRight={index % 2 !== 0}
-												isCentered={true}
-											>
-												<div className="flex justify-center">
-													<div className="w-full max-w-[500px]">
-														<div
-															className={`flex flex-col space-y-2 ${
-																index % 2 !== 0
-																	? "items-end"
-																	: "items-start"
-															}`}
-														>
-															{isSkillYearGroup(item) &&
-																item.skills.map((skill: Skill) => (
+										{loading ? (
+											// DESKTOP SKELETON
+											[...Array(3)].map((_, index) => (
+												<DotTimeline
+													key={index}
+													year="2024"
+													showBadge={true}
+													isRight={index % 2 !== 0}
+													isCentered={true}
+												>
+													<div className="flex justify-center">
+														<div className="w-full max-w-[500px]">
+															<div
+																className={`flex flex-col space-y-2 ${
+																	index % 2 !== 0 ? "items-end" : "items-start"
+																}`}
+															>
+																{[...Array(4)].map((_, i) => (
 																	<SkillItem
-																		key={skill.name}
-																		skill={skill}
+																		key={i}
+																		skill={{} as Skill}
 																		allColorIcon={allColorIcon}
 																		isRight={index % 2 !== 0}
+																		isLoading={true}
 																	/>
 																))}
+															</div>
 														</div>
 													</div>
-												</div>
-											</DotTimeline>
-										))}
+												</DotTimeline>
+											))
+										) : (
+											// NORMAL DESKTOP CONTENT
+											items.map((item, index) => (
+												<DotTimeline
+													key={
+														isExperienceItem(item) ? item.title : item.year
+													}
+													year={
+														isExperienceItem(item) ? item.date : item.year
+													}
+													showBadge={true}
+													isRight={index % 2 !== 0}
+													isCentered={true}
+												>
+													<div className="flex justify-center">
+														<div className="w-full max-w-[500px]">
+															<div
+																className={`flex flex-col space-y-2 ${
+																	index % 2 !== 0
+																		? "items-end"
+																		: "items-start"
+																}`}
+															>
+																{isSkillYearGroup(item) &&
+																	item.skills.map((skill: Skill) => (
+																		<SkillItem
+																			key={skill.name}
+																			skill={skill}
+																			allColorIcon={allColorIcon}
+																			isRight={index % 2 !== 0}
+																		/>
+																	))}
+															</div>
+														</div>
+													</div>
+												</DotTimeline>
+											))
+										)}
 									</ol>
 								</div>
 							</div>
 						</>
 					) : (
-						<ol className="m-4 relative border-l border-neutral-400 dark:border-neutral-600">
-							{items.map((item) => (
-								<DotTimeline
-									key={isExperienceItem(item) ? item.title : item.year}
-									year={isExperienceItem(item) ? item.date : item.year}
-									showBadge={!isExperienceItem(item)}
-								>
-									{isExperienceItem(item) && (
-										<>
-											{item.date && (
-												<Badge className="mb-1 bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-neutral-300">
-													{item.date}
-												</Badge>
+						<>
+							{loading ? (
+								<SkillsSkeleton />
+							) : (
+								<ol className="m-4 relative border-l border-neutral-400 dark:border-neutral-600">
+									{items.map((item) => (
+										<DotTimeline
+											key={isExperienceItem(item) ? item.title : item.year}
+											year={isExperienceItem(item) ? item.date : item.year}
+											showBadge={!isExperienceItem(item)}
+										>
+											{isExperienceItem(item) && (
+												<>
+													{item.date && (
+														<Badge className="mb-1 bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-neutral-300">
+															{item.date}
+														</Badge>
+													)}
+													<ExperienceItem
+														item={item}
+														showCompany={showCompany}
+														showSkills={showSkills}
+													/>
+												</>
 											)}
-											<ExperienceItem
-												item={item}
-												showCompany={showCompany}
-												showSkills={showSkills}
-											/>
-										</>
-									)}
-								</DotTimeline>
-							))}
-						</ol>
+										</DotTimeline>
+									))}
+								</ol>
+							)}
+						</>
 					)}
 				</ScrollArea>
 

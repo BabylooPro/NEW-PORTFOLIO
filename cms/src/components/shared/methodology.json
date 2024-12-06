@@ -1,0 +1,32 @@
+{
+  "collectionName": "components_shared_methodologies",
+  "info": {
+    "displayName": "Methodology",
+    "description": "Individual methodology entry"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "icon": {
+      "type": "enumeration",
+      "enum": [
+        "GitBranch",
+        "Building",
+        "Cog",
+        "GitPullRequest",
+        "Users",
+        "TestTube",
+        "Smartphone",
+        "Server"
+      ],
+      "required": true
+    },
+    "description": {
+      "type": "string",
+      "required": true
+    }
+  }
+} 

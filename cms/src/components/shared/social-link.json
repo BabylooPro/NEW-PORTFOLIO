@@ -1,0 +1,37 @@
+{
+  "collectionName": "components_shared_social_links",
+  "info": {
+    "displayName": "SocialLink",
+    "description": "Social media link with icon"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "href": {
+      "type": "string",
+      "required": true
+    },
+    "target": {
+      "type": "enumeration",
+      "enum": [
+        "_blank",
+        "_self"
+      ],
+      "required": true,
+      "default": "_blank"
+    },
+    "iconType": {
+      "type": "enumeration",
+      "enum": [
+        "Github",
+        "Linkedin",
+        "Youtube",
+        "Twitter"
+      ],
+      "required": true
+    }
+  }
+} 

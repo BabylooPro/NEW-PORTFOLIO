@@ -1,0 +1,26 @@
+{
+  "kind": "singleType",
+  "collectionName": "experience_sections",
+  "info": {
+    "singularName": "experience-section",
+    "pluralName": "experience-sections",
+    "displayName": "Experience Section"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "titleDescription": {
+      "type": "string",
+      "required": true
+    },
+    "paragraphDescription": {
+      "type": "string",
+      "required": true
+    }
+  }
+} 

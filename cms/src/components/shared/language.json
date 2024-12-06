@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_shared_languages",
+  "info": {
+    "displayName": "Language",
+    "description": "Individual language entry"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "level": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "string",
+      "required": true
+    }
+  }
+} 

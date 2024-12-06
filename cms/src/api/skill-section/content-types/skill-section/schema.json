@@ -1,0 +1,27 @@
+{
+  "kind": "singleType",
+  "collectionName": "skill_sections",
+  "info": {
+    "singularName": "skill-section",
+    "pluralName": "skill-sections",
+    "displayName": "Skill Section",
+    "description": "Content for the Skills section"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "titleDescription": {
+      "type": "string",
+      "required": true
+    },
+    "paragraphDescription": {
+      "type": "string",
+      "required": false
+    }
+  }
+} 

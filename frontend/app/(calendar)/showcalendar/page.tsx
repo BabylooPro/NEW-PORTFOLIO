@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 import { Metadata } from "next";
-import Header from "@/features/landing/Header";
+import Header from "@/components/ui/header/Header";
 import { ShowCalendarIndex } from "@/features/show-calendar";
 import { Skeleton } from "@/components/ui/skeleton";
 

@@ -3,9 +3,10 @@ import WaveAnimation from "./AudioWaveAnimation";
 
 interface AudioReaderProps {
 	src: string;
+	onError?: (error: Error) => void;
 }
 
-const AudioReader: React.FC<AudioReaderProps> = ({ src }) => {
+const AudioReader: React.FC<AudioReaderProps> = ({ src, onError }) => {
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [isEnded, setIsEnded] = useState(false);
 	const audioRef = useRef<HTMLAudioElement>(null);
@@ -60,7 +61,20 @@ const AudioReader: React.FC<AudioReaderProps> = ({ src }) => {
 
 	return (
 		<div>
-			<audio ref={audioRef} src={src} />
+			<audio
+				ref={audioRef}
+				src={src}
+				controls
+				className="hidden"
+				onError={(e) => {
+					console.error("Audio loading error:", e);
+					onError?.(new Error("Failed to load audio"));
+				}}
+				crossOrigin="anonymous"
+			>
+				<source src={src} type="audio/mpeg" />
+				Your browser does not support the audio element.
+			</audio>
 			<button onClick={togglePlayPause}>
 				<WaveAnimation
 					isPlaying={isPlaying}

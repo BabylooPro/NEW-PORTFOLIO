@@ -1,0 +1,28 @@
+{
+  "collectionName": "components_shared_expertises",
+  "info": {
+    "displayName": "Expertise",
+    "description": "Individual expertise entry"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "icon": {
+      "type": "enumeration",
+      "enum": ["Code", "Server", "Palette", "Layers", "Cog"],
+      "required": true
+    },
+    "description": {
+      "type": "string",
+      "required": true
+    },
+    "skillIdentifier": {
+      "type": "string",
+      "required": true,
+      "description": "Skill name used to calculate years of experience (e.g., 'c#', '.net', 'html')"
+    }
+  }
+} 

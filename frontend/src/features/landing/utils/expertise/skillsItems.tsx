@@ -2,13 +2,55 @@ import React from "react";
 import { CodeXml, Heart, ThumbsDown, ThumbsUp, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { ShowInfo } from "@/components/ui/show-info";
-import { Skill } from "@/features/landing/data/skills";
+import { Skill } from "../expertise/types";
+import ReactMarkdown from 'react-markdown';
+import { Skeleton } from "@/components/ui/skeleton";
 
-const SkillItem: React.FC<{ skill: Skill; allColorIcon?: string; isRight?: boolean }> = ({
+const SkillItemSkeleton: React.FC<{ isRight?: boolean }> = ({ isRight }) => {
+	return (
+		<ShowInfo wrapMode>
+			<ShowInfo.Content>
+				<div
+					className={`flex items-center space-x-2 ${
+						isRight ? "flex-row-reverse space-x-reverse" : ""
+					}`}
+				>
+					<Skeleton className="h-6 w-6" />
+					<Skeleton className="h-6 w-24" />
+					<div className="flex gap-1">
+						{[...Array(2)].map((_, i) => (
+							<Skeleton key={i} className="h-4 w-4 rounded-full" />
+						))}
+					</div>
+				</div>
+			</ShowInfo.Content>
+			<ShowInfo.Title className="text-left">
+				<Skeleton className="h-6 w-32" />
+			</ShowInfo.Title>
+			<ShowInfo.Description className="text-left space-y-2">
+				{[...Array(2)].map((_, i) => (
+					<Skeleton key={i} className="h-4 w-full" />
+				))}
+			</ShowInfo.Description>
+		</ShowInfo>
+	);
+};
+
+const SkillItem: React.FC<{ 
+	skill: Skill; 
+	allColorIcon?: string; 
+	isRight?: boolean;
+	isLoading?: boolean;
+}> = ({
 	skill,
 	allColorIcon,
 	isRight,
+	isLoading
 }) => {
+	if (isLoading) {
+		return <SkillItemSkeleton isRight={isRight} />;
+	}
+
 	const getRandomDuration = () => Math.random() * 4 + 1;
 	const getRandomRotate = () => Math.random() * 20 - 10;
 	const getRandomTranslateY = () => Math.random() * 5 - 2.5;
@@ -130,8 +172,10 @@ const SkillItem: React.FC<{ skill: Skill; allColorIcon?: string; isRight?: boole
 				</div>
 			</ShowInfo.Content>
 			<ShowInfo.Title className="text-left">{skill.name}</ShowInfo.Title>
-			<ShowInfo.Description className="text-left">
-				{skill.description ?? "Description not available"}
+			<ShowInfo.Description className="text-left prose dark:prose-invert prose-sm max-w-none">
+				<ReactMarkdown>
+					{(skill.description as string) ?? "Description not available"}
+				</ReactMarkdown>
 			</ShowInfo.Description>
 		</ShowInfo>
 	);

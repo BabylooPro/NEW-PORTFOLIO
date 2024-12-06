@@ -1,0 +1,42 @@
+{
+  "kind": "collectionType",
+  "collectionName": "skills",
+  "info": {
+    "singularName": "skill",
+    "pluralName": "skills",
+    "displayName": "Skill Data"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "icon": {
+      "type": "string"
+    },
+    "description": {
+      "type": "richtext"
+    },
+    "favorite": {
+      "type": "boolean"
+    },
+    "unlike": {
+      "type": "boolean"
+    },
+    "star": {
+      "type": "boolean"
+    },
+    "like": {
+      "type": "boolean"
+    },
+    "skillYear": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::skill-year.skill-year",
+      "inversedBy": "skills"
+    }
+  }
+} 

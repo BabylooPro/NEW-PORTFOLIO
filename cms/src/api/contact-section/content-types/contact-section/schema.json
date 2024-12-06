@@ -1,0 +1,27 @@
+{
+  "kind": "singleType",
+  "collectionName": "contact_sections",
+  "info": {
+    "singularName": "contact-section",
+    "pluralName": "contact-sections",
+    "displayName": "Contact Section",
+    "description": "Content for the contacts section"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "titleDescription": {
+      "type": "string",
+      "required": true
+    },
+    "paragraphDescription": {
+      "type": "string",
+      "required": false
+    }
+  }
+} 

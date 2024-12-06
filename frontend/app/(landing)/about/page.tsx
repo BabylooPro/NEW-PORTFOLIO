@@ -3,7 +3,7 @@ import DevelopmentMethodologiesSection from "@/features/about/DevelopmentMethodo
 import ExpertiseSection from "@/features/about/ExpertiseSection";
 import SoftSkillsSection from "@/features/about/SoftSkillsSection";
 import Footer from "@/features/landing/Footer";
-import Header from "@/features/landing/Header";
+import Header from "@/components/ui/header/Header";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

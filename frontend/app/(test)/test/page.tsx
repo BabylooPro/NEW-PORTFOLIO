@@ -1,6 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
-import Header from "@/features/landing/Header";
+import Header from "@/components/ui/header/Header";
 import { Section } from "@/components/ui/section";
 import { notFound } from "next/navigation";
 

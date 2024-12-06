@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import ExperienceSection from "@/features/landing/ExperienceSection";
 import Footer from "@/features/landing/Footer";
-import Header from "@/features/landing/Header";
+import Header from "@/components/ui/header/Header";
 import HeroSection from "@/features/landing/HeroSection";
 import SkillSection from "@/features/landing/SkillSection";
 import SideProjectsSection from "@/features/landing/SideProjectsSection";

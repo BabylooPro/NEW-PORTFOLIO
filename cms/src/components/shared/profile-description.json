@@ -1,0 +1,28 @@
+{
+  "collectionName": "components_shared_profile_descriptions",
+  "info": {
+    "displayName": "ProfileDescription",
+    "description": "Profile information displayed in header"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "titles": {
+      "type": "component",
+      "component": "shared.profile-title",
+      "required": true,
+      "repeatable": true,
+      "min": 1,
+      "max": 2
+    },
+    "avatar": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["images"]
+    }
+  }
+} 
