@@ -4,30 +4,30 @@ import { useState, useEffect } from 'react';
 interface StrapiResponse {
   data: {
     id: number;
-    attributes: {
-      greeting: string;
-      description: string;
-      swissArmyKnifeText: string;
-      swissArmyKnifeDescription: string;
-      learnMoreText: string;
-      aboutMeText: string;
-      audioTitle: string;
-      audioDescription: string;
-      audioFile: {
-        data: {
-          id: number;
-          attributes: {
-            name: string;
-            url: string;
-          }
-        }
-      };
+    documentId: string;
+    greeting: string;
+    description: string;
+    swissArmyKnifeText: string;
+    swissArmyKnifeDescription: string;
+    learnMoreText: string;
+    aboutMeText: string;
+    audioTitle: string;
+    audioDescription: string;
+    audioFile: {
+      id: number;
+      documentId: string;
+      name: string;
+      url: string;
+      mime: string;
+      hash: string;
+      ext: string;
+      size: number;
     };
   };
   meta: Record<string, unknown>;
 }
 
-// TRANSFORMED DATA TYPE
+// TRANSFORMED DATA TYPE FOR COMPONENT
 interface HeroData {
   greeting: string;
   description: string;
@@ -57,26 +57,29 @@ export function useHeroSection() {
         }
         const result: StrapiResponse = await response.json();
         
+        // DEBUG
+        console.log('Raw Strapi response:', result);
+        
         // TRANSFORM THE DATA
         const transformedData: HeroData = {
-          greeting: result.data.attributes.greeting,
-          description: result.data.attributes.description,
-          swissArmyKnifeText: result.data.attributes.swissArmyKnifeText,
-          swissArmyKnifeDescription: result.data.attributes.swissArmyKnifeDescription,
-          learnMoreText: result.data.attributes.learnMoreText,
-          aboutMeText: result.data.attributes.aboutMeText,
-          audioTitle: result.data.attributes.audioTitle,
-          audioDescription: result.data.attributes.audioDescription,
+          greeting: result.data.greeting,
+          description: result.data.description,
+          swissArmyKnifeText: result.data.swissArmyKnifeText,
+          swissArmyKnifeDescription: result.data.swissArmyKnifeDescription,
+          learnMoreText: result.data.learnMoreText,
+          aboutMeText: result.data.aboutMeText,
+          audioTitle: result.data.audioTitle,
+          audioDescription: result.data.audioDescription,
           audioFile: {
-            name: result.data.attributes.audioFile.data.attributes.name,
-            url: result.data.attributes.audioFile.data.attributes.url
+            name: result.data.audioFile.name,
+            url: result.data.audioFile.url
           }
         };
 
         setHeroData(transformedData);
       } catch (err) {
+        console.error("Raw error:", err);
         setError(err instanceof Error ? err : new Error('Failed to fetch hero section data'));
-        console.error("Failed to fetch hero section data:", err);
       } finally {
         setIsLoading(false);
       }

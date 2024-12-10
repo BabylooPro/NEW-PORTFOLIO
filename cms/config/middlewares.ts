@@ -16,20 +16,21 @@ module.exports = [
       frameguard: false,
     },
   },
-  {
-    name: 'strapi::cors',
-    config: {
-      enabled: true,
-      headers: '*',
-      origin: ['http://localhost:1337', 'http://localhost:3000', '*'],
-      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
-      keepHeaderOnError: true,
-    },
-  },
+  'strapi::cors',
   'strapi::poweredBy',
   'strapi::logger',
   'strapi::query',
-  'strapi::body',
+  {
+    name: 'strapi::body',
+    config: {
+      formLimit: "256mb",
+      jsonLimit: "256mb",
+      textLimit: "256mb",
+      formidable: {
+        maxFileSize: 250 * 1024 * 1024,
+      },
+    },
+  },
   'strapi::session',
   'strapi::favicon',
   'strapi::public',
