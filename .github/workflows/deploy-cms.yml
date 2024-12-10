@@ -45,13 +45,14 @@ jobs:
                       ${{ runner.os }}-node_modules-
 
             - name: Test SSH Connection
-              uses: appleboy/ssh-action@v0.1.5
+              uses: appleboy/ssh-action@v0.1.4
               with:
                   host: ${{ secrets.CMS_EC2_HOST }}
                   username: ${{ secrets.CMS_EC2_USER }}
                   key: ${{ secrets.CMS_EC2_KEY }}
                   debug: true
                   script: |
+                    echo "Testing SSH connection"
                     uptime
                     hostname
 
@@ -62,21 +63,26 @@ jobs:
               run: npm run build
 
             - name: Deploy to EC2
-              uses: appleboy/ssh-action@v0.1.5
+              uses: appleboy/ssh-action@v0.1.4
               with:
                   host: ${{ secrets.CMS_EC2_HOST }}
                   username: ${{ secrets.CMS_EC2_USER }}
                   key: ${{ secrets.CMS_EC2_KEY }}
                   debug: true
                   script: |
-                      cd /home/ubuntu
+                      set -e
+                      echo "Starting deployment on EC2"
+
+                      cd /home/ubuntu || exit
 
                       if [ ! -d "NEW-PORTFOLIO" ]; then
                         git clone https://github.com/BabylooPro/NEW-PORTFOLIO.git
                       fi
 
-                      cd NEW-PORTFOLIO/cms
+                      cd NEW-PORTFOLIO/cms || exit
 
+                      git reset --hard HEAD
+                      git clean -fd
                       git pull origin main
 
                       NODE_OPTIONS="--max-old-space-size=3072" \
