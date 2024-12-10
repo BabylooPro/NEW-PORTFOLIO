@@ -15,8 +15,6 @@ jobs:
             run:
                 working-directory: cms
         env:
-            HOST: ${{ secrets.HOST }}
-            PORT: ${{ secrets.PORT }}
             APP_KEYS: ${{ secrets.APP_KEYS }}
             API_TOKEN_SALT: ${{ secrets.API_TOKEN_SALT }}
             ADMIN_JWT_SECRET: ${{ secrets.ADMIN_JWT_SECRET }}
@@ -44,18 +42,6 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-node_modules-
 
-            - name: Test SSH Connection
-              uses: appleboy/ssh-action@v0.1.4
-              with:
-                  host: ${{ secrets.CMS_EC2_HOST }}
-                  username: ${{ secrets.CMS_EC2_USER }}
-                  key: ${{ secrets.CMS_EC2_KEY }}
-                  debug: true
-                  script: |
-                    echo "Testing SSH connection"
-                    uptime
-                    hostname
-
             - name: Install dependencies
               run: npm install --legacy-peer-deps --force
 
@@ -63,26 +49,21 @@ jobs:
               run: npm run build
 
             - name: Deploy to EC2
-              uses: appleboy/ssh-action@v0.1.4
+              uses: appleboy/ssh-action@v0.1.5
               with:
                   host: ${{ secrets.CMS_EC2_HOST }}
                   username: ${{ secrets.CMS_EC2_USER }}
                   key: ${{ secrets.CMS_EC2_KEY }}
-                  debug: true
+                  port: 22
                   script: |
-                      set -e
-                      echo "Starting deployment on EC2"
-
-                      cd /home/ubuntu || exit
+                      cd /home/ubuntu
 
                       if [ ! -d "NEW-PORTFOLIO" ]; then
                         git clone https://github.com/BabylooPro/NEW-PORTFOLIO.git
                       fi
 
-                      cd NEW-PORTFOLIO/cms || exit
+                      cd NEW-PORTFOLIO/cms
 
-                      git reset --hard HEAD
-                      git clean -fd
                       git pull origin main
 
                       NODE_OPTIONS="--max-old-space-size=3072" \
