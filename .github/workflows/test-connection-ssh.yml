@@ -17,10 +17,9 @@ jobs:
           host: ${{ secrets.CMS_EC2_HOST }}
           username: ${{ secrets.CMS_EC2_USER }}
           key: ${{ secrets.CMS_EC2_KEY }}
-          debug: false
           script: |
-            uptime 2>/dev/null
-            hostname 2>/dev/null
+            uptime
+            hostname
 
       - name: Test SSH Connection - Frontend Instance
         uses: appleboy/ssh-action@v0.1.5
@@ -28,9 +27,6 @@ jobs:
           host: ${{ secrets.FRONTEND_EC2_HOST }}
           username: ${{ secrets.FRONTEND_EC2_USER }}
           key: ${{ secrets.FRONTEND_EC2_KEY }}
-          debug: false
           script: |
-            OUTPUT=$(uptime 2>&1)
-            echo "$OUTPUT"
-            HOSTNAME=$(hostname 2>&1)
-            echo "$HOSTNAME"
+            uptime
+            hostname
