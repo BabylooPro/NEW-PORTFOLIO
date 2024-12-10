@@ -44,12 +44,6 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-node_modules-
 
-            - name: Install dependencies
-              run: npm install --legacy-peer-deps --force
-
-            - name: Build project
-              run: npm run build
-
             - name: Test SSH Connection
               uses: appleboy/ssh-action@v0.1.5
               with:
@@ -60,6 +54,12 @@ jobs:
                   script: |
                     uptime
                     hostname
+
+            - name: Install dependencies
+              run: npm install --legacy-peer-deps --force
+
+            - name: Build project
+              run: npm run build
 
             - name: Deploy to EC2
               uses: appleboy/ssh-action@v0.1.5
