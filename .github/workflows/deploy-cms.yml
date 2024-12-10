@@ -33,28 +33,6 @@ jobs:
             STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
 
         steps:
-            - name: Setup tmate session
-              uses: mxschmitt/action-tmate@v3
-              with:
-                host: ${{ secrets.CMS_EC2_HOST }}
-                username: ${{ secrets.CMS_EC2_USER }}
-                key: ${{ secrets.CMS_EC2_KEY }}
-                port: 22
-                debug: true
-                script: |
-                  echo "Testing SSH connection"
-
-            - name: Debug SSH connection
-              uses: appleboy/ssh-action@v0.1.5
-              with:
-                host: ${{ secrets.CMS_EC2_HOST }}
-                username: ${{ secrets.CMS_EC2_USER }}
-                key: ${{ secrets.CMS_EC2_KEY }}
-                port: 22
-                debug: true
-                script: |
-                  echo "Testing SSH connection"
-
             - name: Checkout code
               uses: actions/checkout@v3
 
@@ -71,8 +49,6 @@ jobs:
 
             - name: Build project
               run: npm run build
-
-            
 
             - name: Deploy to EC2
               uses: appleboy/ssh-action@v0.1.5

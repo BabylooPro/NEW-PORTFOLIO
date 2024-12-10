@@ -1,0 +1,32 @@
+name: Test SSH Connection to EC2
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-ssh:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Test SSH Connection - CMS Instance
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.CMS_EC2_HOST }}
+          username: ${{ secrets.CMS_EC2_USER }}
+          key: ${{ secrets.CMS_EC2_KEY }}
+          script: |
+            uptime
+            hostname
+
+      - name: Test SSH Connection - Frontend Instance
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.FRONTEND_EC2_HOST }}
+          username: ${{ secrets.FRONTEND_EC2_USER }}
+          key: ${{ secrets.FRONTEND_EC2_KEY }}
+          script: |
+            uptime
+            hostname
