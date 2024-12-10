@@ -1,0 +1,93 @@
+name: Deploy CMS to AWS EC2 (Test)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'cms/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cms
+    env:
+      HOST: ${{ secrets.HOST }}
+      PORT: ${{ secrets.PORT }}
+      APP_KEYS: ${{ secrets.APP_KEYS }}
+      API_TOKEN_SALT: ${{ secrets.API_TOKEN_SALT }}
+      ADMIN_JWT_SECRET: ${{ secrets.ADMIN_JWT_SECRET }}
+      TRANSFER_TOKEN_SALT: ${{ secrets.TRANSFER_TOKEN_SALT }}
+      DATABASE_CLIENT: ${{ secrets.DATABASE_CLIENT }}
+      DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
+      DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+      DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+      DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
+      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+      DATABASE_SSL: ${{ secrets.DATABASE_SSL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
+      STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: cms/node_modules
+          key: ${{ runner.os }}-node_modules-${{ hashFiles('cms/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node_modules-
+
+      - name: Test SSH Connection
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.CMS_EC2_HOST }}
+          username: ${{ secrets.CMS_EC2_USER }}
+          key: ${{ secrets.CMS_EC2_KEY }}
+          debug: true
+          script: |
+            echo "Testing SSH connection"
+            uptime
+            hostname
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps --force
+
+      - name: Build project
+        run: npm run build
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.CMS_EC2_HOST }}
+          username: ${{ secrets.CMS_EC2_USER }}
+          key: ${{ secrets.CMS_EC2_KEY }}
+          debug: true
+          script: |
+            set -e
+            echo "Starting deployment on EC2"
+
+            cd /home/ubuntu || exit
+            if [ ! -d "NEW-PORTFOLIO" ]; then
+              git clone https://github.com/BabylooPro/NEW-PORTFOLIO.git
+            fi
+            cd NEW-PORTFOLIO/cms || exit
+
+            git reset --hard HEAD
+            git clean -fd
+            git pull origin main
+
+            NODE_OPTIONS="--max-old-space-size=3072" \
+            npm install --legacy-peer-deps --force
+            NODE_OPTIONS="--max-old-space-size=3072" \
+            npm run build
+
+            pm2 delete cms || true
+            pm2 start npm --name "cms" -- start --prefix /home/ubuntu/NEW-PORTFOLIO/cms --update-env
+            pm2 save
