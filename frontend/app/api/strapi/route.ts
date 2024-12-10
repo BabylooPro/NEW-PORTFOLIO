@@ -13,10 +13,7 @@ export async function GET(request: Request) {
   });
 
   if (!STRAPI_URL || !STRAPI_TOKEN) {
-    console.error('Missing Strapi configuration:', {
-      url: !!STRAPI_URL,
-      token: !!STRAPI_TOKEN
-    });
+    console.error('Missing Strapi configuration');
     return NextResponse.json(
       { error: 'Server configuration error' },
       { status: 500 }
@@ -32,8 +29,8 @@ export async function GET(request: Request) {
     
     // BUILD URL WITH PROPER POPULATION
     const populatedPath = cleanPath.includes('?') ? 
-      `${cleanPath}&populate=deep` : 
-      `${cleanPath}?populate=deep`;
+      `${cleanPath}&populate[0]=audioFile` : 
+      `${cleanPath}?populate[0]=audioFile`;
 
     const url = `${STRAPI_URL}/api/${populatedPath}`;
     console.log('Request details:', {
