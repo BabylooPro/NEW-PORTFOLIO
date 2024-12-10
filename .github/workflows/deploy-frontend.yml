@@ -1,11 +1,6 @@
 name: Deploy Frontend to AWS EC2
 
 on:
-    push:
-        branches:
-            - main
-        paths:
-            - 'frontend/**'
     workflow_dispatch:
 
 jobs:

@@ -1,11 +1,6 @@
 name: Deploy CMS to AWS EC2
 
 on:
-    push:
-        branches:
-            - main
-        paths:
-            - 'cms/**'
     workflow_dispatch:
 
 jobs:
