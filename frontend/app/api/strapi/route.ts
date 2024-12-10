@@ -27,10 +27,19 @@ export async function GET(request: Request) {
     // CLEAN THE PATH
     const cleanPath = path.startsWith('/') ? path.slice(1) : path;
     
-    // BUILD URL WITH PROPER POPULATION
-    const populatedPath = cleanPath.includes('?') ? 
-      `${cleanPath}&populate[0]=audioFile` : 
-      `${cleanPath}?populate[0]=audioFile`;
+    // PROPER POPULATION BASED ON PATH
+    let populatedPath = cleanPath;
+    if (['about-section', 'header-section'].includes(cleanPath)) {
+      populatedPath = cleanPath.includes('?') ? 
+        `${cleanPath}&populate[0]=audioFile` : 
+        `${cleanPath}?populate[0]=audioFile`;
+    } else if (cleanPath === 'expertise-section') {
+      populatedPath = `${cleanPath}?populate[0]=expertises`;
+    } else if (cleanPath === 'soft-skills-section') {
+      populatedPath = `${cleanPath}?populate[0]=softSkills`;
+    } else if (cleanPath === 'development-methodologies-section') {
+      populatedPath = `${cleanPath}?populate[0]=methodologies`;
+    }
 
     const url = `${STRAPI_URL}/api/${populatedPath}`;
     console.log('Request details:', {
