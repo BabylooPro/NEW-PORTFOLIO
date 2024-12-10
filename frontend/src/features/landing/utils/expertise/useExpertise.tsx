@@ -14,9 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skill, SkillYear } from "./types";
 import { SkillsSkeleton } from "./SkillSkeleton";
 
-interface SkillYearGroup extends SkillYear {}
-
-type ExpertiseItem = ExperienceItemProps | SkillYearGroup; // UNION TYPE FOR POSSIBLE ITEM TYPES
+// USE THE SKILLYEAR TYPE DIRECTLY
+type ExpertiseItem = ExperienceItemProps | SkillYear; // UNION TYPE FOR POSSIBLE ITEM TYPES
 
 interface UseExpertiseProps {
 	title: string;
@@ -38,7 +37,7 @@ const isExperienceItem = (item: ExpertiseItem): item is ExperienceItemProps => {
 };
 
 // TYPE GUARD FOR SKILL ITEMS
-const isSkillYearGroup = (item: ExpertiseItem): item is SkillYearGroup => {
+const isSkillYearGroup = (item: ExpertiseItem): item is SkillYear => {
 	return "year" in item && "skills" in item;
 };
 
@@ -58,6 +57,25 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 	const scrollAreaRef = React.useRef<ScrollAreaRef>(null);
 	const isSkillSection = title.toLowerCase().includes("skill");
 
+	if (error) {
+		return (
+			<Section>
+				<div className="flex items-center justify-between mb-4">
+					<h2 className="text-2xl font-bold flex items-center gap-2">
+						<div className="flex items-center gap-2">
+							<ShowInfo
+								title="My Skills"
+							/>
+						</div>
+					</h2>
+				</div>
+				<div className="flex items-center justify-center h-[200px] text-red-500">
+					{error}
+				</div>
+			</Section>
+		);
+	}
+
 	return (
 		<TooltipProvider>
 			<Section>
@@ -67,7 +85,14 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 							{title || "My Skills"}
 							<ShowInfo
 								title={title}
-								description={titleDescription}
+								description={
+									<>
+										{titleDescription} <br />{" "}
+										<span className="text-xs text-neutral-500">
+											{paragraphDescription}
+										</span>
+									</>
+								}
 							/>
 						</div>
 					</h2>

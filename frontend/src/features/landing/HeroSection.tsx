@@ -156,7 +156,7 @@ export default function HeroSection() {
 					<ShowInfo.Description>{heroData.audioDescription}</ShowInfo.Description>
 					<ShowInfo.Content>
 						<AudioReader 
-							src={`${process.env.NEXT_PUBLIC_STRAPI_API_URL}${heroData.audioFile.url}`} 
+							src={`${process.env.NEXT_PUBLIC_STRAPI_API_URL}/uploads/${heroData.audioFile.url.split('/uploads/')[1]}`} 
 							onError={(error: Error) => console.error('Audio error:', error)}
 							/>
 					</ShowInfo.Content>

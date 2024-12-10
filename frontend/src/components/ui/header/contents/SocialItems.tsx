@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Github, Linkedin, Youtube } from "lucide-react";
 
 const IconMap = {

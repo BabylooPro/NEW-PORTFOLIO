@@ -16,8 +16,9 @@ export const ProfileContent = ({
 	const { data, isLoading } = useHeaderSection();
 	const avatar = data?.profile?.avatar;
 	
-	const avatarUrl = avatar?.formats?.thumbnail?.url || avatar?.url;
-	const fullAvatarUrl = avatarUrl ? `${STRAPI_URL}${avatarUrl}` : '';
+	const avatarUrl = avatar?.url 
+		? `${STRAPI_URL}/uploads/${avatar.url.split('/uploads/')[1]}`
+		: '';
 	const initials = data?.profile?.name?.split(' ').map(n => n[0]).join('') || 'MR';
 
 	if (isLoading) return null;
@@ -38,7 +39,7 @@ export const ProfileContent = ({
 					<div className="relative">
 						<Avatar className="w-10 h-10 sm:w-14 sm:h-14">
 							<AvatarImage 
-								src={fullAvatarUrl} 
+								src={avatarUrl} 
 								alt={avatar?.alternativeText || `${data?.profile?.name}'s avatar`}
 							/>
 							<AvatarFallback>{initials}</AvatarFallback>

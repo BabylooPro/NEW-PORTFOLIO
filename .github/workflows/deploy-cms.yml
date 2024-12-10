@@ -28,7 +28,6 @@ jobs:
             DATABASE_SSL: ${{ secrets.DATABASE_SSL }}
             JWT_SECRET: ${{ secrets.JWT_SECRET }}
             STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
-            STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
 
         steps:
             - name: Checkout code
@@ -86,7 +85,7 @@ jobs:
                       JWT_SECRET=${{ secrets.JWT_SECRET }} \
                       STRAPI_API_TOKEN=${{ secrets.STRAPI_API_TOKEN }} \
                       STRAPI_API_URL=${{ secrets.STRAPI_API_URL }} \
-                      npm run build
+                      NODE_ENV=production npm run build
 
                       pm2 delete cms || true
                       HOST=${{ secrets.HOST }} \

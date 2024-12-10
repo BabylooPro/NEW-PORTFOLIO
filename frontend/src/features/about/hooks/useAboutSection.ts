@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery } from '@tanstack/react-query';
 
 interface Language {
@@ -67,7 +68,7 @@ export const useAboutSection = () => {
         const data = await response.json();
         return data;
       } catch (error) {
-        throw new Error('Failed to fetch about section data');
+        throw new Error('Failed to fetch about section data' + error);
       }
     }
   });
