@@ -15,8 +15,8 @@ jobs:
       run:
         working-directory: cms
     env:
-      HOST: ${{ secrets.HOST }}
-      PORT: ${{ secrets.PORT }}
+      # HOST: ${{ secrets.HOST }}
+      # PORT: ${{ secrets.PORT }}
       APP_KEYS: ${{ secrets.APP_KEYS }}
       API_TOKEN_SALT: ${{ secrets.API_TOKEN_SALT }}
       ADMIN_JWT_SECRET: ${{ secrets.ADMIN_JWT_SECRET }}
