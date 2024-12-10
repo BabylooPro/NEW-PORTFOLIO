@@ -45,7 +45,7 @@ jobs:
             ${{ runner.os }}-node_modules-
 
       - name: Test SSH Connection
-        uses: appleboy/ssh-action@v0.1.4
+        uses: appleboy/ssh-action@v0.1.5
         with:
           host: ${{ secrets.CMS_EC2_HOST }}
           username: ${{ secrets.CMS_EC2_USER }}
@@ -63,7 +63,7 @@ jobs:
         run: npm run build
 
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@v0.1.4
+        uses: appleboy/ssh-action@v0.1.5
         with:
           host: ${{ secrets.CMS_EC2_HOST }}
           username: ${{ secrets.CMS_EC2_USER }}
