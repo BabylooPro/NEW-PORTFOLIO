@@ -17,6 +17,7 @@ jobs:
           host: ${{ secrets.CMS_EC2_HOST }}
           username: ${{ secrets.CMS_EC2_USER }}
           key: ${{ secrets.CMS_EC2_KEY }}
+          debug: true
           script: |
             uptime
             hostname
