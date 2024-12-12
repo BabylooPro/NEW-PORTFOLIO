@@ -1,5 +1,6 @@
 import { Section } from "@/components/ui/section";
 import { Separator } from "@/components/ui/separator";
+import Link from "next/link";
 
 export const PrivacyPolicy = () => {
   return (
@@ -100,7 +101,7 @@ export const PrivacyPolicy = () => {
         <div>
           <h2 className="text-2xl font-semibold">8. Updates to This Privacy Policy</h2>
           <p>
-            I may update this Privacy Policy from time to time. Any changes will be posted on this page with an updated "Effective Date." Please review this policy periodically.
+            I may update this Privacy Policy from time to time. Any changes will be posted on this page with an updated &quot;Effective Date.&quot; Please review this policy periodically.
           </p>
         </div>
 
@@ -116,6 +117,16 @@ export const PrivacyPolicy = () => {
             <p>Email: <a target="_blank" href="mailto:maxremy.dev@gmail.com" className="text-primary hover:underline">maxremy.dev@gmail.com</a></p>
             <p>Phone: <a target="_blank" href="tel:+41798730605" className="text-primary hover:underline">+41 79 873 06 05</a></p>
           </div>
+        </div>
+
+        <Separator />
+
+        <div>
+          <h2 className="text-2xl font-semibold">10. Source Code</h2>
+          <p>
+            The source code for this Website is available on GitHub. You can access it at: <br />
+            <Link target="_blank" href="https://github.com/BabylooPro/NEW-PORTFOLIO" className="text-primary hover:underline">https://github.com/BabylooPro/NEW-PORTFOLIO</Link>
+          </p>
         </div>
 
         <Separator />
