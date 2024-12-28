@@ -1,74 +1,96 @@
 import { GET } from "../../app/api/countries/route";
 
 describe("GET /api/countries", () => {
-	// RESTORE MOCKS
-	beforeEach(() => {
-		jest.restoreAllMocks();
-	});
+    // RESTORE MOCKS
+    beforeEach(() => {
+        jest.restoreAllMocks();
+    });
 
-	// TEST FOR DATA
-	it("Should return a list of countries from the external API", async () => {
-		const response = await GET(); // GET DATA
+    // TEST FOR DATA
+    it("Should return a list of countries from the external API", async () => {
+        // MOCK RESPONSE DATA
+        const mockCountries = [
+            {
+                id: 1,
+                name: "Test Country",
+                iso3: "TST",
+                iso2: "TS",
+                capital: "Test Capital",
+                currency: "TST",
+                emoji: "🏳️",
+                numeric_code: "123",
+                phone_code: "+1",
+            },
+        ];
 
-		// CHECK STATUS
-		expect(response.status).toBe(200);
+        // MOCK FETCH
+        global.fetch = jest.fn().mockResolvedValue({
+            ok: true,
+            json: async () => mockCountries,
+        });
 
-		// CHECK DATA
-		const jsonResponse = await response.json();
-		expect(Array.isArray(jsonResponse)).toBe(true);
-		expect(jsonResponse.length).toBeGreaterThan(0);
+        const response = await GET();
+        const data = await response.json();
 
-		// CHECK PROPERTIES
-		const country = jsonResponse[0];
-		expect(country).toHaveProperty("id");
-		expect(country).toHaveProperty("name");
-		expect(country).toHaveProperty("iso3");
-		expect(country).toHaveProperty("iso2");
-		expect(country).toHaveProperty("capital");
-		expect(country).toHaveProperty("currency");
-		expect(country).toHaveProperty("emoji");
+        // CHECK STATUS
+        expect(response.status).toBe(200);
 
-		// CHECK TYPES
-		if (country.numeric_code) expect(typeof country.numeric_code).toBe("string");
-		if (country.phone_code) expect(typeof country.phone_code).toBe("string");
-	});
+        // CHECK DATA
+        expect(Array.isArray(data)).toBe(true);
+        expect(data.length).toBeGreaterThan(0);
 
-	// TEST FOR AUTHENTICATION HEADER
-	it("Should include the `X-CSCAPI-KEY` authentication header", async () => {
-		// SIMULATE API RESPONSE
-		const mockFetch = jest.spyOn(global, "fetch").mockResolvedValue({
-			ok: true,
-			json: async () => [],
-		} as Response);
+        // CHECK PROPERTIES
+        const country = data[0];
+        expect(country).toHaveProperty("id");
+        expect(country).toHaveProperty("name");
+        expect(country).toHaveProperty("iso3");
+        expect(country).toHaveProperty("iso2");
+        expect(country).toHaveProperty("capital");
+        expect(country).toHaveProperty("currency");
+        expect(country).toHaveProperty("emoji");
 
-		// GET DATA
-		await GET();
+        // CHECK TYPES
+        if (country.numeric_code) expect(typeof country.numeric_code).toBe("string");
+        if (country.phone_code) expect(typeof country.phone_code).toBe("string");
+    });
 
-		// CHECK CALL
-		expect(mockFetch).toHaveBeenCalledWith(expect.any(String), {
-			headers: {
-				"X-CSCAPI-KEY": process.env.COUNTRY_STATE_CITY_API_KEY || "",
-			},
-		});
-	});
+    // TEST FOR AUTHENTICATION HEADER
+    it("Should include the `X-CSCAPI-KEY` authentication header", async () => {
+        // MOCK FETCH
+        const mockFetch = jest.fn().mockResolvedValue({
+            ok: true,
+            json: async () => [],
+        });
+        global.fetch = mockFetch;
 
-	// TEST FOR 500 ERROR
-	it("Should return a 500 error if the external API does not respond", async () => {
-		// SIMULATE API RESPONSE
-		jest.spyOn(global, "fetch").mockResolvedValue({
-			ok: false,
-			status: 500,
-			json: async () => ({ error: "Failed to fetch country data" }),
-		} as Response);
+        // GET DATA
+        await GET();
 
-		// GET DATA
-		const response = await GET();
+        // CHECK CALL
+        expect(mockFetch).toHaveBeenCalledWith(expect.any(String), {
+            headers: {
+                "X-CSCAPI-KEY": process.env.COUNTRY_STATE_CITY_API_KEY || "",
+            },
+        });
+    });
 
-		// CHECK STATUS
-		expect(response.status).toBe(500);
+    // TEST FOR 500 ERROR
+    it("Should return a 500 error if the external API does not respond", async () => {
+        // MOCK FETCH
+        global.fetch = jest.fn().mockResolvedValue({
+            ok: false,
+            status: 500,
+            json: async () => ({ error: "Failed to fetch country data" }),
+        });
 
-		// CHECK DATA
-		const jsonResponse = await response.json();
-		expect(jsonResponse).toEqual({ error: "Failed to fetch country data" });
-	});
+        // GET DATA
+        const response = await GET();
+        const data = await response.json();
+
+        // CHECK STATUS
+        expect(response.status).toBe(500);
+
+        // CHECK DATA
+        expect(data).toEqual({ error: "Failed to fetch country data" });
+    });
 });
