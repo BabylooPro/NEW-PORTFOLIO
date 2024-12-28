@@ -6,7 +6,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     defaults:
       run:
         working-directory: cms
@@ -50,7 +50,7 @@ jobs:
           username: ${{ secrets.CMS_EC2_USER }}
           key: ${{ secrets.CMS_EC2_KEY }}
           port: 22
-          command_timeout: 20m
+          command_timeout: 40m
           script: |
             cd /home/ubuntu
 
@@ -69,7 +69,7 @@ jobs:
             rm -rf dist
 
             # INSTALL WITH INCREASED MEMORY
-            export NODE_OPTIONS="--max-old-space-size=4096"
+            export NODE_OPTIONS="--max-old-space-size=3072"
             npm install --legacy-peer-deps --force
 
             # BUILD WITH ENVIRONMENT VARIABLES
@@ -89,7 +89,7 @@ jobs:
             JWT_SECRET=${{ secrets.JWT_SECRET }} \
             STRAPI_API_TOKEN=${{ secrets.STRAPI_API_TOKEN }} \
             STRAPI_API_URL=${{ secrets.STRAPI_API_URL }} \
-            NODE_ENV=production npm run build
+            NODE_ENV=production NODE_OPTIONS="--max-old-space-size=3072" npm run build
 
             # VERIFY BUILD
             if [ ! -d "dist" ]; then
@@ -115,6 +115,6 @@ jobs:
             JWT_SECRET=${{ secrets.JWT_SECRET }} \
             STRAPI_API_TOKEN=${{ secrets.STRAPI_API_TOKEN }} \
             STRAPI_API_URL=${{ secrets.STRAPI_API_URL }} \
-            NODE_ENV=production pm2 start npm --name cms -- run start
+            NODE_ENV=production NODE_OPTIONS="--max-old-space-size=3072" pm2 start npm --name cms -- run start
 
             pm2 save
