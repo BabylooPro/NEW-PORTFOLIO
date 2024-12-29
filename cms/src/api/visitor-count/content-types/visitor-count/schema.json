@@ -1,0 +1,24 @@
+{
+  "kind": "singleType",
+  "collectionName": "visitor_counts",
+  "info": {
+    "singularName": "visitor-count",
+    "pluralName": "visitor-counts",
+    "displayName": "Visitor Count"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "count": {
+      "type": "integer",
+      "default": 0,
+      "required": true
+    },
+    "history": {
+      "type": "json",
+      "required": true,
+      "default": []
+    }
+  }
+}

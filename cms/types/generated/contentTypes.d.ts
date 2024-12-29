@@ -830,6 +830,39 @@ export interface ApiSoftSkillsSectionSoftSkillsSection
   };
 }
 
+export interface ApiVisitorCountVisitorCount extends Struct.SingleTypeSchema {
+  collectionName: 'visitor_counts';
+  info: {
+    displayName: 'Visitor Count';
+    pluralName: 'visitor-counts';
+    singularName: 'visitor-count';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    count: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<0>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    history: Schema.Attribute.JSON &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<[]>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::visitor-count.visitor-count'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiWhatIDoSectionWhatIDoSection
   extends Struct.SingleTypeSchema {
   collectionName: 'what-i-do-sections';
@@ -1384,6 +1417,7 @@ declare module '@strapi/strapi' {
       'api::skill-year.skill-year': ApiSkillYearSkillYear;
       'api::skill.skill': ApiSkillSkill;
       'api::soft-skills-section.soft-skills-section': ApiSoftSkillsSectionSoftSkillsSection;
+      'api::visitor-count.visitor-count': ApiVisitorCountVisitorCount;
       'api::what-i-do-section.what-i-do-section': ApiWhatIDoSectionWhatIDoSection;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

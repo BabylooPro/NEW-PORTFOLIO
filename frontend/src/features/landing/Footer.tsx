@@ -2,16 +2,28 @@
 
 import { CodeXml } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React from "react";
 import { ShowInfo } from "@/components/ui/show-info";
 import { FeedbackRating } from "@/components/ui/feedback-badge";
+import { VisitorCounter } from "@/components/ui/visitor-counter";
 
 const Footer = () => {
     const currentYear = new Date().getFullYear();
+    const pathname = usePathname();
 
     return (
         <footer className="py-8 sm:py-12 md:py-16 flex flex-col justify-center items-center space-y-4">
-            <FeedbackRating />
+
+            <div className="flex flex-col items-center space-y-4 mb-32">
+                {pathname === "/" && (
+                    <>
+                        <FeedbackRating />
+                        <VisitorCounter />
+                    </>
+                )}
+            </div>
+
 
             <ShowInfo wrapMode>
                 <ShowInfo.Title>Privacy Policy</ShowInfo.Title>
