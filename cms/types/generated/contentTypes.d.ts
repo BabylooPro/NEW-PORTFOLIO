@@ -538,6 +538,43 @@ export interface ApiExpertiseSectionExpertiseSection
   };
 }
 
+export interface ApiFeedbackFeedback extends Struct.CollectionTypeSchema {
+  collectionName: 'feedbacks';
+  info: {
+    displayName: 'Feedback';
+    pluralName: 'feedbacks';
+    singularName: 'feedback';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    feedback: Schema.Attribute.Text;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::feedback.feedback'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    rating: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 5;
+          min: 0.5;
+        },
+        number
+      >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiHeaderSectionHeaderSection extends Struct.SingleTypeSchema {
   collectionName: 'header_sections';
   info: {
@@ -1339,6 +1376,7 @@ declare module '@strapi/strapi' {
       'api::development-methodologies-section.development-methodologies-section': ApiDevelopmentMethodologiesSectionDevelopmentMethodologiesSection;
       'api::experience-section.experience-section': ApiExperienceSectionExperienceSection;
       'api::expertise-section.expertise-section': ApiExpertiseSectionExpertiseSection;
+      'api::feedback.feedback': ApiFeedbackFeedback;
       'api::header-section.header-section': ApiHeaderSectionHeaderSection;
       'api::hero-section.hero-section': ApiHeroSectionHeroSection;
       'api::projects-section.projects-section': ApiProjectsSectionProjectsSection;

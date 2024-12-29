@@ -1,21 +1,24 @@
 "use client";
 
-import { CodeXml} from "lucide-react";
+import { CodeXml } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { ShowInfo } from "@/components/ui/show-info";
+import { FeedbackRating } from "@/components/ui/feedback-badge";
 
 const Footer = () => {
-	const currentYear = new Date().getFullYear();
+    const currentYear = new Date().getFullYear();
 
-	return (
-		<footer className="py-8 sm:py-12 md:py-16 flex flex-col justify-center items-center space-y-4">
-			<ShowInfo wrapMode>
-				<ShowInfo.Title>Privacy Policy</ShowInfo.Title>
-				<ShowInfo.Description>
-					Click to read my full privacy policy
-				</ShowInfo.Description>
-				<ShowInfo.Content>
+    return (
+        <footer className="py-8 sm:py-12 md:py-16 flex flex-col justify-center items-center space-y-4">
+            <FeedbackRating />
+
+            <ShowInfo wrapMode>
+                <ShowInfo.Title>Privacy Policy</ShowInfo.Title>
+                <ShowInfo.Description>
+                    Click to read my full privacy policy
+                </ShowInfo.Description>
+                <ShowInfo.Content>
                     <Link href="/privacy">
                         <div className="flex items-center space-x-2 text-center">
                             <span className="text-xs sm:text-sm md:text-base font-bold">
@@ -27,10 +30,10 @@ const Footer = () => {
                             </span>
                         </div>
                     </Link>
-				</ShowInfo.Content>
-			</ShowInfo>
-		</footer>
-	);
+                </ShowInfo.Content>
+            </ShowInfo>
+        </footer>
+    );
 };
 
 export default Footer;
