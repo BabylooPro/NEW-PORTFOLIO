@@ -61,38 +61,75 @@ async function getSkillIdByName(name: string): Promise<number | null> {
     }
 }
 
-// UPDATE CMS SKILL HOURS
-async function updateSkillHours(skillId: number, hours: number, minutes: number) {
-    console.log(`Setting hours for skill ${skillId} to: ${hours}h ${minutes}m`);
+// UPDATE SKILL HOURS IN CMS
+async function updateSkillHours(skillId: number, newHours: number, newMinutes: number) {
     try {
-        const path = `skills/${skillId}/update-hours`;
-        const url = `${BASE_URL}/api/strapi?path=${path}`;
-        console.log(`Sending PUT request to: ${url}`);
+        // FIRST GET CURRENT SKILL DATA USING COLLECTION ROUTE WITH FILTER
+        const path = `skills`;
+        const params = new URLSearchParams({
+            'filters[id][$eq]': skillId.toString(),
+            'populate': '*'
+        });
+        const getUrl = `/api/strapi?path=${path}&${params.toString()}`;
 
-        // SEND TOTAL HOURS AND MINUTES FOR DAY
-        const response = await fetch(url, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                hours: Math.floor(hours),
-                minutes: Math.floor(minutes)
-            }),
+        console.log("Getting current skill hours:", { skillId });
+        console.log("URL:", getUrl);
+
+        const getResponse = await fetch(`${BASE_URL}${getUrl}`);
+        console.log("Get response status:", getResponse.status);
+
+        if (!getResponse.ok) {
+            throw new Error(`Failed to get skill hours: ${getResponse.status}`);
+        }
+
+        const data = await getResponse.json();
+        const currentSkill = data.data?.[0];
+
+        if (!currentSkill) {
+            throw new Error(`Skill not found with ID: ${skillId}`);
+        }
+
+        const currentHours = currentSkill.attributes.hours || 0;
+        const currentMinutes = currentSkill.attributes.minutes || 0;
+
+        // CALCULATE TOTAL MINUTES
+        const totalMinutes = (currentHours * 60 + currentMinutes) + (newHours * 60 + newMinutes);
+
+        // CONVERT BACK TO HOURS AND MINUTES
+        const finalHours = Math.floor(totalMinutes / 60);
+        const finalMinutes = totalMinutes % 60;
+
+        console.log("Hours calculation:", {
+            current: { hours: currentHours, minutes: currentMinutes },
+            new: { hours: newHours, minutes: newMinutes },
+            final: { hours: finalHours, minutes: finalMinutes }
         });
 
-        console.log(`Update response status:`, response.status);
+        // UPDATE WITH TOTAL HOURS
+        const updatePath = `skills/${skillId}/update-hours`;
+        const updateUrl = `/api/strapi?path=${updatePath}`;
 
-        if (!response.ok) {
-            console.error(`Failed to update skill hours: ${response.statusText}`);
-            const errorData = await response.text();
-            console.error(`Error details:`, errorData);
-        } else {
-            const successData = await response.json();
-            console.log(`Update successful:`, successData);
+        console.log("Updating skill hours:", { skillId, hours: finalHours, minutes: finalMinutes });
+        console.log("URL:", updateUrl);
+
+        const updateResponse = await fetch(`${BASE_URL}${updateUrl}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ hours: finalHours, minutes: finalMinutes }),
+        });
+
+        console.log("Update response status:", updateResponse.status);
+
+        if (!updateResponse.ok) {
+            throw new Error(`Failed to update skill hours: ${updateResponse.status}`);
         }
+
+        return await updateResponse.json();
     } catch (error) {
-        console.error('Error updating skill hours:', error);
+        console.error("Error updating skill hours:", error);
+        throw error;
     }
 }
 
