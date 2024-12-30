@@ -1,0 +1,44 @@
+{
+  "kind": "collectionType",
+  "collectionName": "live_projects",
+  "info": {
+    "singularName": "live-project",
+    "pluralName": "live-projects",
+    "displayName": "Live Projects",
+    "description": "Projects that are currently live and deployed"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "description": "The name of the project (must match GitHub repository name)"
+    },
+    "url": {
+      "type": "string",
+      "description": "The URL where the project is deployed"
+    },
+    "isOnline": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the project is currently online"
+    },
+    "notes": {
+      "type": "text",
+      "description": "Additional notes about the live deployment"
+    },
+    "deployDate": {
+      "type": "date",
+      "description": "When the project was deployed"
+    },
+    "technologies": {
+      "type": "json",
+      "description": "List of technologies used in the project",
+      "default": []
+    }
+  }
+}

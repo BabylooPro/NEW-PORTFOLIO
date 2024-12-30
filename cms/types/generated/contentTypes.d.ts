@@ -651,6 +651,42 @@ export interface ApiHeroSectionHeroSection extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiLiveProjectLiveProject extends Struct.CollectionTypeSchema {
+  collectionName: 'live_projects';
+  info: {
+    description: 'Projects that are currently live and deployed';
+    displayName: 'Live Projects';
+    pluralName: 'live-projects';
+    singularName: 'live-project';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    deployDate: Schema.Attribute.Date;
+    isOnline: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::live-project.live-project'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    notes: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    technologies: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    url: Schema.Attribute.String;
+  };
+}
+
 export interface ApiProjectsSectionProjectsSection
   extends Struct.SingleTypeSchema {
   collectionName: 'projects_sections';
@@ -1412,6 +1448,7 @@ declare module '@strapi/strapi' {
       'api::feedback.feedback': ApiFeedbackFeedback;
       'api::header-section.header-section': ApiHeaderSectionHeaderSection;
       'api::hero-section.hero-section': ApiHeroSectionHeroSection;
+      'api::live-project.live-project': ApiLiveProjectLiveProject;
       'api::projects-section.projects-section': ApiProjectsSectionProjectsSection;
       'api::skill-section.skill-section': ApiSkillSectionSkillSection;
       'api::skill-year.skill-year': ApiSkillYearSkillYear;
