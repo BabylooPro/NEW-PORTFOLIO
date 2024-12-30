@@ -42,11 +42,20 @@ export default factories.createCoreController('api::skill.skill', ({ strapi }) =
                 return ctx.notFound('Skill not found');
             }
 
-            // UPDATE SKILL WITH NEW HOURS AND MINUTES
+            // CALCULATE TOTAL MINUTES
+            const currentTotalMinutes = (skill.hours || 0) * 60 + (skill.minutes || 0);
+            const newTotalMinutes = hours * 60 + minutes;
+            const finalTotalMinutes = currentTotalMinutes + newTotalMinutes;
+
+            // CONVERT BACK TO HOURS AND MINUTES
+            const finalHours = Math.floor(finalTotalMinutes / 60);
+            const finalMinutes = finalTotalMinutes % 60;
+
+            // UPDATE SKILL WITH NEW TOTAL HOURS AND MINUTES
             const updatedSkill = await strapi.entityService.update('api::skill.skill', id, {
                 data: {
-                    hours,
-                    minutes,
+                    hours: finalHours,
+                    minutes: finalMinutes,
                 }
             });
 
