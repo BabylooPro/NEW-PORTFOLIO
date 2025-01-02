@@ -2,20 +2,30 @@
 
 import { useEffect, useState } from "react";
 import { Card } from "./card";
-import { Eye } from "lucide-react";
-import { Area, AreaChart, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Area, AreaChart, XAxis, YAxis } from "recharts";
 import { UsersIcon } from "../decoration/icons/users";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./chart";
 
 type VisitorHistory = {
     count: number;
     timestamp: string;
 }
 
+const chartConfig = {
+    count: {
+        label: "Visitors",
+        theme: {
+            light: "rgb(16, 185, 129)",
+            dark: "rgb(16, 185, 129)"
+        }
+    },
+} as const;
+
 export const VisitorCounter = () => {
     const [mounted, setMounted] = useState(false);
     const [visitorCount, setVisitorCount] = useState<number>(0);
-    const [history, setHistory] = useState<VisitorHistory[]>([]);
+    const [processedHistory, setProcessedHistory] = useState<VisitorHistory[]>([]);
     const [delta, setDelta] = useState<number>(0);
     const [isHovered, setIsHovered] = useState(false);
 
@@ -29,25 +39,48 @@ export const VisitorCounter = () => {
                 const response = await fetch("/api/visitor");
                 const data = await response.json();
                 setVisitorCount(data?.data?.attributes?.count || 0);
-                setHistory(data?.data?.attributes?.history || []);
+                const rawHistory = data?.data?.attributes?.history || [];
+
+                // PROCESS HISTORY TO GET VISITS PER HOUR
+                const visitsPerHour = rawHistory.reduce((acc: { [key: string]: number }, curr: VisitorHistory) => {
+                    try {
+                        const date = new Date(curr.timestamp);
+                        if (isNaN(date.getTime())) {
+                            console.warn('Invalid date:', curr.timestamp);
+                            return acc;
+                        }
+                        // FORMAT: YYYY-MM-DD HH
+                        const hourKey = date.toISOString().slice(0, 13) + ':00:00.000Z';
+                        acc[hourKey] = (acc[hourKey] || 0) + 1;
+                    } catch {
+                        console.warn('Error processing date:', curr.timestamp);
+                    }
+                    return acc;
+                }, {});
+
+                // CONVERT TO ARRAY FORMAT FOR CHART
+                const processedData = Object.entries(visitsPerHour)
+                    .map(([timestamp, count]) => ({
+                        timestamp,
+                        count: count as number
+                    }))
+                    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+                console.log('Processed data:', processedData);
+                setProcessedHistory(processedData);
 
                 // CALCULATE DELTA FOR LAST 24H
                 const now = new Date();
                 const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
                 // FILTER HISTORY FOR LAST 24H
-                const last24hEntries = (data?.data?.attributes?.history || []).filter((entry: VisitorHistory) =>
+                const last24hEntries = rawHistory.filter((entry: VisitorHistory) =>
                     new Date(entry.timestamp) >= last24h
                 );
 
                 // CALCULATE DELTA FOR LAST 24H
                 if (last24hEntries.length > 0) {
-                    const lastCount = last24hEntries[last24hEntries.length - 1].count;
-                    const firstCount = (data?.data?.attributes?.history || [])
-                        .find((entry: VisitorHistory) => new Date(entry.timestamp) < last24h)?.count ||
-                        last24hEntries[0].count;
-
-                    setDelta(lastCount - firstCount);
+                    setDelta(last24hEntries.length);
                 }
             } catch (error) {
                 console.error("Failed to update visitor count:", error);
@@ -80,25 +113,27 @@ export const VisitorCounter = () => {
                         )}
                     </div>
 
-                    {history.length > 0 && (
+                    {processedHistory.length > 0 && (
                         <div className="h-6 w-12">
-                            <AreaChart
-                                data={history}
-                                width={48}
-                                height={24}
-                                margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
-                            >
-                                <Area
-                                    type="monotone"
-                                    dataKey="count"
-                                    stroke="rgb(16, 185, 129)"
-                                    fill="rgb(16, 185, 129)"
-                                    fillOpacity={0.2}
-                                    strokeWidth={1}
-                                    dot={false}
-                                    isAnimationActive={false}
-                                />
-                            </AreaChart>
+                            <ChartContainer config={chartConfig}>
+                                <AreaChart
+                                    data={processedHistory}
+                                    width={48}
+                                    height={24}
+                                    margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+                                >
+                                    <Area
+                                        type="natural"
+                                        dataKey="count"
+                                        stroke="rgb(16, 185, 129)"
+                                        fill="rgb(16, 185, 129)"
+                                        fillOpacity={0.2}
+                                        strokeWidth={1}
+                                        dot={false}
+                                        isAnimationActive={false}
+                                    />
+                                </AreaChart>
+                            </ChartContainer>
                         </div>
                     )}
                 </Card>
@@ -106,39 +141,78 @@ export const VisitorCounter = () => {
             <DialogContent className="sm:max-w-[600px]">
                 <DialogHeader>
                     <DialogTitle>Visitor Analytics</DialogTitle>
+                    <DialogDescription>
+                        View the number of visitors over time
+                    </DialogDescription>
                 </DialogHeader>
                 <div className="h-[300px] w-full py-4">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ChartContainer config={chartConfig}>
                         <AreaChart
-                            data={history}
+                            data={processedHistory}
                             margin={{ top: 10, right: 10, bottom: 0, left: 0 }}
                         >
                             <XAxis
                                 dataKey="timestamp"
-                                tickFormatter={(timestamp) => new Date(timestamp).toLocaleDateString()}
+                                tickFormatter={(timestamp) => {
+                                    try {
+                                        return new Intl.DateTimeFormat('en-US', {
+                                            month: 'numeric',
+                                            day: 'numeric',
+                                            hour: 'numeric',
+                                            minute: '2-digit',
+                                            hour12: true
+                                        }).format(new Date(timestamp));
+                                    } catch {
+                                        console.warn('Error formatting date:', timestamp);
+                                        return 'Invalid Date';
+                                    }
+                                }}
                             />
                             <YAxis />
-                            <Tooltip
-                                labelFormatter={(timestamp) => new Date(timestamp).toLocaleString()}
-                                formatter={(value) => [value.toLocaleString(), "Visitors"]}
-                                contentStyle={{
-                                    backgroundColor: "rgb(24, 24, 27)",
-                                    border: "1px solid rgb(39, 39, 42)",
-                                    color: "rgb(250, 250, 250)",
-                                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
-                                    borderRadius: "0.5rem",
-                                    padding: "0.75rem"
-                                }}
-                                itemStyle={{
-                                    color: "rgb(250, 250, 250)"
-                                }}
-                                labelStyle={{
-                                    color: "rgb(250, 250, 250)"
+                            <ChartTooltip
+                                content={({ active, payload }) => {
+                                    if (!active || !payload?.length) return null;
+
+                                    return (
+                                        <ChartTooltipContent
+                                            className="flex flex-col gap-2"
+                                            indicator="dot"
+                                            formatter={(value, name) => (
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="text-muted-foreground">
+                                                        {chartConfig[name as keyof typeof chartConfig]?.label || name}
+                                                    </span>
+                                                    <span className="font-bold tabular-nums">
+                                                        {value}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            labelFormatter={(_, payload) => {
+                                                if (!payload?.[0]?.payload?.timestamp) return 'Invalid Date';
+
+                                                try {
+                                                    return new Intl.DateTimeFormat('en-US', {
+                                                        month: 'numeric',
+                                                        day: 'numeric',
+                                                        hour: 'numeric',
+                                                        minute: '2-digit',
+                                                        hour12: true
+                                                    }).format(new Date(payload[0].payload.timestamp));
+                                                } catch {
+                                                    console.warn('Error formatting date:', payload[0].payload.timestamp);
+                                                    return 'Invalid Date';
+                                                }
+                                            }}
+                                            active={active}
+                                            payload={payload}
+                                        />
+                                    );
                                 }}
                             />
                             <Area
-                                type="monotone"
+                                type="natural"
                                 dataKey="count"
+                                name="count"
                                 stroke="rgb(16, 185, 129)"
                                 fill="rgb(16, 185, 129)"
                                 fillOpacity={0.2}
@@ -146,7 +220,7 @@ export const VisitorCounter = () => {
                                 dot
                             />
                         </AreaChart>
-                    </ResponsiveContainer>
+                    </ChartContainer>
                 </div>
             </DialogContent>
         </Dialog>

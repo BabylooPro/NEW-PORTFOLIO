@@ -1,12 +1,11 @@
 'use client';
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { Button } from "./button";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "./card";
 import { Textarea } from "./textarea";
-import { useTheme } from "next-themes";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -145,7 +144,7 @@ interface Particle {
 
 const StarParticles = ({ x, y, count }: { x: number; y: number; count: number }) => {
     const [particles, setParticles] = useState<Particle[]>([]);
-    const requestRef = useRef<number>();
+    const requestRef = useRef<number | null>(null);
 
     useEffect(() => {
         // CREATE PARTICLES FOR EACH SELECTED STAR
@@ -231,19 +230,19 @@ export const FeedbackRating = () => {
     const [userFeedback, setUserFeedback] = useState<string>("");
     const ratingContainerRef = useRef<HTMLDivElement>(null);
     const node = useRef<HTMLDivElement>(null);
-    const { resolvedTheme } = useTheme();
-    const precision = 0.5;
     const totalStars = 5;
     const [particleProps, setParticleProps] = useState<{ x: number; y: number; show: boolean; count: number }>({ x: 0, y: 0, show: false, count: 0 });
-    const [selectedRating, setSelectedRating] = useState<number | null>(null);
+    const [selectedRating, setSelectedRating] = useState<number | null>(() => null);
     const [mouseX, setMouseX] = useState<number | null>(null);
+
+    const defaultValues = {
+        rating: 0,
+        feedback: "",
+    };
 
     const form = useForm<FeedbackForm>({
         resolver: zodResolver(feedbackSchema),
-        defaultValues: {
-            rating: 0,
-            feedback: "",
-        },
+        defaultValues,
     });
 
     useEffect(() => {
@@ -251,7 +250,7 @@ export const FeedbackRating = () => {
             const handleClickOutside = (e: MouseEvent) => {
                 if (node.current && !node.current.contains(e.target as Node)) {
                     setFeedbackActive(false);
-                    form.reset();
+                    form.reset(defaultValues);
                 }
             };
             document.addEventListener("mousedown", handleClickOutside);
@@ -259,7 +258,7 @@ export const FeedbackRating = () => {
                 document.removeEventListener("mousedown", handleClickOutside);
             };
         }
-    }, [feedbackActive, form]);
+    }, [feedbackActive, form, defaultValues]);
 
     // CHECK LOCAL STORAGE ON MOUNT
     useEffect(() => {
@@ -359,19 +358,17 @@ export const FeedbackRating = () => {
         setMouseX(null);
     };
 
+    const resetSelectedRating = useCallback(() => {
+        setSelectedRating(() => null);
+    }, []);
+
     const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
         const newRating = calculateRating(e);
         form.setValue("rating", newRating);
-        setSelectedRating(newRating);
+        setSelectedRating(() => newRating);
         setFeedbackActive(true);
 
-        setTimeout(() => {
-            setSelectedRating(null);
-        }, 400);
-
-        const rect = e.currentTarget.getBoundingClientRect();
         const selectedStarsCount = Math.ceil(newRating);
-
         setParticleProps({
             x: e.clientX,
             y: e.clientY,
@@ -379,6 +376,10 @@ export const FeedbackRating = () => {
             count: selectedStarsCount
         });
 
+        // RESET SELECTED RATING AFTER ANIMATION
+        setTimeout(resetSelectedRating, 400);
+
+        // HIDE PARTICLES AFTER ANIMATION
         setTimeout(() => {
             setParticleProps(prev => ({ ...prev, show: false }));
         }, 1000);

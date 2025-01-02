@@ -2,22 +2,16 @@ import { NextResponse } from "next/server";
 import { WakaTimeData, Editor, CachedWakaTimeData, OperatingSystem, Category, Language } from "./types";
 
 const WAKATIME_API_KEY = process.env.WAKATIME_API_KEY;
-const CMS_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL;
 const STRAPI_TOKEN = process.env.STRAPI_API_TOKEN;
-
-// BASE URL FOR API CALLS (ABSOLUTE URL BETWEEN WAKATIME AND STRAPI)
 const BASE_URL = process.env.NODE_ENV === 'production'
     ? 'https://maxremy.dev'
     : 'http://localhost:3000';
 
 // CACHE SETTINGS
 let cachedData: CachedWakaTimeData | null = null;
-let lastActivityAt: number | null = null;
 
 // THRESHOLD SETTINGS
 const CACHE_DURATION_SECONDS = 300; // 5 MINUTES
-const AWAY_THRESHOLD_SECONDS = 900; // 15 MINUTES
-const BUSY_THRESHOLD_SECONDS = 3600; // 1 HOUR
 
 // FETCH SKILL ID BY NAME
 async function getSkillIdByName(name: string): Promise<number | null> {
@@ -61,74 +55,54 @@ async function getSkillIdByName(name: string): Promise<number | null> {
     }
 }
 
-// UPDATE SKILL HOURS IN CMS
-async function updateSkillHours(skillId: number, newHours: number, newMinutes: number) {
+// UPDATE SKILL STATS IN CMS
+async function updateSkillStats(skillId: number, seconds: number) {
     try {
-        // FIRST GET CURRENT SKILL DATA USING COLLECTION ROUTE WITH FILTER
-        const path = `skills`;
-        const params = new URLSearchParams({
-            'filters[id][$eq]': skillId.toString(),
-            'populate': '*'
-        });
-        const getUrl = `/api/strapi?path=${path}&${params.toString()}`;
+        const today = new Date().toISOString().split('T')[0];
+        const path = 'wakatime-stats';
 
-        console.log("Getting current skill hours:", { skillId });
-        console.log("URL:", getUrl);
+        // FIRST GET EXISTING STATS FOR THIS SKILL AND DATE
+        const getUrl = `${BASE_URL}/api/strapi?path=${path}&filters[skill][id][$eq]=${skillId}&filters[date][$eq]=${today}`;
+        const existingResponse = await fetch(getUrl);
+        const existingData = await existingResponse.json();
 
-        const getResponse = await fetch(`${BASE_URL}${getUrl}`);
-        console.log("Get response status:", getResponse.status);
-
-        if (!getResponse.ok) {
-            throw new Error(`Failed to get skill hours: ${getResponse.status}`);
+        // CALCULATE TOTAL SECONDS (EXISTING + NEW)
+        let totalSeconds = Math.round(seconds);
+        if (existingData.data && existingData.data.length > 0) {
+            totalSeconds += existingData.data[0].attributes.seconds || 0;
         }
 
-        const data = await getResponse.json();
-        const currentSkill = data.data?.[0];
+        // UPDATE OR CREATE STATS
+        const updateUrl = `${BASE_URL}/api/strapi?path=${path}/upsert`;
+        console.log("Updating skill stats:", { skillId, totalSeconds, date: today, url: updateUrl });
 
-        if (!currentSkill) {
-            throw new Error(`Skill not found with ID: ${skillId}`);
-        }
-
-        const currentHours = currentSkill.attributes.hours || 0;
-        const currentMinutes = currentSkill.attributes.minutes || 0;
-
-        // CALCULATE TOTAL MINUTES
-        const totalMinutes = (currentHours * 60 + currentMinutes) + (newHours * 60 + newMinutes);
-
-        // CONVERT BACK TO HOURS AND MINUTES
-        const finalHours = Math.floor(totalMinutes / 60);
-        const finalMinutes = totalMinutes % 60;
-
-        console.log("Hours calculation:", {
-            current: { hours: currentHours, minutes: currentMinutes },
-            new: { hours: newHours, minutes: newMinutes },
-            final: { hours: finalHours, minutes: finalMinutes }
-        });
-
-        // UPDATE WITH TOTAL HOURS
-        const updatePath = `skills/${skillId}/update-hours`;
-        const updateUrl = `/api/strapi?path=${updatePath}`;
-
-        console.log("Updating skill hours:", { skillId, hours: finalHours, minutes: finalMinutes });
-        console.log("URL:", updateUrl);
-
-        const updateResponse = await fetch(`${BASE_URL}${updateUrl}`, {
-            method: "PUT",
+        const response = await fetch(updateUrl, {
+            method: 'POST',
             headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${STRAPI_TOKEN}`
             },
-            body: JSON.stringify({ hours: finalHours, minutes: finalMinutes }),
+            body: JSON.stringify({
+                skillId,
+                date: today,
+                seconds: totalSeconds
+            })
         });
 
-        console.log("Update response status:", updateResponse.status);
+        const responseText = await response.text();
+        console.log("Raw response:", responseText);
 
-        if (!updateResponse.ok) {
-            throw new Error(`Failed to update skill hours: ${updateResponse.status}`);
+        if (!response.ok) {
+            console.error(`Failed to update skill stats: ${response.status} - ${responseText}`);
+            throw new Error(`Failed to update skill stats: ${response.status}`);
         }
 
-        return await updateResponse.json();
+        const data = JSON.parse(responseText);
+        console.log("Stats update response:", data);
+
+        return data;
     } catch (error) {
-        console.error("Error updating skill hours:", error);
+        console.error("Error updating skill stats:", { skillId, error });
         throw error;
     }
 }
@@ -146,7 +120,8 @@ async function fetchDataWithCache(revalidate: boolean = false) {
     }
 
     // FETCH FRESH DATA FROM WAKATIME API
-    const wakatimeApiUrl = "https://wakatime.com/api/v1/users/current/status_bar/today?scope=read_summaries";
+    const today = new Date().toISOString().split('T')[0];
+    const wakatimeApiUrl = `https://wakatime.com/api/v1/users/current/summaries?start=${today}&end=${today}`;
 
     // FETCH DATA FROM WAKATIME API
     try {
@@ -166,30 +141,95 @@ async function fetchDataWithCache(revalidate: boolean = false) {
             throw new Error(`WakaTime API responded with status: ${response.status}`);
         }
 
-        const data: WakaTimeData = await response.json(); // PARSE JSON RESPONSE
-        console.log('Raw data from WakaTime:', {
-            categories: data.data.categories,
-            languages: data.data.languages,
-            grand_total: data.data.grand_total
-        });
+        const rawData = await response.json(); // PARSE JSON RESPONSE
+        console.log('Raw data from WakaTime:', rawData);
+
+        // TRANSFORM THE DATA TO MATCH OUR INTERFACE
+        const data: WakaTimeData = {
+            cached_at: new Date().toISOString(),
+            data: {
+                categories: rawData.data[0]?.categories || [],
+                editors: rawData.data[0]?.editors || [],
+                operating_systems: rawData.data[0]?.operating_systems || [],
+                languages: rawData.data[0]?.languages || [],
+                grand_total: rawData.data[0]?.grand_total || {
+                    hours: 0,
+                    minutes: 0,
+                    total_seconds: 0,
+                    digital: "0:00",
+                    decimal: "0.00",
+                    text: "0 mins"
+                },
+                range: rawData.data[0]?.range || {
+                    start: new Date().toISOString(),
+                    end: new Date().toISOString(),
+                    date: new Date().toISOString().split('T')[0],
+                    text: "Today",
+                    timezone: "Unknown"
+                }
+            },
+            status: "available",
+            lastCachedAt: Date.now()
+        };
 
         // ENSURE DEFAULT VALUES FOR EMPTY ARRAYS
         const categories: Category[] =
             data.data.categories.length > 0
                 ? data.data.categories
-                : [{ name: "No activity", total_seconds: 0, digital: "0:00", percent: 0 }];
+                : [{
+                    name: "No activity",
+                    total_seconds: 0,
+                    digital: "0:00",
+                    decimal: "0.00",
+                    text: "0 mins",
+                    hours: 0,
+                    minutes: 0,
+                    seconds: 0,
+                    percent: 0
+                }];
         const editors: Editor[] =
             data.data.editors.length > 0
                 ? data.data.editors
-                : [{ name: "None", total_seconds: 0, digital: "0:00", percent: 0 }];
+                : [{
+                    name: "None",
+                    total_seconds: 0,
+                    digital: "0:00",
+                    decimal: "0.00",
+                    text: "0 mins",
+                    hours: 0,
+                    minutes: 0,
+                    seconds: 0,
+                    percent: 0
+                }];
         const operating_systems: OperatingSystem[] =
             data.data.operating_systems.length > 0
                 ? data.data.operating_systems
-                : [{ name: "None", total_seconds: 0, digital: "0:00", percent: 0 }];
+                : [{
+                    name: "None",
+                    total_seconds: 0,
+                    digital: "0:00",
+                    decimal: "0.00",
+                    text: "0 mins",
+                    hours: 0,
+                    minutes: 0,
+                    seconds: 0,
+                    percent: 0,
+                    last_used: Date.now()
+                }];
         const languages: Language[] =
             data.data.languages.length > 0
                 ? data.data.languages
-                : [{ name: "None", total_seconds: 0, digital: "0:00", percent: 0 }];
+                : [{
+                    name: "None",
+                    total_seconds: 0,
+                    digital: "0:00",
+                    decimal: "0.00",
+                    text: "0 mins",
+                    hours: 0,
+                    minutes: 0,
+                    seconds: 0,
+                    percent: 0
+                }];
 
         console.log('Processed languages:', languages);
 
@@ -208,22 +248,11 @@ async function fetchDataWithCache(revalidate: boolean = false) {
 
                 const skillId = await getSkillIdByName(language.name);
                 if (skillId) {
-                    // CALCULATE HOURS AND MINUTES DIRECTLY FROM TOTAL_SECONDS
-                    const hours = Math.floor(language.total_seconds / 3600);
-                    const minutes = Math.floor((language.total_seconds % 3600) / 60);
-
                     console.log(`Time for ${language.name}:`, {
-                        total_seconds: language.total_seconds,
-                        hours,
-                        minutes
+                        total_seconds: language.total_seconds
                     });
 
-                    // UPDATE SKILL HOURS IF THERE IS SIGNIFICANT TIME
-                    if (hours > 0 || minutes > 0) {
-                        await updateSkillHours(skillId, hours, minutes);
-                    } else {
-                        console.log(`No significant time for ${language.name}`);
-                    }
+                    await updateSkillStats(skillId, language.total_seconds);
                 } else {
                     console.log(`No matching skill found for ${language.name}`);
                 }
@@ -256,7 +285,8 @@ async function fetchDataWithCache(revalidate: boolean = false) {
             !cachedData ||
             filteredData.data.grand_total.total_seconds > cachedData.data.grand_total.total_seconds
         ) {
-            lastActivityAt = now;
+            // ACTIVITY DETECTED
+            console.log('New activity detected');
         }
 
         cachedData = filteredData; // UPDATE CACHED DATA
@@ -288,44 +318,38 @@ function updateOperatingSystemsLastUsed(
 
 // API ROUTE TO GET WAKATIME DATA
 export async function GET() {
-    console.log('GET request received');
-    console.log('Environment variables:', {
-        CMS_URL: CMS_URL,
-        WAKATIME_API_KEY: WAKATIME_API_KEY ? 'Set' : 'Not set',
-        STRAPI_TOKEN: STRAPI_TOKEN ? 'Set' : 'Not set'
-    });
-
     try {
-        const data = await fetchDataWithCache(); // FETCH DATA WITH CACHE
-        let status: "available" | "away" | "busy" = "available"; // SET STATUS TO AVAILABLE
+        console.log("GET request received");
+        console.log("Environment variables:", {
+            WAKATIME_API_KEY: process.env.WAKATIME_API_KEY ? "Set" : "Not set",
+            STRAPI_TOKEN: process.env.STRAPI_TOKEN ? "Set" : "Not set",
+        });
 
-        // IF LAST ACTIVITY TIME IS SET, CHECK IF STATUS SHOULD BE AWAY OR BUSY
-        if (lastActivityAt) {
-            const now = Date.now(); // GET CURRENT TIME
-            const timeSinceLastActivity = (now - lastActivityAt) / 1000; // TIME IN SECONDS
+        const data = await fetchDataWithCache();
 
-            console.log('Time since last activity:', {
-                timeSinceLastActivity,
-                BUSY_THRESHOLD_SECONDS,
-                AWAY_THRESHOLD_SECONDS
+        // HANDLE TEST ENVIRONMENT DIFFERENTLY
+        if (process.env.NODE_ENV === 'test') {
+            return new Response(JSON.stringify(data), {
+                headers: { 'Content-Type': 'application/json' },
+                status: 200
             });
-
-            if (timeSinceLastActivity > BUSY_THRESHOLD_SECONDS) {
-                status = "busy"; // SET STATUS TO BUSY IF INACTIVE FOR MORE THAN 1 HOUR
-            } else if (timeSinceLastActivity > AWAY_THRESHOLD_SECONDS) {
-                status = "away"; // SET STATUS TO AWAY IF INACTIVE FOR MORE THAN 15 MINUTES
-            } else {
-                status = "available"; // SET STATUS TO AVAILABLE IF ACTIVITY DETECTED
-            }
         }
 
-        console.log('Returning response with status:', status);
-        return NextResponse.json({ ...data, status }); // RETURN WAKATIME DATA AND STATUS
+        return NextResponse.json(data);
     } catch (error) {
         console.error("Error in GET handler:", error);
-        if (error instanceof Error) {
-            return NextResponse.json({ error: error.message }, { status: 500 });
+        const errorResponse = {
+            error: error instanceof Error ? error.message : "Failed to fetch WakaTime data"
+        };
+
+        // HANDLE TEST ENVIRONMENT DIFFERENTLY
+        if (process.env.NODE_ENV === 'test') {
+            return new Response(JSON.stringify(errorResponse), {
+                headers: { 'Content-Type': 'application/json' },
+                status: 500
+            });
         }
-        return NextResponse.json({ error: "Failed to fetch WakaTime data" }, { status: 500 });
+
+        return NextResponse.json(errorResponse, { status: 500 });
     }
 }

@@ -9,115 +9,115 @@ import { useHeaderSection } from "@/components/ui/header/hooks/useHeaderSection"
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL;
 
 export const ProfileContent = ({
-	wakaTimeData,
+    wakaTimeData,
 }: {
-	wakaTimeData: WakaTimeData | null;
+    wakaTimeData: WakaTimeData | null;
 }) => {
-	const { data, isLoading } = useHeaderSection();
-	const avatar = data?.profile?.avatar;
-	
-	const avatarUrl = avatar?.url 
-		? `${STRAPI_URL}/uploads/${avatar.url.split('/uploads/')[1]}`
-		: '';
-	const initials = data?.profile?.name?.split(' ').map(n => n[0]).join('') || 'MR';
+    const { data, isLoading } = useHeaderSection();
+    const avatar = data?.profile?.avatar;
 
-	if (isLoading) return null;
+    const avatarUrl = avatar?.url
+        ? `${STRAPI_URL}/uploads/${avatar.url.split('/uploads/')[1]}`
+        : '';
+    const initials = data?.profile?.name?.split(' ').map(n => n[0]).join('') || 'MR';
 
-	return (
-		<ShowInfo wrapMode>
-			<ShowInfo.Title>Activity Status</ShowInfo.Title>
-			<ShowInfo.Content>
-				<motion.div
-					whileHover={{ scale: 1.1 }}
-					transition={{
-						type: "spring",
-						stiffness: 300,
-						damping: 10,
-					}}
-					className="relative"
-				>
-					<div className="relative">
-						<Avatar className="w-10 h-10 sm:w-14 sm:h-14">
-							<AvatarImage 
-								src={avatarUrl} 
-								alt={avatar?.alternativeText || `${data?.profile?.name}'s avatar`}
-							/>
-							<AvatarFallback>{initials}</AvatarFallback>
-						</Avatar>
-						<AvatarStatus size={14} />
-					</div>
-				</motion.div>
-			</ShowInfo.Content>
-			<ShowInfo.Description>
-				{wakaTimeData ? (
-					<>
-						<strong>
-							{wakaTimeData.status === "available" && "I'm currently available:"}
-							{wakaTimeData.status === "away" && "I'm currently away:"}
-							{wakaTimeData.status === "busy" && "I'm currently busy:"}
-						</strong>
-						{wakaTimeData.data.categories.length > 0 &&
-						wakaTimeData.data.categories[0].digital !== "0:00" ? (
-							<ul className="list-disc pl-4">
-								<li>
-									{wakaTimeData.status === "available" && "Today, I've been "}
-									{wakaTimeData.status === "away" && "I've been "}
-									{wakaTimeData.status === "busy" && "I've already spent "}
-									{wakaTimeData.data.categories[0].name.toLowerCase()} for{" "}
-									{wakaTimeData.data.categories[0].digital}
-									{wakaTimeData.status === "away" && " so far today"}
-									{wakaTimeData.status === "busy" && " coding today"}
-								</li>
-								<li>
-									{wakaTimeData.status === "available" && "Currently using "}
-									{wakaTimeData.status === "away" && "Last active on "}
-									{wakaTimeData.status === "busy" &&
-										"Not working at the moment, but earlier I was on "}
-									{wakaTimeData.data.operating_systems.length > 0
-										? wakaTimeData.data.operating_systems[0].name
-										: "an unknown system"}
-									, with{" "}
-									{wakaTimeData.data.editors.length > 0
-										? wakaTimeData.data.editors[0].name
-										: "no editor"}
-								</li>
-							</ul>
-						) : (
-							<p>No activity has been logged since the start of the day.</p>
-						)}
+    if (isLoading) return null;
 
-						<Separator className="my-4" />
+    return (
+        <ShowInfo wrapMode>
+            <ShowInfo.Title>Activity Status</ShowInfo.Title>
+            <ShowInfo.Content>
+                <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 10,
+                    }}
+                    className="relative"
+                >
+                    <div className="relative">
+                        <Avatar className="w-10 h-10 sm:w-14 sm:h-14">
+                            <AvatarImage
+                                src={avatarUrl}
+                                alt={avatar?.alternativeText || `${data?.profile?.name}'s avatar`}
+                            />
+                            <AvatarFallback>{initials}</AvatarFallback>
+                        </Avatar>
+                        <AvatarStatus size={14} />
+                    </div>
+                </motion.div>
+            </ShowInfo.Content>
+            <ShowInfo.Description>
+                {wakaTimeData ? (
+                    <>
+                        <strong>
+                            {wakaTimeData.status === "available" && "I'm currently available:"}
+                            {wakaTimeData.status === "away" && "I'm currently away:"}
+                            {wakaTimeData.status === "busy" && "I'm currently busy:"}
+                        </strong>
+                        {wakaTimeData.data.categories?.length > 0 &&
+                            wakaTimeData.data.categories[0].digital !== "0:00" ? (
+                            <ul className="list-disc pl-4">
+                                <li>
+                                    {wakaTimeData.status === "available" && "Today, I've been "}
+                                    {wakaTimeData.status === "away" && "I've been "}
+                                    {wakaTimeData.status === "busy" && "I've already spent "}
+                                    {wakaTimeData.data.categories[0].name.toLowerCase()} for{" "}
+                                    {wakaTimeData.data.categories[0].digital}
+                                    {wakaTimeData.status === "away" && " so far today"}
+                                    {wakaTimeData.status === "busy" && " coding today"}
+                                </li>
+                                <li>
+                                    {wakaTimeData.status === "available" && "Currently using "}
+                                    {wakaTimeData.status === "away" && "Last active on "}
+                                    {wakaTimeData.status === "busy" &&
+                                        "Not working at the moment, but earlier I was on "}
+                                    {wakaTimeData.data.operating_systems?.length > 0
+                                        ? wakaTimeData.data.operating_systems[0].name
+                                        : "an unknown system"}
+                                    , with{" "}
+                                    {wakaTimeData.data.editors?.length > 0
+                                        ? wakaTimeData.data.editors[0].name
+                                        : "no editor"}
+                                </li>
+                            </ul>
+                        ) : (
+                            <p>No activity has been logged since the start of the day.</p>
+                        )}
 
-						<ul className="mt-2">
-							<li>
-								<span className="text-green-500">●</span> <strong>Available: </strong>
-								Active in the last 15 minutes
-							</li>
-							<li>
-								<span className="text-orange-500">●</span> <strong>Away: </strong>
-								Inactive for 15 to 60 minutes
-							</li>
-							<li>
-								<span className="text-red-500">●</span> <strong>Busy: </strong>
-								Inactive for more than an hour
-							</li>
-						</ul>
+                        <Separator className="my-4" />
 
-						<Separator className="my-4" />
+                        <ul className="mt-2">
+                            <li>
+                                <span className="text-green-500">●</span> <strong>Available: </strong>
+                                Active in the last 15 minutes
+                            </li>
+                            <li>
+                                <span className="text-orange-500">●</span> <strong>Away: </strong>
+                                Inactive for 15 to 60 minutes
+                            </li>
+                            <li>
+                                <span className="text-red-500">●</span> <strong>Busy: </strong>
+                                Inactive for more than an hour
+                            </li>
+                        </ul>
 
-						<p className="text-neutral-500 text-sm font-extralight">
-							<strong>Time Zone:</strong> {wakaTimeData.data.range.timezone}
-						</p>
+                        <Separator className="my-4" />
 
-						<p className="text-neutral-500 text-sm font-extralight">
-							<strong>Last Update:</strong>{" "}
-							{new Date(wakaTimeData.cached_at).toLocaleString()}
-						</p>
-					</>
-				) : (
-					<p>Loading Status...</p>
-				)}
-			</ShowInfo.Description>
-		</ShowInfo>
-	);
+                        <p className="text-neutral-500 text-sm font-extralight">
+                            <strong>Time Zone:</strong> Europe/Bern
+                        </p>
+
+                        <p className="text-neutral-500 text-sm font-extralight">
+                            <strong>Last Update:</strong>{" "}
+                            {wakaTimeData.lastCachedAt ? new Date(wakaTimeData.lastCachedAt).toLocaleString() : "Unknown"}
+                        </p>
+                    </>
+                ) : (
+                    <p>Loading Status...</p>
+                )}
+            </ShowInfo.Description>
+        </ShowInfo>
+    );
 }; 

@@ -1,57 +1,61 @@
-import { NextResponse } from "next/server";
-import { resend } from "./utils";
-
-const fromEmail = "portfolio@maxremy.dev";
-const toEmail = "maxremy.dev@gmail.com";
+import { generateEmailHtml, fromEmail, toEmail } from "./utils";
 
 // EXPORTING ASYNC FUNCTION TO HANDLE POST REQUEST
-export async function POST(req: Request) {
-	const { name, email, message } = await req.json();
+export async function POST(request: Request) {
+    try {
+        const body = await request.json();
+        const { name, email, message } = body;
 
-	// GENERATE A UNIQUE IDENTIFIER FOR ONE SUBMISSION
-	const submissionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+        // VALIDATE REQUIRED FIELDS
+        if (!name || !email || !message) {
+            return new Response(JSON.stringify({ error: "Missing required fields" }), {
+                headers: { 'Content-Type': 'application/json' },
+                status: 400
+            });
+        }
 
-	// TRYING TO SEND EMAIL USING RESEND API
-	try {
-		const result = await resend.emails.send({
-			from: fromEmail,
-			to: [toEmail, email], // SEND TO BOTH DEV AND VISITOR
-			subject: `New Contact from ${name} in Portfolio (ID: ${submissionId})`,
-			html: `
-				<h2>New Contact Form Submission</h2>
-            <br />
-				<p><strong>Name:</strong> ${name}</p>
-				<p><strong>Email:</strong> ${email}</p>
-				<p><strong>Message:</strong> ${message}</p>
-				<br />
-				${
-					email === toEmail
-						? ""
-						: "<p style='color: gray; font-size: 0.8em;'>This is a copy of the message sent to the portfolio owner.</p>"
-				}
-            <p style='color: gray; font-size: 0.8em;'><strong>Submission ID:</strong> ${submissionId}</p>
-         `,
-		});
+        // GENERATE SUBMISSION ID
+        const submissionId = Date.now().toString(36) + Math.random().toString(36).slice(2);
 
-		// CHECK IF EMAIL WAS SENT AND RETURN SUCCESS RESPONSE
-		if (result && result.data && result.data.id) {
-			return NextResponse.json({
-				success: true,
-				message: `Email sent successfully to ${toEmail} from ${name}.`,
-			});
-		} else {
-			throw new Error("RESEND: Unexpected response from Resend API");
-		}
-	} catch (error: unknown) {
-		console.error("RESEND Error sending email:", error);
+        // SEND EMAIL VIA RESEND API
+        const response = await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+            },
+            body: JSON.stringify({
+                from: fromEmail,
+                to: [toEmail, email],
+                subject: `New Contact from ${name} in Portfolio (ID: ${submissionId})`,
+                html: generateEmailHtml({ name, email, message, submissionId }),
+            }),
+        });
 
-		// RETURN ERROR RESPONSE
-		return NextResponse.json(
-			{
-				success: false,
-				message: error instanceof Error ? error.message : "Unknown error occurred",
-			},
-			{ status: 500 }
-		);
-	}
+        const result = await response.json();
+
+        if (!response.ok) {
+            return new Response(JSON.stringify({ error: result.message || "Failed to send email" }), {
+                headers: { 'Content-Type': 'application/json' },
+                status: response.status
+            });
+        }
+
+        return new Response(JSON.stringify(result), {
+            headers: { 'Content-Type': 'application/json' },
+            status: 200
+        });
+    } catch (error) {
+        console.error("Error in POST handler:", error);
+        if (error instanceof Error) {
+            return new Response(JSON.stringify({ error: error.message }), {
+                headers: { 'Content-Type': 'application/json' },
+                status: 500
+            });
+        }
+        return new Response(JSON.stringify({ error: "Failed to send email" }), {
+            headers: { 'Content-Type': 'application/json' },
+            status: 500
+        });
+    }
 }

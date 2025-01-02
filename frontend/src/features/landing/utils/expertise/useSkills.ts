@@ -15,7 +15,7 @@ interface StrapiSkill {
         minutes: number | null;
         skillYear: {
             year: string;
-        };
+        } | null;
     };
 }
 
@@ -41,7 +41,8 @@ export const useSkills = () => {
                 const skillsByYear: Record<string, Map<string, Skill>> = {};
 
                 result.data.forEach((item: StrapiSkill) => {
-                    const year = item.attributes.skillYear.year;
+                    const year = item.attributes.skillYear?.year;
+                    if (!year) return;
                     if (!skillsByYear[year]) {
                         skillsByYear[year] = new Map();
                     }

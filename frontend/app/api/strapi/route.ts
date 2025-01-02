@@ -88,8 +88,13 @@ export async function POST(request: Request) {
     const path = searchParams.get('path') ?? '';
     const body = await request.json();
 
+    console.log('POST request:', { path, body });
+
     try {
-        const response = await fetch(`${STRAPI_URL}/api/${path}`, {
+        const url = `${STRAPI_URL}/api/${path}`;
+        console.log('Making request to:', url);
+
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -98,10 +103,26 @@ export async function POST(request: Request) {
             body: JSON.stringify(body),
         });
 
-        const data = await response.json();
+        const responseText = await response.text();
+        console.log('Raw response:', responseText);
+
+        if (!response.ok) {
+            console.error(`Error response: ${response.status} - ${responseText}`);
+            return NextResponse.json(
+                { error: `Failed to post data: ${responseText}` },
+                { status: response.status }
+            );
+        }
+
+        const data = JSON.parse(responseText);
+        console.log('Parsed response:', data);
         return NextResponse.json(data);
     } catch (error) {
-        return NextResponse.json({ error: 'Failed to post data' + error }, { status: 500 });
+        console.error('Error in POST handler:', error);
+        return NextResponse.json(
+            { error: `Failed to post data: ${error instanceof Error ? error.message : String(error)}` },
+            { status: 500 }
+        );
     }
 }
 

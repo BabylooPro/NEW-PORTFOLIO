@@ -29,19 +29,15 @@ interface StrapiResponse {
     }
 }
 
-interface LiveProjectsResponse {
-    data: Array<{
-        id: number;
-        attributes: {
-            name: string;
-            url: string;
-            status: string;
-            notes: string | null;
-            createdAt: string;
-            updatedAt: string;
-            publishedAt: string;
-        }
-    }>
+interface StrapiProject {
+    id: number;
+    publishedAt: string | null;
+    name: string;
+    url: string;
+    isOnline: boolean;
+    notes?: string;
+    technologies?: string[];
+    deployDate?: string;
 }
 
 // DEFAULT STATE
@@ -53,18 +49,14 @@ const DEFAULT_STATE: ProjectsSectionData = {
 };
 
 // VALIDATE STRAPI RESPONSE
-const isValidStrapiResponse = (response: any): response is StrapiResponse => {
-    return response?.data?.title !== undefined &&
-        response?.data?.titleDescription !== undefined &&
-        response?.data?.mainTechnologies !== undefined;
-};
-
-const isValidLiveProjectsResponse = (response: any): response is LiveProjectsResponse => {
-    return Array.isArray(response?.data) && response.data.every((project: any) =>
-        project?.attributes?.name !== undefined &&
-        project?.attributes?.url !== undefined &&
-        project?.attributes?.status !== undefined
-    );
+const isValidStrapiResponse = (response: unknown): response is StrapiResponse => {
+    if (!response || typeof response !== 'object') return false;
+    const typedResponse = response as Record<string, unknown>;
+    if (!typedResponse.data || typeof typedResponse.data !== 'object') return false;
+    const data = typedResponse.data as Record<string, unknown>;
+    return typeof data.title === 'string' &&
+        typeof data.titleDescription === 'string' &&
+        typeof data.mainTechnologies === 'string';
 };
 
 export const useProjectsSection = () => {
@@ -90,14 +82,12 @@ export const useProjectsSection = () => {
                 // THEN TRY TO FETCH LIVE PROJECTS
                 let liveProjects: LiveProject[] = [];
                 try {
-                    const liveProjectsRes = await fetch("/api/strapi?path=live-projects"); // FETCH LIVE PROJECTS
+                    const liveProjectsRes = await fetch("/api/strapi?path=live-projects");
 
                     // VALIDATE RESPONSE
                     if (liveProjectsRes.ok) {
                         const liveProjectsResponse = await liveProjectsRes.json();
                         console.log('Live Projects Raw Response:', liveProjectsResponse);
-                        console.log('Response type:', typeof liveProjectsResponse);
-                        console.log('Has data property:', 'data' in liveProjectsResponse);
 
                         // CHECK IF THE RESPONSE HAS DATA
                         if (!liveProjectsResponse?.data) {
@@ -109,28 +99,18 @@ export const useProjectsSection = () => {
                                 ? liveProjectsResponse.data
                                 : [liveProjectsResponse.data];
 
-                            console.log('Projects data array:', projectsData);
-
                             // FILTER PROJECTS
                             liveProjects = projectsData
-                                .filter((project: any) => {
-                                    const isPublished = !!project?.publishedAt;
-                                    console.log('Project published status:', project?.name, isPublished);
-                                    return isPublished;
-                                })
-                                .map((project: any) => {
-                                    console.log('Processing project:', project);
-                                    return {
-                                        name: project.name,
-                                        url: project.url,
-                                        isOnline: project.isOnline,
-                                        notes: project.notes || undefined,
-                                        technologies: project.technologies || [],
-                                        deployDate: project.deployDate
-                                    };
-                                });
+                                .filter((project: StrapiProject) => !!project?.publishedAt)
+                                .map((project: StrapiProject) => ({
+                                    name: project.name,
+                                    url: project.url,
+                                    isOnline: project.isOnline,
+                                    notes: project.notes,
+                                    technologies: project.technologies,
+                                    deployDate: project.deployDate
+                                }));
                         }
-                        console.log('Final processed live projects:', liveProjects);
                     } else {
                         console.warn('Failed to fetch live projects:', liveProjectsRes.statusText);
                     }
@@ -143,18 +123,12 @@ export const useProjectsSection = () => {
                     ? sectionData.data.mainTechnologies.split(",").map((tech: string) => tech.trim())
                     : [];
 
-                // COMBINE DATA
-                const result = {
+                return {
                     title: sectionData.data.title,
                     titleDescription: sectionData.data.titleDescription,
                     mainTechnologies,
                     liveProjects,
                 } as ProjectsSectionData;
-
-                console.log('Final Result:', result);
-
-                // RETURN RESULT
-                return result;
             } catch (error) {
                 console.error('Error in useProjectsSection:', error);
                 return DEFAULT_STATE;
