@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import "@testing-library/jest-dom";
 import "./jest.setup";
-import fetch from "node-fetch";
+import "isomorphic-fetch";
 
 // SETUP GLOBAL FETCH
 global.fetch = fetch as any;
-global.Request = fetch.Request as any;
-global.Response = fetch.Response as any;
-global.Headers = fetch.Headers as any;
+global.Request = Request as any;
+global.Response = Response as any;
+global.Headers = Headers as any;
 
 if (typeof window !== 'undefined') {
     Object.defineProperty(window, "matchMedia", {

@@ -1,140 +1,105 @@
 import { POST } from "../../../app/api/contact/route";
-import { resend } from "../../../app/api/contact/utils";
+import { generateEmailHtml } from "../../../app/api/contact/utils";
 
-// MOCK NEXT REQUEST
-class MockNextRequest {
-	private body: string;
+// MOCK FETCH
+global.fetch = jest.fn();
 
-	constructor(url: string, options: { method: string; body: string }) {
-		this.body = options.body;
-	}
+// MOCK DATA
+const mockName = "Test User";
+const mockEmail = "test@example.com";
+const mockMessage = "Test message";
 
-	async json() {
-		return JSON.parse(this.body);
-	}
-}
-
-// MOCK RESEND
-jest.mock("../../../app/api/contact/utils", () => ({
-	resend: {
-		emails: {
-			send: jest.fn(),
-		},
-	},
-}));
-
-// MOCK NEXT RESPONSE
-jest.mock("next/server", () => ({
-	NextResponse: {
-		json: jest.fn().mockImplementation((body, init) => ({
-			status: init?.status || 200,
-			json: async () => body,
-		})),
-	},
-}));
-
-// SUPPRESS CONSOLE ERRORS
-beforeAll(() => {
-	jest.spyOn(console, "error").mockImplementation(() => {});
-});
-
-// RESTORE CONSOLE ERROR
-afterAll(() => {
-	(console.error as jest.Mock).mockRestore();
+// SETUP MOCKS
+beforeEach(() => {
+    jest.clearAllMocks();
+    (global.fetch as jest.Mock).mockImplementation(() => Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({
+            id: "test-id",
+            from: "portfolio@maxremy.dev",
+            to: ["maxremy.dev@gmail.com", mockEmail],
+            created_at: new Date().toISOString()
+        })
+    }));
 });
 
 // TESTS - CONTACT API
 describe("Contact API", () => {
-	beforeEach(() => {
-		jest.clearAllMocks();
-	});
+    // TEST - SEND EMAIL SUCCESSFULLY
+    it("should send an email successfully", async () => {
+        // MOCK REQUEST
+        const request = new Request("http://localhost:3000/api/contact", {
+            method: "POST",
+            body: JSON.stringify({
+                name: mockName,
+                email: mockEmail,
+                message: mockMessage,
+            }),
+        });
 
-	// TEST - SEND EMAIL SUCCESSFULLY
-	it("should send an email successfully", async () => {
-		(resend.emails.send as jest.Mock).mockResolvedValue({ data: { id: "123" }, error: null });
+        // SEND REQUEST
+        const response = await POST(request);
+        const responseData = await response.json();
 
-		// MOCK REQUEST
-		const req = new MockNextRequest("http://localhost:3000/api/contact", {
-			method: "POST",
-			body: JSON.stringify({
-				name: "Test User",
-				email: "test@example.com",
-				message: "Hello, this is a test message",
-			}),
-		});
+        // ASSERTIONS
+        expect(response.status).toBe(200);
+        expect(responseData).toHaveProperty("id");
+        expect(responseData).toHaveProperty("from");
+        expect(responseData).toHaveProperty("to");
+        expect(responseData).toHaveProperty("created_at");
+    });
 
-		// MOCK RESPONSE
-		const response = await POST(req as unknown as Request);
-		const responseData = await response.json();
+    // TEST - HANDLE RESEND API ERRORS
+    it("should handle Resend API errors", async () => {
+        // MOCK FETCH ERROR
+        (global.fetch as jest.Mock).mockImplementation(() => Promise.resolve({
+            ok: false,
+            status: 500,
+            json: () => Promise.resolve({ message: "Resend API Error" })
+        }));
 
-		// ASSERTIONS
-		expect(response.status).toBe(200);
-		expect(responseData).toEqual({
-			success: true,
-			message: expect.stringContaining("Email sent successfully"),
-		});
+        // MOCK REQUEST
+        const request = new Request("http://localhost:3000/api/contact", {
+            method: "POST",
+            body: JSON.stringify({
+                name: mockName,
+                email: mockEmail,
+                message: mockMessage,
+            }),
+        });
 
-		// CHECK IF RESEND WAS CALLED
-		expect(resend.emails.send).toHaveBeenCalledTimes(1);
-		expect(resend.emails.send).toHaveBeenCalledWith(
-			expect.objectContaining({
-				from: "portfolio@maxremy.dev",
-				to: ["maxremy.dev@gmail.com", "test@example.com"],
-				subject: expect.stringContaining("New Contact from Test User"),
-				html: expect.stringContaining("Hello, this is a test message"),
-			})
-		);
-	});
+        // SEND REQUEST
+        const response = await POST(request);
+        const responseData = await response.json();
 
-	// TEST - HANDLE RESEND API ERRORS
-	it("should handle Resend API errors", async () => {
-		(resend.emails.send as jest.Mock).mockRejectedValue(new Error("Resend API Error"));
+        // ASSERTIONS
+        expect(response.status).toBe(500);
+        expect(responseData).toEqual({
+            error: "Resend API Error"
+        });
+    });
 
-		// MOCK REQUEST
-		const req = new MockNextRequest("http://localhost:3000/api/contact", {
-			method: "POST",
-			body: JSON.stringify({
-				name: "Test User",
-				email: "test@example.com",
-				message: "Hello, this is a test message",
-			}),
-		});
+    // TEST - HANDLE MISSING FIELDS
+    it("should handle missing required fields", async () => {
+        // MOCK REQUEST WITH MISSING FIELDS
+        const request = new Request("http://localhost:3000/api/contact", {
+            method: "POST",
+            body: JSON.stringify({
+                name: mockName,
+                // email missing
+                message: mockMessage,
+            }),
+        });
 
-		// MOCK RESPONSE
-		const response = await POST(req as unknown as Request);
-		const responseData = await response.json();
+        // SEND REQUEST
+        const response = await POST(request);
+        const responseData = await response.json();
 
-		// ASSERTIONS
-		expect(response.status).toBe(500);
-		expect(responseData).toEqual({
-			success: false,
-			message: "Resend API Error",
-		});
-	});
-
-	// TEST - HANDLE UNEXPECTED RESEND API RESPONSE
-	it("should handle unexpected Resend API response", async () => {
-		(resend.emails.send as jest.Mock).mockResolvedValue({ data: null, error: null });
-
-		// MOCK REQUEST
-		const req = new MockNextRequest("http://localhost:3000/api/contact", {
-			method: "POST",
-			body: JSON.stringify({
-				name: "Test User",
-				email: "test@example.com",
-				message: "Hello, this is a test message",
-			}),
-		});
-
-		// MOCK RESPONSE
-		const response = await POST(req as unknown as Request);
-		const responseData = await response.json();
-
-		// ASSERTIONS
-		expect(response.status).toBe(500);
-		expect(responseData).toEqual({
-			success: false,
-			message: "RESEND: Unexpected response from Resend API",
-		});
-	});
+        // ASSERTIONS
+        expect(response.status).toBe(400);
+        expect(responseData).toEqual({
+            error: "Missing required fields"
+        });
+    });
 });
