@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "dotenv -e .env.test -- jest --testPathPattern='^(?!.*integration).*$'",
-    "test:integration": "TEST_TYPE=integration dotenv -e .env.test -- jest --testPathPattern=integration"
+    "test": "dotenv --env-file .env.test -- jest --testPathPattern='^(?!.*integration).*$'",
+    "test:integration": "TEST_TYPE=integration dotenv --env-file .env.test -- jest --testPathPattern=integration"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -37,7 +37,6 @@
     "@react-stately/calendar": "^3.6.0",
     "@studio-freight/lenis": "^1.0.42",
     "@tanstack/react-query": "^5.62.2",
-    "@types/react": "^18.2.0",
     "@xstate/react": "^5.0.0",
     "axios": "^1.7.9",
     "canvas-confetti": "^1.9.3",
@@ -77,13 +76,12 @@
     "@tailwindcss/typography": "^0.5.15",
     "@testing-library/dom": "^9.3.4",
     "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.0.1",
+    "@testing-library/react": "^14.2.1",
     "@types/canvas-confetti": "^1.6.4",
     "@types/isomorphic-fetch": "^0.0.39",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.1",
     "@types/node-fetch": "^2.6.12",
-    "@types/react-dom": "^18.3.1",
     "@types/react-syntax-highlighter": "^15.5.13",
     "dotenv": "^16.4.7",
     "dotenv-cli": "^7.4.4",
@@ -102,7 +100,9 @@
     "whatwg-fetch": "^3.6.20"
   },
   "overrides": {
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.3.1"
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "19.0.0-rc-66855b96-20241106",
+    "react-dom": "19.0.0-rc-66855b96-20241106"
   }
 }
