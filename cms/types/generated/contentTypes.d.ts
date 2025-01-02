@@ -784,6 +784,7 @@ export interface ApiSkillYearSkillYear extends Struct.CollectionTypeSchema {
 export interface ApiSkillSkill extends Struct.CollectionTypeSchema {
   collectionName: 'skills';
   info: {
+    description: '';
     displayName: 'Skill Data';
     pluralName: 'skills';
     singularName: 'skill';
@@ -830,6 +831,10 @@ export interface ApiSkillSkill extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    wakatimeStats: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::wakatime-stat.wakatime-stat'
+    >;
   };
 }
 
@@ -893,6 +898,50 @@ export interface ApiVisitorCountVisitorCount extends Struct.SingleTypeSchema {
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiWakatimeStatWakatimeStat
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'wakatime_stats';
+  info: {
+    displayName: 'WakaTime Stat';
+    pluralName: 'wakatime-stats';
+    singularName: 'wakatime-stat';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: true;
+    };
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    date: Schema.Attribute.Date & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::wakatime-stat.wakatime-stat'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    seconds: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    skill: Schema.Attribute.Relation<'manyToOne', 'api::skill.skill'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1455,6 +1504,7 @@ declare module '@strapi/strapi' {
       'api::skill.skill': ApiSkillSkill;
       'api::soft-skills-section.soft-skills-section': ApiSoftSkillsSectionSoftSkillsSection;
       'api::visitor-count.visitor-count': ApiVisitorCountVisitorCount;
+      'api::wakatime-stat.wakatime-stat': ApiWakatimeStatWakatimeStat;
       'api::what-i-do-section.what-i-do-section': ApiWhatIDoSectionWhatIDoSection;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

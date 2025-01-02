@@ -4,11 +4,13 @@
   "info": {
     "singularName": "skill",
     "pluralName": "skills",
-    "displayName": "Skill Data"
+    "displayName": "Skill Data",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
   },
+  "pluginOptions": {},
   "attributes": {
     "name": {
       "type": "string",
@@ -48,6 +50,12 @@
       "relation": "manyToOne",
       "target": "api::skill-year.skill-year",
       "inversedBy": "skills"
+    },
+    "wakatimeStats": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::wakatime-stat.wakatime-stat",
+      "mappedBy": "skill"
     }
   }
 }

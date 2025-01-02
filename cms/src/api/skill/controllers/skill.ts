@@ -31,7 +31,7 @@ export default factories.createCoreController('api::skill.skill', ({ strapi }) =
     async updateHours(ctx) {
         try {
             const { id } = ctx.params;
-            const { hours = 0, minutes = 0 } = ctx.request.body;
+            const { hours: newHours = 0, minutes: newMinutes = 0 } = ctx.request.body;
 
             // GET CURRENT SKILL
             const skill = await strapi.entityService.findOne('api::skill.skill', id, {
@@ -42,16 +42,24 @@ export default factories.createCoreController('api::skill.skill', ({ strapi }) =
                 return ctx.notFound('Skill not found');
             }
 
-            // CALCULATE TOTAL MINUTES
+            // CONVERT CURRENT AND NEW TIME TO MINUTES
             const currentTotalMinutes = (skill.hours || 0) * 60 + (skill.minutes || 0);
-            const newTotalMinutes = hours * 60 + minutes;
+            const newTotalMinutes = newHours * 60 + newMinutes;
+
+            // ADD THE NEW TIME TO THE CURRENT TOTAL
             const finalTotalMinutes = currentTotalMinutes + newTotalMinutes;
 
             // CONVERT BACK TO HOURS AND MINUTES
             const finalHours = Math.floor(finalTotalMinutes / 60);
             const finalMinutes = finalTotalMinutes % 60;
 
-            // UPDATE SKILL WITH NEW TOTAL HOURS AND MINUTES
+            console.log("[SKILL] Hours calculation:", {
+                current: { hours: skill.hours || 0, minutes: skill.minutes || 0, totalMinutes: currentTotalMinutes },
+                new: { hours: newHours, minutes: newMinutes, totalMinutes: newTotalMinutes },
+                final: { hours: finalHours, minutes: finalMinutes, totalMinutes: finalTotalMinutes }
+            });
+
+            // UPDATE SKILL WITH NEW TOTAL
             const updatedSkill = await strapi.entityService.update('api::skill.skill', id, {
                 data: {
                     hours: finalHours,

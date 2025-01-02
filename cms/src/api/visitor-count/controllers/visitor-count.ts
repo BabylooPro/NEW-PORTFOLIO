@@ -46,8 +46,8 @@ export default {
                     }
                 });
             } else {
-                // KEEP LAST 50 ENTRIES
-                const history = [...(entity.history || []), newEntry].slice(-50);
+                // KEEP ALL ENTRIES
+                const history = [...(entity.history || []), newEntry];
 
                 entity = await strapi.db.query("api::visitor-count.visitor-count").update({
                     where: { id: entity.id },

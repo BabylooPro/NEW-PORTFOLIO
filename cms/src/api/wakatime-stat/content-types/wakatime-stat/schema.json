@@ -1,0 +1,35 @@
+{
+  "kind": "collectionType",
+  "collectionName": "wakatime_stats",
+  "info": {
+    "singularName": "wakatime-stat",
+    "pluralName": "wakatime-stats",
+    "displayName": "WakaTime Stat"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "content-manager": {
+      "visible": true
+    }
+  },
+  "attributes": {
+    "date": {
+      "type": "date",
+      "required": true
+    },
+    "skill": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::skill.skill",
+      "inversedBy": "wakatimeStats"
+    },
+    "seconds": {
+      "type": "integer",
+      "required": true,
+      "min": 0,
+      "default": 0
+    }
+  }
+}
