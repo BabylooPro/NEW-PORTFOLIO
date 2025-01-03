@@ -61,20 +61,9 @@ async function updateSkillStats(skillId: number, seconds: number) {
         const today = new Date().toISOString().split('T')[0];
         const path = 'wakatime-stats';
 
-        // FIRST GET EXISTING STATS FOR THIS SKILL AND DATE
-        const getUrl = `${BASE_URL}/api/strapi?path=${path}&filters[skill][id][$eq]=${skillId}&filters[date][$eq]=${today}`;
-        const existingResponse = await fetch(getUrl);
-        const existingData = await existingResponse.json();
-
-        // CALCULATE TOTAL SECONDS (EXISTING + NEW)
-        let totalSeconds = Math.round(seconds);
-        if (existingData.data && existingData.data.length > 0) {
-            totalSeconds += existingData.data[0].attributes.seconds || 0;
-        }
-
         // UPDATE OR CREATE STATS
         const updateUrl = `${BASE_URL}/api/strapi?path=${path}/upsert`;
-        console.log("Updating skill stats:", { skillId, totalSeconds, date: today, url: updateUrl });
+        console.log("Updating skill stats:", { skillId, seconds, date: today, url: updateUrl });
 
         const response = await fetch(updateUrl, {
             method: 'POST',
@@ -85,7 +74,7 @@ async function updateSkillStats(skillId: number, seconds: number) {
             body: JSON.stringify({
                 skillId,
                 date: today,
-                seconds: totalSeconds
+                seconds: Math.round(seconds)
             })
         });
 

@@ -45,10 +45,10 @@ export default {
 
             let result;
             if (existingStat) {
-                // UPDATE EXISTING STAT BY ADDING NEW SECONDS
+                // UPDATE EXISTING STAT
                 result = await strapi.entityService.update('api::wakatime-stat.wakatime-stat', existingStat.id, {
                     data: {
-                        seconds: existingStat.seconds + seconds,
+                        seconds: seconds, // JUST USE THE NEW SECONDS VALUE
                         skill: skillId // ENSURE SKILL RELATION IS MAINTAINED
                     }
                 });
@@ -70,13 +70,14 @@ export default {
                 }
             });
 
+            // CALCULATE TOTAL SECONDS FROM ALL STATS
             const totalSeconds = allStats.reduce((acc, curr) => acc + curr.seconds, 0);
             const hours = Math.floor(totalSeconds / 3600);
             const minutes = Math.floor((totalSeconds % 3600) / 60);
 
             console.log("Updating skill hours:", { totalSeconds, hours, minutes });
 
-            // UPDATE SKILL HOURS
+            // UPDATE SKILL HOURS WITH TOTAL FROM ALL STATS
             await strapi.entityService.update('api::skill.skill', skillId, {
                 data: {
                     hours,
