@@ -193,10 +193,13 @@ const SideProjectsSection = () => {
             });
 
         // SPLIT GITHUB PROJECTS
-        const pinnedProjects = githubProjects.filter(p => p.pinned);
+        const pinnedProjects = githubProjects
+            .filter(p => p.pinned)
+            .sort((a, b) => b.stargazers_count - a.stargazers_count);
+
         const normalProjects = githubProjects.filter(p => !p.pinned);
 
-        // RETURN IN ORDER: ONLINE, ONLINE PINNED, WIP PINNED, WIP, PINNED, NORMAL, OFFLINE
+        // RETURN IN ORDER: ONLINE, ONLINE PINNED, WIP PINNED, WIP, PINNED (SORTED BY STARS), NORMAL, OFFLINE
         return [
             ...onlineProjects,
             ...onlinePinnedProjects,
