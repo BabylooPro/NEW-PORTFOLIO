@@ -47,12 +47,33 @@ export default {
 
         try {
             // VERIFY SKILL EXISTS AND GET FULL SKILL DATA
-            const skill = await strapi.entityService.findOne('api::skill.skill', skillId, {
+            let skill = await strapi.entityService.findOne('api::skill.skill', skillId, {
                 populate: ['skillYear', 'wakatimeStats']
             }) as unknown as Skill;
 
+            // IF SKILL NOT FOUND, TRY TO GET IT BY ID FIRST
             if (!skill) {
-                throw new Error(`Skill with ID ${skillId} not found`);
+                console.log(`Skill ${skillId} not found, trying to get it by ID...`);
+                const skills = await strapi.entityService.findMany('api::skill.skill', {
+                    filters: {
+                        id: skillId
+                    },
+                    populate: ['skillYear', 'wakatimeStats']
+                });
+
+                if (skills && skills.length > 0) {
+                    skill = skills[0] as unknown as Skill;
+                } else {
+                    console.log(`Skill ${skillId} not found in database, creating it...`);
+                    // CREATE THE SKILL IF IT DOESN'T EXIST
+                    skill = await strapi.entityService.create('api::skill.skill', {
+                        data: {
+                            documentId: Math.random().toString(36).substring(2) + Date.now().toString(36),
+                            name: `Skill ${skillId}`,
+                            publishedAt: new Date()
+                        }
+                    }) as unknown as Skill;
+                }
             }
 
             // FORCE PUBLISH THE SKILL

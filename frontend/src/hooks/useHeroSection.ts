@@ -57,19 +57,27 @@ export function useHeroSection() {
                 }
                 const result: StrapiResponse = await response.json();
 
-                // TRANSFORM THE DATA
+                // CHECK IF DATA EXISTS AND IS PUBLISHED
+                if (!result?.data) {
+                    throw new Error('No data received from API');
+                }
+
+                // TRANSFORM THE DATA EVEN IF NOT PUBLISHED
                 const transformedData: HeroData = {
-                    greeting: result.data.greeting,
-                    description: result.data.description,
-                    swissArmyKnifeText: result.data.swissArmyKnifeText,
-                    swissArmyKnifeDescription: result.data.swissArmyKnifeDescription,
-                    learnMoreText: result.data.learnMoreText,
-                    aboutMeText: result.data.aboutMeText,
-                    audioTitle: result.data.audioTitle,
-                    audioDescription: result.data.audioDescription,
-                    audioFile: {
+                    greeting: result.data.greeting || "Hello,",
+                    description: result.data.description || "Welcome to my portfolio",
+                    swissArmyKnifeText: result.data.swissArmyKnifeText || "Swiss Army Knife",
+                    swissArmyKnifeDescription: result.data.swissArmyKnifeDescription || "for any development needs.",
+                    learnMoreText: result.data.learnMoreText || "Learn more",
+                    aboutMeText: result.data.aboutMeText || "about me.",
+                    audioTitle: result.data.audioTitle || "Audio version",
+                    audioDescription: result.data.audioDescription || "Listen to my resume",
+                    audioFile: result.data.audioFile ? {
                         name: result.data.audioFile.name,
                         url: result.data.audioFile.url
+                    } : {
+                        name: "default.mp3",
+                        url: "/default.mp3"
                     }
                 };
 
