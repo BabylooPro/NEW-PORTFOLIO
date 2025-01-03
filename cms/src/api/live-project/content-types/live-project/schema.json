@@ -39,6 +39,11 @@
       "type": "json",
       "description": "List of technologies used in the project",
       "default": []
+    },
+    "isWip": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the project is currently a Work In Progress"
     }
   }
 }

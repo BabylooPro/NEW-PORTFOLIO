@@ -19,6 +19,7 @@ export interface GitHubRepo {
     homepage?: string | null;
     isPrivate: boolean;
     isOnline?: boolean;
+    isWip?: boolean;
     deployDate?: string;
 }
 

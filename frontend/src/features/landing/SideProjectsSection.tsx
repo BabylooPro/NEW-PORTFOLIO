@@ -48,7 +48,6 @@ const SideProjectsSection = () => {
     const scrollAreaRef = useRef<ScrollAreaRef>(null);
     const [filterTechnology, setFilterTechnology] = useState<string>("All");
     const [filterYear, setFilterYear] = useState<string>("All");
-    const [showLiveOnly, setShowLiveOnly] = useState<boolean>(false);
 
     // SORT PROJECTS BY LIVE STATUS AND CREATED_AT DATE
     const sortedProjects = useMemo(() => {
@@ -99,6 +98,7 @@ const SideProjectsSection = () => {
                     homepage: liveProject.url || githubProject.homepage,
                     isPrivate: false,
                     isOnline: liveProject.isOnline,
+                    isWip: liveProject.isWip,
                     pinned: githubProject.pinned || false,
                     deployDate: liveProject.deployDate
                 };
@@ -121,14 +121,15 @@ const SideProjectsSection = () => {
                 homepage: liveProject.url,
                 isPrivate: false,
                 isOnline: liveProject.isOnline,
+                isWip: liveProject.isWip,
                 pinned: false,
                 deployDate: liveProject.deployDate
             };
         }) || [];
 
-        // SPLIT LIVE PROJECTS INTO ONLINE AND OFFLINE
-        const onlineLiveProjects = liveProjects
-            .filter(p => p.isOnline)
+        // SPLIT LIVE PROJECTS INTO DIFFERENT CATEGORIES
+        const onlineProjects = liveProjects
+            .filter(p => p.isOnline && !p.isWip && !p.pinned)
             .filter(project => {
                 const techMatch = filterTechnology === "All" || project.languages.includes(filterTechnology);
                 const yearMatch = filterYear === "All" ||
@@ -136,8 +137,8 @@ const SideProjectsSection = () => {
                 return techMatch && yearMatch;
             });
 
-        const offlineLiveProjects = liveProjects
-            .filter(p => !p.isOnline)
+        const onlinePinnedProjects = liveProjects
+            .filter(p => p.isOnline && !p.isWip && p.pinned)
             .filter(project => {
                 const techMatch = filterTechnology === "All" || project.languages.includes(filterTechnology);
                 const yearMatch = filterYear === "All" ||
@@ -145,16 +146,38 @@ const SideProjectsSection = () => {
                 return techMatch && yearMatch;
             });
 
-        if (showLiveOnly) {
-            // IN LIVE ONLY MODE, DISPLAY ONLINE FIRST THEN OFFLINE
-            return [...onlineLiveProjects, ...offlineLiveProjects];
-        }
+        const wipPinnedProjects = liveProjects
+            .filter(p => p.isWip && p.pinned)
+            .filter(project => {
+                const techMatch = filterTechnology === "All" || project.languages.includes(filterTechnology);
+                const yearMatch = filterYear === "All" ||
+                    (project.created_at && new Date(project.created_at).getFullYear().toString() === filterYear);
+                return techMatch && yearMatch;
+            });
+
+        const wipProjects = liveProjects
+            .filter(p => p.isWip && !p.pinned)
+            .filter(project => {
+                const techMatch = filterTechnology === "All" || project.languages.includes(filterTechnology);
+                const yearMatch = filterYear === "All" ||
+                    (project.created_at && new Date(project.created_at).getFullYear().toString() === filterYear);
+                return techMatch && yearMatch;
+            });
+
+        const offlineProjects = liveProjects
+            .filter(p => !p.isOnline && !p.isWip)
+            .filter(project => {
+                const techMatch = filterTechnology === "All" || project.languages.includes(filterTechnology);
+                const yearMatch = filterYear === "All" ||
+                    (project.created_at && new Date(project.created_at).getFullYear().toString() === filterYear);
+                return techMatch && yearMatch;
+            });
 
         // FILTER GITHUB PROJECTS TO EXCLUDE THOSE THAT ARE ALREADY IN LIVE PROJECTS
         const liveProjectUrls = new Set(liveProjects.map(p => p.homepage?.toLowerCase()));
         const liveProjectNames = new Set(liveProjects.map(p => p.name.toLowerCase()));
 
-        // IN NORMAL MODE, SORT GITHUB PROJECTS BY PIN AND STARS
+        // FILTER AND SORT GITHUB PROJECTS
         const githubProjects = sortedProjects
             .filter(project => {
                 // EXCLUDE PROJECTS THAT ARE ALREADY IN LIVE PROJECTS
@@ -168,22 +191,23 @@ const SideProjectsSection = () => {
                 const yearMatch = filterYear === "All" ||
                     new Date(project.created_at).getFullYear().toString() === filterYear;
                 return techMatch && yearMatch;
-            })
-            .sort((a, b) => {
-                // FIRST BY PIN
-                if (a.pinned && !b.pinned) return -1;
-                if (!a.pinned && b.pinned) return 1;
-                // THEN BY STARS
-                if (a.stargazers_count !== b.stargazers_count) {
-                    return b.stargazers_count - a.stargazers_count;
-                }
-                // IF SAME NUMBER OF STARS, KEEP ORIGINAL ORDER
-                return 0;
             });
 
-        // RETURN LIVE ONLINE FIRST, THEN GITHUB, THEN LIVE OFFLINE
-        return [...onlineLiveProjects, ...githubProjects, ...offlineLiveProjects];
-    }, [sortedProjects, filterTechnology, filterYear, showLiveOnly, sectionData?.liveProjects]);
+        // SPLIT GITHUB PROJECTS
+        const pinnedProjects = githubProjects.filter(p => p.pinned);
+        const normalProjects = githubProjects.filter(p => !p.pinned);
+
+        // RETURN IN ORDER: ONLINE, ONLINE PINNED, WIP PINNED, WIP, PINNED, NORMAL, OFFLINE
+        return [
+            ...onlineProjects,
+            ...onlinePinnedProjects,
+            ...wipPinnedProjects,
+            ...wipProjects,
+            ...pinnedProjects,
+            ...normalProjects,
+            ...offlineProjects
+        ];
+    }, [sortedProjects, filterTechnology, filterYear, sectionData?.liveProjects]);
 
     // GET ALL TECHNOLOGIES USED IN PROJECTS
     const technologies = useMemo(() => {
@@ -222,9 +246,6 @@ const SideProjectsSection = () => {
 
         return ["All", ...Array.from(yearSet).sort((a, b) => b.localeCompare(a))];
     }, [projects, sectionData?.liveProjects]);
-
-    // DISABLE FILTERS IN LIVE ONLY MODE
-    const isFilteringDisabled = showLiveOnly;
 
     // HANDLE ERRORS
     if (projectsError || sectionError) {
@@ -303,9 +324,8 @@ const SideProjectsSection = () => {
                 <Select
                     onValueChange={setFilterTechnology}
                     defaultValue={filterTechnology}
-                    disabled={isFilteringDisabled}
                 >
-                    <SelectTrigger className="w-[calc(33%-4px)] sm:w-full lg:w-[145px]">
+                    <SelectTrigger className="w-[calc(50%-4px)] sm:w-full lg:w-[145px]">
                         <SelectValue placeholder="Filter by Technology" />
                     </SelectTrigger>
                     <SelectContent>
@@ -320,9 +340,8 @@ const SideProjectsSection = () => {
                 <Select
                     onValueChange={setFilterYear}
                     defaultValue={filterYear}
-                    disabled={isFilteringDisabled}
                 >
-                    <SelectTrigger className="w-[calc(33%-4px)] sm:w-full lg:w-[145px]">
+                    <SelectTrigger className="w-[calc(50%-4px)] sm:w-full lg:w-[145px]">
                         <SelectValue placeholder="Filter by Year" />
                     </SelectTrigger>
                     <SelectContent>
@@ -333,22 +352,6 @@ const SideProjectsSection = () => {
                         ))}
                     </SelectContent>
                 </Select>
-
-                <Button
-                    variant={showLiveOnly ? "default" : "outline"}
-                    className="w-[calc(33%-4px)] sm:w-full lg:w-[145px] flex items-center gap-2"
-                    onClick={() => {
-                        setShowLiveOnly(!showLiveOnly);
-                        if (!showLiveOnly) {
-                            // RESET FILTERS WHEN SWITCHING TO LIVE ONLY MODE
-                            setFilterTechnology("All");
-                            setFilterYear("All");
-                        }
-                    }}
-                >
-                    <Radio className="h-4 w-4" />
-                    Live Only
-                </Button>
             </div>
 
             {/* SCROLL AREA TO DISPLAY MORE PROJECTS */}
@@ -372,7 +375,17 @@ const SideProjectsSection = () => {
                                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                                         <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                                                     </span>
-                                                    <span className="text-xs text-green-500 font-medium">LIVE</span>
+                                                    <span className="text-xs text-green-500 font-medium">ONLINE</span>
+                                                    {project.isWip && (
+                                                        <span className="text-xs text-yellow-500 font-medium ml-2">WIP</span>
+                                                    )}
+                                                </>
+                                            ) : project.isWip ? (
+                                                <>
+                                                    <span className="relative flex h-2 w-2">
+                                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
+                                                    </span>
+                                                    <span className="text-xs text-yellow-500 font-medium">WIP</span>
                                                 </>
                                             ) : (
                                                 <>

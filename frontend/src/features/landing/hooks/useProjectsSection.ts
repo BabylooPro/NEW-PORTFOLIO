@@ -5,6 +5,7 @@ export interface LiveProject {
     notes?: string;
     url: string;
     isOnline: boolean;
+    isWip?: boolean;
     technologies?: string[];
     deployDate?: string;
 }
@@ -35,6 +36,7 @@ interface StrapiProject {
     name: string;
     url: string;
     isOnline: boolean;
+    isWip?: boolean;
     notes?: string;
     technologies?: string[];
     deployDate?: string;
@@ -106,6 +108,7 @@ export const useProjectsSection = () => {
                                     name: project.name,
                                     url: project.url,
                                     isOnline: project.isOnline,
+                                    isWip: project.isWip,
                                     notes: project.notes,
                                     technologies: project.technologies,
                                     deployDate: project.deployDate

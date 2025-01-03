@@ -668,6 +668,7 @@ export interface ApiLiveProjectLiveProject extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     deployDate: Schema.Attribute.Date;
     isOnline: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    isWip: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
