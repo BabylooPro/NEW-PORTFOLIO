@@ -13,9 +13,25 @@ interface WakatimeStat {
 }
 
 interface UpsertStatsBody {
-    skillId: number;
-    date: string;
-    seconds: number;
+    data: {
+        skill: number;
+        date: string;
+        seconds: number;
+    }
+}
+
+interface SkillYear {
+    id: number;
+    year: string;
+    publishedAt?: Date;
+}
+
+interface Skill {
+    id: number;
+    name: string;
+    publishedAt?: Date;
+    skillYear?: SkillYear;
+    wakatimeStats?: WakatimeStat[];
 }
 
 // @ts-ignore - Strapi types are not perfect
@@ -23,14 +39,50 @@ const contentType = 'api::wakatime-stat.wakatime-stat';
 
 export default {
     async upsertStats(ctx) {
-        const { skillId, date, seconds } = ctx.request.body;
+        const { data } = ctx.request.body as UpsertStatsBody;
+        const skillId = data.skill;
+        const { date, seconds } = data;
+
         console.log("Received upsert request:", { skillId, date, seconds });
 
         try {
-            // VERIFY SKILL EXISTS
-            const skill = await strapi.entityService.findOne('api::skill.skill', skillId);
+            // VERIFY SKILL EXISTS AND GET FULL SKILL DATA
+            const skill = await strapi.entityService.findOne('api::skill.skill', skillId, {
+                populate: ['skillYear', 'wakatimeStats']
+            }) as unknown as Skill;
+
             if (!skill) {
                 throw new Error(`Skill with ID ${skillId} not found`);
+            }
+
+            // FORCE PUBLISH THE SKILL
+            await strapi.db.query('api::skill.skill').update({
+                where: { id: skillId },
+                data: {
+                    publishedAt: new Date()
+                }
+            });
+
+            // PUBLISH SKILL YEAR IF EXISTS
+            if (skill.skillYear?.id) {
+                await strapi.db.query('api::skill-year.skill-year').update({
+                    where: { id: skill.skillYear.id },
+                    data: {
+                        publishedAt: new Date()
+                    }
+                });
+            }
+
+            // PUBLISH ALL WAKATIME STATS FOR THIS SKILL
+            if (skill.wakatimeStats?.length > 0) {
+                await Promise.all(skill.wakatimeStats.map(stat =>
+                    strapi.db.query('api::wakatime-stat.wakatime-stat').update({
+                        where: { id: stat.id },
+                        data: {
+                            publishedAt: new Date()
+                        }
+                    })
+                ));
             }
 
             // FIND EXISTING STAT FOR THIS SKILL AND DATE
@@ -46,19 +98,22 @@ export default {
             let result;
             if (existingStat) {
                 // UPDATE EXISTING STAT
-                result = await strapi.entityService.update('api::wakatime-stat.wakatime-stat', existingStat.id, {
+                result = await strapi.db.query('api::wakatime-stat.wakatime-stat').update({
+                    where: { id: existingStat.id },
                     data: {
-                        seconds: seconds, // JUST USE THE NEW SECONDS VALUE
-                        skill: skillId // ENSURE SKILL RELATION IS MAINTAINED
+                        seconds: seconds,
+                        publishedAt: new Date(),
+                        skill: skillId
                     }
                 });
             } else {
                 // CREATE NEW STAT
-                result = await strapi.entityService.create('api::wakatime-stat.wakatime-stat', {
+                result = await strapi.db.query('api::wakatime-stat.wakatime-stat').create({
                     data: {
-                        skill: skillId, // SET SKILL RELATION
+                        skill: skillId,
                         date: date,
-                        seconds: seconds
+                        seconds: seconds,
+                        publishedAt: new Date()
                     }
                 });
             }
@@ -77,11 +132,13 @@ export default {
 
             console.log("Updating skill hours:", { totalSeconds, hours, minutes });
 
-            // UPDATE SKILL HOURS WITH TOTAL FROM ALL STATS
-            await strapi.entityService.update('api::skill.skill', skillId, {
+            // UPDATE SKILL HOURS WITH TOTAL FROM ALL STATS AND FORCE PUBLISH
+            await strapi.db.query('api::skill.skill').update({
+                where: { id: skillId },
                 data: {
                     hours,
-                    minutes
+                    minutes,
+                    publishedAt: new Date()
                 }
             });
 

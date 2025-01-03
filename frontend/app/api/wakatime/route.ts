@@ -36,10 +36,9 @@ async function getSkillIdByName(name: string): Promise<number | null> {
         const data = await response.json();
         console.log(`Data received for ${name}:`, JSON.stringify(data, null, 2));
 
-        // FIND FIRST PUBLISHED SKILL WITH MATCHING NAME
-        const skill = data.data?.find((s: { attributes: { name: string; publishedAt: string | null } }) =>
-            s.attributes.name.toLowerCase() === name.toLowerCase() &&
-            s.attributes.publishedAt !== null
+        // FIND FIRST SKILL WITH MATCHING NAME (PUBLISHED OR NOT)
+        const skill = data.data?.find((s: { attributes: { name: string } }) =>
+            s.attributes.name.toLowerCase() === name.toLowerCase()
         );
 
         if (skill) {
@@ -47,8 +46,30 @@ async function getSkillIdByName(name: string): Promise<number | null> {
             return skill.id;
         }
 
-        console.log(`No published skill found for ${name}`);
-        return null;
+        // IF NO SKILL FOUND, CREATE ONE
+        console.log(`No skill found for ${name}, creating new one`);
+        const createResponse = await fetch(`${BASE_URL}/api/strapi?path=${path}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${STRAPI_TOKEN}`
+            },
+            body: JSON.stringify({
+                data: {
+                    name: name,
+                    documentId: Math.random().toString(36).substring(2) + Date.now().toString(36)
+                }
+            })
+        });
+
+        if (!createResponse.ok) {
+            console.error(`Failed to create skill for ${name}: ${createResponse.statusText}`);
+            return null;
+        }
+
+        const createData = await createResponse.json();
+        console.log(`Created new skill for ${name}:`, createData);
+        return createData.data.id;
     } catch (error) {
         console.error(`Error fetching skill ID for ${name}:`, error);
         return null;
@@ -72,9 +93,11 @@ async function updateSkillStats(skillId: number, seconds: number) {
                 'Authorization': `Bearer ${STRAPI_TOKEN}`
             },
             body: JSON.stringify({
-                skillId,
-                date: today,
-                seconds: Math.round(seconds)
+                data: {
+                    skill: skillId,
+                    date: today,
+                    seconds: Math.round(seconds)
+                }
             })
         });
 
