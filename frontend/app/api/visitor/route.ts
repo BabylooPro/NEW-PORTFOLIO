@@ -31,6 +31,7 @@ export async function POST() {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${process.env.STRAPI_API_TOKEN}`,
             },
+            cache: 'no-store'
         });
 
         if (!response.ok) {
