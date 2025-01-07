@@ -254,8 +254,6 @@ export const VisitorCounter = () => {
                                 fill="rgb(16, 185, 129)"
                                 fillOpacity={0.2}
                                 strokeWidth={2}
-                                dot={{ r: 4, fill: "rgb(16, 185, 129)", stroke: "rgb(16, 185, 129)" }}
-                                activeDot={{ r: 4, fill: "rgb(16, 185, 129)", stroke: "rgb(16, 185, 129)" }}
                                 connectNulls
                                 isAnimationActive={false}
                                 baseValue={0}
