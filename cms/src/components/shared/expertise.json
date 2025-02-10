@@ -23,6 +23,11 @@
       "type": "string",
       "required": true,
       "description": "Skill name used to calculate years of experience (e.g., 'c#', '.net', 'html')"
+    },
+    "startYear": {
+      "type": "biginteger",
+      "required": false,
+      "description": "Year when expertise started"
     }
   }
 }

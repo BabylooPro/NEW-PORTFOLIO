@@ -18,6 +18,7 @@ interface Expertise {
     description: string;
     icon: keyof typeof ICONS;
     skillIdentifier: string;
+    startYear: number | null;
 }
 
 interface ExpertiseSkill extends Skill {
@@ -36,6 +37,12 @@ const ICONS: Record<string, LucideIcon> = {
     Palette,
     Layers,
     Cog,
+};
+
+const calculateExperience = (startYear: number | null | undefined): number => {
+    if (!startYear) return 0;
+    const currentYear = new Date().getFullYear();
+    return currentYear - startYear;
 };
 
 const ExpertiseSectionSkeleton: React.FC<{
@@ -148,6 +155,8 @@ const ExpertiseSection: React.FC = () => {
                             return (b.star ? 1 : 0) - (a.star ? 1 : 0);
                         });
 
+                    const yearsOfExperience = calculateExperience(expertise.startYear);
+
                     return (
                         <motion.div
                             key={expertise.id}
@@ -163,7 +172,12 @@ const ExpertiseSection: React.FC = () => {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="flex-grow">
-                                    {/* <p className="mb-2">{ } years of experience</p> */}
+                                    <p className="mb-2">
+                                        {yearsOfExperience > 0
+                                            ? `${yearsOfExperience} years of experience`
+                                            : "New expertise"
+                                        }
+                                    </p>
                                     <p className="text-sm text-muted-foreground mb-4">
                                         {expertise.description}
                                     </p>

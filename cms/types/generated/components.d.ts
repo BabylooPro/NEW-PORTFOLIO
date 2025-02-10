@@ -39,6 +39,7 @@ export interface SharedExpertise extends Struct.ComponentSchema {
     > &
       Schema.Attribute.Required;
     skillIdentifier: Schema.Attribute.String & Schema.Attribute.Required;
+    startYear: Schema.Attribute.BigInteger;
     title: Schema.Attribute.String & Schema.Attribute.Required;
   };
 }
