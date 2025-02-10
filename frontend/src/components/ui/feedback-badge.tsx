@@ -291,7 +291,8 @@ export const FeedbackRating = () => {
 
     const onSubmit = async (data: FeedbackForm) => {
         try {
-            const response = await fetch('/api/strapi?path=feedbacks', {
+            // FIRST: SAVE TO STRAPI
+            const strapiResponse = await fetch('/api/strapi?path=feedbacks', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -299,8 +300,22 @@ export const FeedbackRating = () => {
                 body: JSON.stringify({ data }),
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to submit feedback');
+            if (!strapiResponse.ok) {
+                throw new Error('Failed to submit feedback to Strapi');
+            }
+
+            // THEN: SEND EMAIL NOTIFICATION
+            const emailResponse = await fetch('/api/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ data }),
+            });
+
+            if (!emailResponse.ok) {
+                console.error('Failed to send email notification');
+                // CONTINUE SINCE STRAPI SAVE WAS SUCCESSFULL
             }
 
             // GET STATS AFTER SUBMISSION
@@ -311,7 +326,6 @@ export const FeedbackRating = () => {
             setUserRating(data.rating);
             setUserFeedback(data.feedback || "");
             setHasSubmitted(true);
-            // SAVE TO LOCAL STORAGE
             localStorage.setItem('feedbackSubmitted', 'true');
             localStorage.setItem('userRating', data.rating.toString());
             if (data.feedback) localStorage.setItem('userFeedback', data.feedback);
