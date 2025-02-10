@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { Card } from "./card";
-import { Area, AreaChart, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, XAxis, YAxis, ResponsiveContainer, CartesianGrid, ReferenceArea, ComposedChart } from "recharts";
 import { UsersIcon } from "../decoration/icons/users";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
-import { ChartContainer, ChartTooltip } from "./chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./chart";
+import { Button } from "@/components/ui/button";
 
 type VisitorHistory = {
     count: number;
@@ -22,12 +23,31 @@ const chartConfig = {
     },
 } as const;
 
+type ApiResponse = {
+    data: {
+        attributes: {
+            count: number;
+            history: Array<{
+                timestamp: string;
+                count: number;
+            }>;
+        };
+    };
+};
+
 export const VisitorCounter = () => {
     const [mounted, setMounted] = useState(false);
     const [visitorCount, setVisitorCount] = useState<number>(0);
     const [processedHistory, setProcessedHistory] = useState<VisitorHistory[]>([]);
+    const [dailyHistory, setDailyHistory] = useState<VisitorHistory[]>([]);
     const [delta, setDelta] = useState<number>(0);
     const [isHovered, setIsHovered] = useState(false);
+    const [refAreaLeft, setRefAreaLeft] = useState<string | null>(null);
+    const [refAreaRight, setRefAreaRight] = useState<string | null>(null);
+    const [startTime, setStartTime] = useState<string | null>(null);
+    const [endTime, setEndTime] = useState<string | null>(null);
+    const [isSelecting, setIsSelecting] = useState(false);
+    const chartRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const incrementAndFetchCount = async () => {
@@ -47,59 +67,59 @@ export const VisitorCounter = () => {
                 }
 
                 const response = await fetch("/api/visitor");
-                const data = await response.json();
+                const data = await response.json() as ApiResponse;
                 setVisitorCount(data?.data?.attributes?.count || 0);
                 const rawHistory = data?.data?.attributes?.history || [];
 
                 // GET CURRENT TIME AND WINDOW
                 const currentTime = new Date();
                 currentTime.setMinutes(0, 0, 0); // NORMALIZE TO HOUR
-                const oldestDate = new Date(currentTime.getTime() - 7 * 24 * 60 * 60 * 1000);
-                oldestDate.setMinutes(0, 0, 0); // NORMALIZE TO HOUR
 
-                // NORMALIZE AND GROUP VISITS BY HOUR
-                const hourlyVisits = rawHistory.reduce((acc: Map<number, number>, curr: VisitorHistory) => {
+                // Prepare two different groupings: hourly for dialog and daily for card
+                const visitsByHour = rawHistory.reduce((acc: Map<number, number>, curr: VisitorHistory) => {
+                    if (typeof curr.timestamp !== 'string') return acc;
+
                     const date = new Date(curr.timestamp);
-                    if (isNaN(date.getTime()) || date < oldestDate || date > currentTime) return acc;
+                    if (isNaN(date.getTime())) return acc;
 
                     const hourTimestamp = new Date(date).setMinutes(0, 0, 0);
                     return acc.set(hourTimestamp, (acc.get(hourTimestamp) || 0) + 1);
                 }, new Map<number, number>());
 
-                // CREATE HOURLY TIMELINE
-                const timeline: VisitorHistory[] = [];
-                for (let time = oldestDate.getTime(); time <= currentTime.getTime(); time += 3600000) {
-                    timeline.push({
-                        timestamp: new Date(time).toISOString(),
-                        count: hourlyVisits.get(time) || 0
-                    });
-                }
+                // Group by day for the mini chart
+                const visitsByDay = rawHistory.reduce((acc: Map<number, number>, curr: VisitorHistory) => {
+                    if (typeof curr.timestamp !== 'string') return acc;
+                    const date = new Date(curr.timestamp);
+                    if (isNaN(date.getTime())) return acc;
+                    const dayTimestamp = new Date(date.setHours(0, 0, 0, 0)).getTime();
+                    return acc.set(dayTimestamp, (acc.get(dayTimestamp) || 0) + 1);
+                }, new Map<number, number>());
 
-                // REMOVE EMPTY EDGES AND KEEP ONLY RELEVANT ZERO POINTS
-                const nonZeroIndices = timeline
-                    .map((entry, index) => entry.count > 0 ? index : -1)
-                    .filter(index => index !== -1);
+                // Create timeline for dialog chart (hourly)
+                const sortedHourlyTimestamps = Array.from(visitsByHour.keys()).sort();
+                const hourlyTimeline: VisitorHistory[] = sortedHourlyTimestamps.map(timestamp => ({
+                    timestamp: new Date(timestamp).toISOString(),
+                    count: visitsByHour.get(timestamp) || 0
+                }));
 
-                if (nonZeroIndices.length > 0) {
-                    const start = Math.max(0, Math.min(...nonZeroIndices) - 1);
-                    const end = Math.min(timeline.length, Math.max(...nonZeroIndices) + 2);
+                // Create timeline for mini chart (daily)
+                const sortedDailyTimestamps = Array.from(visitsByDay.keys()).sort();
+                const dailyTimeline: VisitorHistory[] = sortedDailyTimestamps.map(timestamp => ({
+                    timestamp: new Date(timestamp).toISOString(),
+                    count: visitsByDay.get(timestamp) || 0
+                }));
 
-                    const processedData = timeline
-                        .slice(start, end)
-                        .filter(entry => entry.count > 0);
-
-                    setProcessedHistory(processedData);
-                } else {
-                    setProcessedHistory([]);
-                }
+                setProcessedHistory(hourlyTimeline);
+                setDailyHistory(dailyTimeline);
 
                 // CALCULATE DELTA FOR LAST 24H
                 const last24h = new Date(currentTime.getTime() - 24 * 60 * 60 * 1000);
 
                 // FILTER HISTORY FOR LAST 24H
-                const last24hEntries = rawHistory.filter((entry: VisitorHistory) =>
-                    new Date(entry.timestamp) >= last24h
-                );
+                const last24hEntries = rawHistory.filter((entry) => {
+                    const entryDate = new Date(entry.timestamp);
+                    return !isNaN(entryDate.getTime()) && entryDate >= last24h;
+                });
 
                 // CALCULATE DELTA FOR LAST 24H
                 if (last24hEntries.length > 0) {
@@ -114,6 +134,57 @@ export const VisitorCounter = () => {
         incrementAndFetchCount();
     }, []);
 
+    const zoomedHistory = useMemo(() => {
+        // Si pas de zoom, utiliser l'historique journalier
+        if (!startTime || !endTime) return dailyHistory;
+
+        // Une fois zoomé, utiliser l'historique horaire
+        return processedHistory.filter(
+            (point) => point.timestamp >= startTime && point.timestamp <= endTime
+        );
+    }, [startTime, endTime, processedHistory, dailyHistory]);
+
+    const handleMouseDown = (e: any) => {
+        if (e.activeLabel) {
+            setRefAreaLeft(e.activeLabel);
+            setIsSelecting(true);
+        }
+    };
+
+    const handleMouseMove = (e: any) => {
+        if (isSelecting && e.activeLabel) {
+            setRefAreaRight(e.activeLabel);
+        }
+    };
+
+    const handleMouseUp = () => {
+        if (refAreaLeft && refAreaRight) {
+            const [left, right] = [refAreaLeft, refAreaRight].sort();
+            setStartTime(left);
+            setEndTime(right);
+        }
+        setRefAreaLeft(null);
+        setRefAreaRight(null);
+        setIsSelecting(false);
+    };
+
+    const handleReset = () => {
+        setStartTime(null);
+        setEndTime(null);
+    };
+
+    // Modifier le formatteur de date pour l'axe X en fonction du zoom
+    const formatXAxisTick = (timestamp: string) => {
+        const date = new Date(timestamp);
+        // Si on est zoomé, afficher l'heure, sinon afficher la date
+        return new Intl.DateTimeFormat('fr-CH', {
+            ...(startTime && endTime
+                ? { hour: 'numeric', minute: '2-digit' }
+                : { month: 'numeric', day: 'numeric' }
+            )
+        }).format(date);
+    };
+
     if (!mounted) return null;
 
     return (
@@ -126,7 +197,7 @@ export const VisitorCounter = () => {
                 >
                     <div className="flex items-center gap-2">
                         <UsersIcon className="hover:bg-transparent size-10" isHovered={isHovered} />
-                        <span className="text-sm font-medium">
+                        <span className="text-sm font-medium mr-2">
                             You are the {visitorCount.toLocaleString()}th visitor !
                         </span>
                         {delta > 0 && (
@@ -136,17 +207,17 @@ export const VisitorCounter = () => {
                         )}
                     </div>
 
-                    {processedHistory.length > 0 && (
+                    {dailyHistory.length > 0 && (
                         <div className="h-6 w-12">
                             <ChartContainer config={chartConfig} className="[&_.recharts-dot]:fill-[--color-count] [&_.recharts-dot]:stroke-[--color-count]">
                                 <AreaChart
-                                    data={processedHistory}
+                                    data={dailyHistory}
                                     width={48}
                                     height={24}
                                     margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
                                 >
                                     <Area
-                                        type="natural"
+                                        type="monotone"
                                         dataKey="count"
                                         stroke="rgb(16, 185, 129)"
                                         fill="rgb(16, 185, 129)"
@@ -161,104 +232,95 @@ export const VisitorCounter = () => {
                     )}
                 </Card>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden">
-                <DialogHeader className="pb-2">
+            <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-hidden p-6">
+                <DialogHeader className="pb-4">
                     <DialogTitle>Visitor Analytics</DialogTitle>
                     <DialogDescription>
                         View the number of visitors over time
                     </DialogDescription>
                 </DialogHeader>
-                <div className="w-full aspect-[2/1] min-w-0">
-                    <ChartContainer config={chartConfig} className="[&_.recharts-dot]:fill-[--color-count] [&_.recharts-dot]:stroke-[--color-count] [&_.recharts-responsive-container]:!w-[99%]">
-                        <AreaChart
-                            data={processedHistory}
-                        // margin={{ top: 5, right: 40, bottom: 25, left: 15 }}
-                        >
-                            <XAxis
-                                dataKey="timestamp"
-                                height={30}
-                                interval={5}
-                                tickMargin={5}
-                                tickFormatter={(timestamp) => {
-                                    try {
-                                        const date = new Date(timestamp);
-                                        return new Intl.DateTimeFormat('fr-CH', {
-                                            hour: 'numeric' as const,
-                                            minute: '2-digit' as const,
-                                            hour12: true
-                                        }).format(date);
-                                    } catch {
-                                        console.warn('Error formatting date:', timestamp);
-                                        return 'Invalid Date';
-                                    }
-                                }}
-                            />
-                            <YAxis
-                                allowDecimals={false}
-                                domain={[0, 'auto']}
-                                minTickGap={1}
-                            />
-                            <ChartTooltip
-                                content={({ active, payload }) => {
-                                    if (!active || !payload?.length) return null;
-
-                                    const tooltipLabel = (
-                                        <div className="font-medium">
-                                            {new Intl.DateTimeFormat('fr-CH', {
-                                                year: 'numeric',
-                                                month: 'numeric',
-                                                day: 'numeric',
-                                                hour: 'numeric',
-                                                minute: '2-digit',
-                                                hour12: true
-                                            }).format(new Date(payload[0].payload.timestamp))}
-                                        </div>
-                                    );
-
-                                    return (
-                                        <div className="grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
-                                            {tooltipLabel}
-                                            <div className="grid gap-1.5">
-                                                {payload.map((item, index) => {
-                                                    const indicatorColor = "rgb(16, 185, 129)";
-                                                    return (
-                                                        <div key={index} className="flex w-full items-center gap-2">
-                                                            <div
-                                                                className="h-2.5 w-2.5 shrink-0 rounded-[2px] border-[--color-border] bg-[--color-bg]"
-                                                                style={{
-                                                                    "--color-bg": indicatorColor,
-                                                                    "--color-border": indicatorColor,
-                                                                } as React.CSSProperties}
-                                                            />
-                                                            <div className="flex flex-1 items-center justify-between leading-none">
-                                                                <span className="text-muted-foreground">
-                                                                    {chartConfig[item.name as keyof typeof chartConfig]?.label}
-                                                                </span>
-                                                                <span className="font-mono font-medium tabular-nums text-foreground">
-                                                                    {item.value}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    );
-                                }}
-                            />
-                            <Area
-                                type="monotone"
-                                dataKey="count"
-                                name="count"
-                                stroke="rgb(16, 185, 129)"
-                                fill="rgb(16, 185, 129)"
-                                fillOpacity={0.2}
-                                strokeWidth={2}
-                                connectNulls
-                                isAnimationActive={false}
-                                baseValue={0}
-                            />
-                        </AreaChart>
+                <div className="w-full h-[400px]">
+                    <ChartContainer config={chartConfig}>
+                        <div className="flex h-full flex-col">
+                            <div className="flex justify-end mb-4">
+                                <Button
+                                    variant="outline"
+                                    onClick={handleReset}
+                                    disabled={!startTime && !endTime}
+                                    className="text-xs sm:text-sm"
+                                >
+                                    Reset Zoom
+                                </Button>
+                            </div>
+                            <div className="flex-1">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <ComposedChart
+                                        data={zoomedHistory}
+                                        margin={{ top: 10, right: 10, left: 0, bottom: 10 }}
+                                        onMouseDown={handleMouseDown}
+                                        onMouseMove={handleMouseMove}
+                                        onMouseUp={handleMouseUp}
+                                        onMouseLeave={handleMouseUp}
+                                        style={{
+                                            cursor: isSelecting ? 'grabbing' : 'grab',
+                                            userSelect: 'none'
+                                        }}
+                                    >
+                                        <defs>
+                                            <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="rgb(16, 185, 129)" stopOpacity={0.8} />
+                                                <stop offset="95%" stopColor="rgb(16, 185, 129)" stopOpacity={0.1} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid vertical={false} />
+                                        <XAxis
+                                            dataKey="timestamp"
+                                            tickFormatter={formatXAxisTick}
+                                            tickLine={false}
+                                            axisLine={false}
+                                            tickMargin={4}
+                                            minTickGap={16}
+                                            style={{ fontSize: '10px', userSelect: 'none' }}
+                                        />
+                                        <YAxis
+                                            tickLine={false}
+                                            axisLine={false}
+                                            style={{ fontSize: '10px', userSelect: 'none' }}
+                                            width={30}
+                                        />
+                                        <ChartTooltip
+                                            cursor={false}
+                                            content={
+                                                <ChartTooltipContent
+                                                    className="w-[150px] sm:w-[200px] font-mono text-xs sm:text-sm"
+                                                    nameKey="count"
+                                                    labelFormatter={(value) => new Date(value).toLocaleString().replace(/:\d{2} /, ' ')}
+                                                />
+                                            }
+                                        />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="count"
+                                            name="count"
+                                            stroke="rgb(16, 185, 129)"
+                                            fill="url(#colorVisitors)"
+                                            fillOpacity={1}
+                                            strokeWidth={2}
+                                            isAnimationActive={false}
+                                        />
+                                        {refAreaLeft && refAreaRight && (
+                                            <ReferenceArea
+                                                x1={refAreaLeft}
+                                                x2={refAreaRight}
+                                                strokeOpacity={0.3}
+                                                fill="hsl(var(--muted))"
+                                                fillOpacity={0.2}
+                                            />
+                                        )}
+                                    </ComposedChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
                     </ChartContainer>
                 </div>
             </DialogContent>
