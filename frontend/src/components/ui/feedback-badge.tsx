@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import { Button } from "./button";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -235,10 +235,10 @@ export const FeedbackRating = () => {
     const [selectedRating, setSelectedRating] = useState<number | null>(() => null);
     const [mouseX, setMouseX] = useState<number | null>(null);
 
-    const defaultValues = {
+    const defaultValues = useMemo(() => ({
         rating: 0,
         feedback: "",
-    };
+    }), []);
 
     const form = useForm<FeedbackForm>({
         resolver: zodResolver(feedbackSchema),
