@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Card } from "./card";
 import { Area, AreaChart, XAxis, YAxis, ResponsiveContainer, CartesianGrid, ReferenceArea, ComposedChart } from "recharts";
 import { UsersIcon } from "../decoration/icons/users";
@@ -47,7 +48,6 @@ export const VisitorCounter = () => {
     const [startTime, setStartTime] = useState<string | null>(null);
     const [endTime, setEndTime] = useState<string | null>(null);
     const [isSelecting, setIsSelecting] = useState(false);
-    const chartRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const incrementAndFetchCount = async () => {
@@ -144,16 +144,16 @@ export const VisitorCounter = () => {
         );
     }, [startTime, endTime, processedHistory, dailyHistory]);
 
-    const handleMouseDown = (e: any) => {
-        if (e.activeLabel) {
-            setRefAreaLeft(e.activeLabel);
+    const handleMouseDown = (state: any) => {
+        if (state?.activeLabel) {
+            setRefAreaLeft(String(state.activeLabel));
             setIsSelecting(true);
         }
     };
 
-    const handleMouseMove = (e: any) => {
-        if (isSelecting && e.activeLabel) {
-            setRefAreaRight(e.activeLabel);
+    const handleMouseMove = (state: any) => {
+        if (isSelecting && state?.activeLabel) {
+            setRefAreaRight(String(state.activeLabel));
         }
     };
 
