@@ -1,304 +1,431 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Section } from "@/components/ui/section";
 import { ShowInfo } from "@/components/ui/show-info";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardHeader } from "@/components/ui/card";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useTheme } from "next-themes";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useWhatIDoSection } from "./utils/useWhatIDoSection";
+import { Button } from "@/components/ui/button";
+import { backendDevelopment } from "./components/what-i-do/backend-development";
+import { softwareEngineering } from "./components/what-i-do/software-engineering";
+import { frontendDevelopment } from "./components/what-i-do/frontend-development";
+import { fullstackDevelopment } from "./components/what-i-do/fullstack-development";
+import { devops } from "./components/what-i-do/devops";
+import type { ProjectData } from "./components/what-i-do/types";
+import { TerminalPreview } from "./components/TerminalPreview";
+import { CodeXml, Fullscreen, SquareTerminal } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { terminal } from "./components/what-i-do/terminal";
 
-const WhatIDoData = [
-	// BACKEND PROJECT: USER MANAGEMENT WITH AN ENDPOINT TO FETCH USERS
-	{
-		title: "Backend Development",
-		file: "UsersController.cs",
-		language: "csharp",
-		snippetHeight: 555,
-		snippet: `  using Microsoft.AspNetCore.Mvc;
-
- [ApiController]
- [Route("api/[controller]")]
- public class UsersController : ControllerBase
- {
-     private readonly IUserService _userService;
-
-     public UsersController(IUserService userService)
-     {
-         _userService = userService;
-     }
-
-     [HttpGet]
-     public IActionResult GetUsers()
-     {
-         var users = _userService.GetAllUsers(); // Fetch users from the service
-         return Ok(users);
-     }
- }`,
-	},
-
-	// PYTHON PROJECT: PAYMENT PROCESSING USING STRATEGY PATTERN
-	{
-		title: "Software Engineering",
-		file: "payment_processor.py",
-		language: "python",
-		snippetHeight: 620,
-		snippet: `  from abc import ABC, abstractmethod
-
- class PaymentProcessor(ABC):
-     @abstractmethod
-     def process_payment(self, amount: float) -> bool:
-         pass
-
- class StripeProcessor(PaymentProcessor):
-     def process_payment(self, amount: float) -> bool:
-         # IMPLEMENT STRIPE PAYMENT LOGIC
-         print(f"Processing {amount} via Stripe")
-         return True
-
- class PayPalProcessor(PaymentProcessor):
-     def process_payment(self, amount: float) -> bool:
-         # IMPLEMENT PAYPAL PAYMENT LOGIC
-         print(f"Processing {amount} via PayPal")
-         return True
-
- def process_order(payment_method: PaymentProcessor, amount: float):
-     if payment_method.process_payment(amount):
-         print("Payment successful!")
-     else:
-         print("Payment failed.")`,
-	},
-
-	// REACT PROJECT: SIMPLE COUNTER COMPONENT WITH USESTATE HOOK
-	{
-		title: "Frontend Development",
-		file: "Counter.jsx",
-		language: "javascript",
-		snippetHeight: 450,
-		snippet: `  import React, { useState } from 'react';
-
- const Counter = () => {
-   const [count, setCount] = useState(0);
-
-   return (
-     <div>
-       <p>You clicked {count} times</p>
-       <button onClick={() => setCount(count + 1)}>
-         Click me
-       </button>
-     </div>
-   );
- };
-
- export default Counter;`,
-	},
-
-	// NEXT.JS PROJECT: FETCHING DATA FROM AN API ROUTE
-	{
-		title: "Full Stack Development",
-		file: "index.tsx",
-		language: "typescript",
-		snippetHeight: 635,
-		snippet: `  // app/api/data.ts
- import type { NextApiRequest, NextApiResponse } from 'next';
-
- export default async function handler(
-   req: NextApiRequest,
-   res: NextApiResponse
- ) {
-   const data = await fetchDataFromDatabase(); // Mock function to simulate database fetch
-   res.status(200).json(data);
- }
-
- // app/page.tsx
- import { useEffect, useState } from 'react';
-
- export default function Home() {
-   const [data, setData] = useState(null);
-
-   useEffect(() => {
-     fetch('/api/data')
-       .then((res) => res.json())
-       .then(setData);
-   }, []);
-
-   return <div>{data ? JSON.stringify(data) : "Loading..."}</div>;
- }`,
-	},
-
-	// DOCKER PROJECT: BASIC SETUP WITH A WEB SERVICE, DATABASE, AND REDIS
-	{
-		title: "DevOps",
-		file: "docker-compose.yml",
-		language: "yaml",
-		snippetHeight: 500,
-		snippet: `  version: '3'
- services:
-   web:
-     build: .
-     ports:
-       - "8000:8000"
-     depends_on:
-       - db
-   db:
-     image: postgres:13
-     environment:
-       POSTGRES_DB: myapp
-       POSTGRES_USER: user
-       POSTGRES_PASSWORD: password
-   redis:
-     image: "redis:alpine"
-
- # DEPLOY WITH: docker-compose up -d`,
-	},
+const WhatIDoData: ProjectData[] = [
+    backendDevelopment,
+    softwareEngineering,
+    frontendDevelopment,
+    fullstackDevelopment,
+    devops,
 ];
 
-const TypedSyntaxHighlighter: React.FC<{ code: string; language: string }> = ({
-	code,
-	language,
+const TypedSyntaxHighlighter: React.FC<{
+    code: string;
+    language: string;
+    isCompleted: boolean;
+    onComplete: () => void;
+    activeFile: string;
+}> = ({
+    code,
+    language,
+    isCompleted,
+    onComplete,
+    activeFile
 }) => {
-	const [displayedCode, setDisplayedCode] = useState("");
-	const [showCursor, setShowCursor] = useState(true);
-	const { resolvedTheme } = useTheme();
+        const [displayedCode, setDisplayedCode] = useState("");
+        const [showCursor, setShowCursor] = useState(true);
+        const [isTyping, setIsTyping] = useState(true);
+        const { resolvedTheme } = useTheme();
+        const containerRef = useRef<HTMLDivElement>(null);
 
-	useEffect(() => {
-		let index = 0;
-		const typingInterval = setInterval(() => {
-			setDisplayedCode((prev) => prev + code[index]);
-			index++;
-			if (index === code.length) {
-				clearInterval(typingInterval);
-				const cursorInterval = setInterval(() => {
-					setShowCursor((prev) => !prev);
-				}, 500);
-				return () => clearInterval(cursorInterval);
-			}
-		}, 20);
+        // SIMPLIFIED AUTO-SCROLLING USING A SINGLE REF
+        useEffect(() => {
+            const observer = new MutationObserver(() => {
+                if (containerRef.current) {
+                    containerRef.current.scrollTop = containerRef.current.scrollHeight;
+                }
+            });
 
-		return () => clearInterval(typingInterval);
-	}, [code]);
+            if (containerRef.current) {
+                observer.observe(containerRef.current, {
+                    childList: true,
+                    subtree: true,
+                    characterData: true
+                });
+            }
 
-	return (
-		<div className={resolvedTheme === "dark" ? "bg-neutral-900" : "bg-white"}>
-			<SyntaxHighlighter
-				language={language}
-				style={resolvedTheme === "dark" ? vscDarkPlus : vs}
-				customStyle={{
-					color: resolvedTheme === "dark" ? "#D4D4D4" : "#333333",
-					padding: 0,
-					margin: 0,
-					fontSize: "0.875rem",
-					border: "none",
-					overflowX: "auto",
-					backgroundColor: resolvedTheme === "dark" ? "#171717" : "#ffffff",
-				}}
-				codeTagProps={{
-					style: {
-						fontFamily: "inherit",
-						backgroundColor: resolvedTheme === "dark" ? "#171717" : "#ffffff",
-					}
-				}}
-			>
-				{displayedCode + (showCursor ? "|" : " ")}
-			</SyntaxHighlighter>
-		</div>
-	);
+            return () => observer.disconnect();
+        }, []);
+
+        // RESET WHEN FILE CHANGES
+        useEffect(() => {
+            if (isCompleted) {
+                setDisplayedCode(code);
+                setIsTyping(false);
+                setShowCursor(false);
+            } else {
+                setDisplayedCode("");
+                setIsTyping(true);
+                setShowCursor(true);
+            }
+        }, [code, isCompleted, activeFile]);
+
+        // TYPING EFFECT
+        useEffect(() => {
+            if (isCompleted) return;
+            if (!isTyping) return;
+
+            let index = displayedCode.length;
+            const typingInterval = setInterval(() => {
+                if (index < code.length) {
+                    setDisplayedCode((prev) => prev + code[index]);
+                    index++;
+                } else {
+                    setIsTyping(false);
+                    onComplete();
+                    clearInterval(typingInterval);
+                }
+            }, 20);
+
+            return () => clearInterval(typingInterval);
+        }, [code, isTyping, onComplete, isCompleted, displayedCode]);
+
+        // CURSOR BLINKING
+        useEffect(() => {
+            if (isTyping) return;
+
+            const cursorInterval = setInterval(() => {
+                setShowCursor((prev) => !prev);
+            }, 500);
+
+            return () => clearInterval(cursorInterval);
+        }, [isTyping]);
+
+        return (
+            <div ref={containerRef} className="h-[500px] overflow-auto">
+                <SyntaxHighlighter
+                    language={language}
+                    style={resolvedTheme === "dark" ? vscDarkPlus : vs}
+                    customStyle={{
+                        margin: 0,
+                        padding: '1rem',
+                        background: 'transparent',
+                        fontSize: '0.875rem',
+                        border: 'none',
+                        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                        lineHeight: 1.5,
+                    }}
+                    wrapLongLines={true}
+                >
+                    {displayedCode + (showCursor && !isCompleted ? "|" : "")}
+                </SyntaxHighlighter>
+            </div>
+        );
+    };
+
+// PREVIEW COMPONENT
+const Preview: React.FC<{ preview: any }> = ({ preview }) => {
+    if (!preview) return null;
+
+    switch (preview.type) {
+        case "json":
+            return (
+                <div className="p-4 rounded-lg bg-neutral-100 dark:bg-neutral-800">
+                    <pre className="text-sm">
+                        {JSON.stringify(preview.content, null, 2)}
+                    </pre>
+                </div>
+            );
+        case "component":
+            const Component = preview.content;
+            return (
+                <div className="flex items-center justify-center w-full min-h-[200px]">
+                    <Component />
+                </div>
+            );
+        case "terminal":
+            return (
+                <div className="w-full min-h-[300px] bg-black rounded-lg">
+                    <TerminalPreview commands={preview.content} />
+                </div>
+            );
+        default:
+            return null;
+    }
+};
+
+const IDEWindow: React.FC<{
+    vscode: typeof WhatIDoData[0];
+    resolvedTheme?: string;
+    activeFile: string;
+    onFileChange: (file: string) => void;
+}> = ({ resolvedTheme, activeFile, onFileChange }) => {
+    const [showPreview, setShowPreview] = useState(false);
+    const [completedSnippets, setCompletedSnippets] = useState<Record<string, boolean>>({});
+    const [showTerminal, setShowTerminal] = useState(false);
+    const [hasUsedTerminal, setHasUsedTerminal] = useState<Record<string, boolean>>({});
+    const activeSnippet = WhatIDoData.find(item => item.file === activeFile);
+
+    const isCodeComplete = completedSnippets[activeFile] || false;
+    const hasUsedTerminalForFile = hasUsedTerminal[activeFile] || false;
+
+    // RESET ONLY PREVIEW AND TERMINAL WHEN CHANGING FILES
+    useEffect(() => {
+        setShowPreview(false);
+        setShowTerminal(false);
+    }, [activeFile]);
+
+    // RESET STATES WHEN CHANGING FILES
+    useEffect(() => {
+        setShowPreview(false);
+        setShowTerminal(false);
+        if (!activeSnippet?.terminal) {
+            setHasUsedTerminal(prev => ({
+                ...prev,
+                [activeFile]: true
+            }));
+        }
+    }, [activeFile, activeSnippet]);
+
+    if (!activeSnippet) return null; // NO ACTIVE SNIPPET
+
+    // HANDLERS FOR BUTTONS IN IDE WINDOW
+    const handleCodeComplete = () => {
+        setCompletedSnippets(prev => ({
+            ...prev,
+            [activeFile]: true
+        }));
+    };
+
+    // HANDLERS FOR BUTTONS IN IDE WINDOW
+    const handleTerminalUse = () => {
+        setShowTerminal(true);
+        setHasUsedTerminal(prev => ({
+            ...prev,
+            [activeFile]: true
+        }));
+    };
+
+    // HANDLERS FOR BUTTONS IN IDE WINDOW
+    const handleTerminalComplete = () => {
+        setShowTerminal(false); // CLOSE TERMINAL
+        setShowPreview(true);   // OPEN PEWVIEW
+    };
+
+    return (
+        <div className="relative flex flex-col h-full">
+            <CardHeader
+                className={`p-0 flex items-center border-none h-8 relative ${resolvedTheme === "dark" ? "bg-neutral-800" : "bg-neutral-200"
+                    }`}
+            >
+                <div className="flex space-x-2 mt-[10px] ml-4 items-center absolute left-0">
+                    <div className="w-3 h-3 rounded-full bg-red-500" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                    <div className="w-3 h-3 rounded-full bg-green-500" />
+                </div>
+                <div className="text-sm font-semibold w-full text-center">
+                    {activeSnippet.title}
+                </div>
+            </CardHeader>
+
+            {/* BUTTONS FOR CODE, TERMINAL, PREVIEW */}
+            <div className="absolute right-0 top-[30px] flex gap-2 z-10 p-2 rounded-bl-md bg-neutral-200 dark:bg-neutral-800">
+                <Button
+                    size="sm"
+                    variant={showPreview ? "ghost" : "secondary"}
+                    onClick={() => setShowPreview(false)}
+                    className="h-7 text-sm mt-1"
+                >
+                    <CodeXml className="mr-1 h-3 w-3" />
+                    Code
+                </Button>
+
+                {/* BUTTONS FOR TERMINAL AND PREVIEW - DISABLED IF NOT READY */}
+                {activeSnippet.terminal && (
+                    <ShowInfo wrapMode>
+                        <ShowInfo.Description>
+                            {!isCodeComplete
+                                ? "&laquo; I haven't finished writing the code, opening the terminal will cause errors. &raquo;"
+                                : "&laquo; I need to run some commands in the terminal to enable the preview. &raquo;"
+                            }
+                        </ShowInfo.Description>
+                        <ShowInfo.Content>
+                            <Button
+                                size="sm"
+                                variant={showTerminal ? "secondary" : "ghost"}
+                                onClick={handleTerminalUse}
+                                className="h-7 text-sm mt-1"
+                                disabled={!isCodeComplete}
+                            >
+                                <SquareTerminal className="mr-1 h-3 w-3" />
+                                Terminal
+                            </Button>
+                        </ShowInfo.Content>
+                    </ShowInfo>
+                )}
+
+                {/* BUTTONS FOR TERMINAL AND PREVIEW - DISABLED IF NOT READY */}
+                {activeSnippet.preview && (
+                    <ShowInfo wrapMode>
+                        <ShowInfo.Description>
+                            {!hasUsedTerminalForFile
+                                ? "&laquo; I need to use the terminal first to enable the preview. &raquo;"
+                                : "&laquo; I can now see the preview of my work. &raquo;"
+                            }
+                        </ShowInfo.Description>
+                        <ShowInfo.Content>
+                            <Button
+                                size="sm"
+                                variant={showPreview ? "secondary" : "ghost"}
+                                onClick={() => setShowPreview(true)}
+                                className="h-7 text-sm mt-1"
+                                disabled={!hasUsedTerminalForFile}
+                            >
+                                <Fullscreen className="mr-1 h-3 w-3" />
+                                Preview
+                            </Button>
+                        </ShowInfo.Content>
+                    </ShowInfo>
+                )}
+            </div>
+
+            {/* TABS FOR SWITCHING FILES */}
+            <div className="pr-[300px] border-b border-neutral-200 dark:border-neutral-800">
+                <ScrollArea className="w-full">
+                    <div className="flex items-center px-4">
+                        <div className="flex space-x-2 bg-transparent py-2 rounded-lg w-max">
+                            {WhatIDoData.map((tab) => (
+                                <button
+                                    key={tab.file}
+                                    onClick={() => onFileChange(tab.file)}
+                                    className={`
+                                            px-3 py-1.5 rounded-md text-sm transition-colors
+                                            ${activeFile === tab.file
+                                            ? "bg-neutral-200 dark:bg-neutral-800"
+                                            : "hover:bg-neutral-200 dark:hover:bg-neutral-800"
+                                        }
+                                `}
+                                >
+                                    {tab.file}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <ScrollBar orientation="horizontal" />
+                </ScrollArea>
+            </div >
+
+            {/* CODE AND PREVIEW WINDOW */}
+            <div className="flex-1 overflow-hidden bg-neutral-50 dark:bg-neutral-900">
+                <div className={`h-full transition-opacity duration-200 ${showPreview ? "opacity-0 pointer-events-none absolute inset-0" : "opacity-100"
+                    }`}>
+                    <TypedSyntaxHighlighter
+                        code={activeSnippet.snippet || ""}
+                        language={activeSnippet.language}
+                        isCompleted={isCodeComplete}
+                        onComplete={handleCodeComplete}
+                        activeFile={activeFile}
+                    />
+                </div>
+                {showPreview && activeSnippet.preview && (
+                    <div className="h-full p-4">
+                        <Preview preview={activeSnippet.preview} />
+                    </div>
+                )}
+            </div>
+
+            {/* TERMINAL WINDOW */}
+            <Dialog open={showTerminal} onOpenChange={setShowTerminal}>
+                <DialogContent className="sm:max-w-[800px] p-0 gap-0" hideCloseButton>
+                    <DialogTitle className="sr-only">Terminal Window</DialogTitle>
+                    <div className="w-full min-h-[400px] bg-black rounded-lg">
+                        <div className={`p-0 flex items-center h-8 relative rounded-t-lg ${resolvedTheme === "dark" ? "bg-neutral-800" : "bg-neutral-200"}`}>
+                            <div className="flex space-x-2 mt-[5px] ml-4 items-center absolute left-0">
+                                <DialogClose className="hover:opacity-80 cursor-pointer">
+                                    <div className="w-3 h-3 rounded-full bg-red-500" />
+                                </DialogClose>
+                                <DialogClose className="hover:opacity-80 cursor-pointer">
+                                    <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                                </DialogClose>
+                                <div className="w-3 h-3 rounded-full bg-green-500" />
+                            </div>
+                            <div className="text-sm font-semibold w-full text-center">
+                                Terminal
+                            </div>
+                        </div>
+                        <TerminalPreview
+                            commands={activeSnippet.terminalCommands || terminal.preview?.content || []}
+                            project={activeSnippet.project}
+                            onComplete={handleTerminalComplete}
+                        />
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
 };
 
 const WhatIDoSection: React.FC = () => {
-	const { resolvedTheme } = useTheme();
-	const [activeTab, setActiveTab] = useState(WhatIDoData[0].file);
-	const [isMounted, setIsMounted] = useState(false);
-	const { data: sectionData, isLoading } = useWhatIDoSection();
+    const { resolvedTheme } = useTheme();
+    const [activeFile, setActiveFile] = useState(WhatIDoData[0].file);
+    const [isMounted, setIsMounted] = useState(false);
+    const { data: sectionData, isLoading } = useWhatIDoSection();
 
-	useEffect(() => {
-		setIsMounted(true);
-	}, []);
+    // WAIT FOR MOUNT TO AVOID SSR MISMATCH
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
-	if (!resolvedTheme || !isMounted || isLoading) {
-		return null;
-	}
+    // WAIT FOR DATA TO AVOID SSR MISMATCH
+    if (!resolvedTheme || !isMounted || isLoading) {
+        return null;
+    }
 
-	const activeSnippet = WhatIDoData.find((item) => item.file === activeTab);
-	const contentHeight = activeSnippet ? activeSnippet.snippetHeight : 0;
+    return (
+        <Section>
+            {/* SECTION TITLE */}
+            <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
+                {sectionData?.title || "What I Do"}
+                <ShowInfo
+                    description={
+                        <>
+                            {sectionData?.titleDescription} <br />{" "}
+                            <span className="text-xs text-neutral-500">
+                                {sectionData?.paragraphDescription}
+                            </span>
+                        </>
+                    }
+                />
+            </h2>
 
-	return (
-		<Section>
-			<h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
-				{sectionData?.title || "What I Do"}
-				<ShowInfo
-					description={
-						<>
-							{sectionData?.titleDescription} <br />{" "}
-							<span className="text-xs text-neutral-500">
-								{sectionData?.paragraphDescription}
-							</span>
-						</>
-					}
-				/>
-			</h2>
-
-			<Tabs defaultValue={WhatIDoData[0].file} onValueChange={setActiveTab}>
-				{WhatIDoData.map((vscode) => (
-					<TabsContent
-						key={vscode.file}
-						value={vscode.file}
-						style={{ minHeight: `${contentHeight}px` }}
-					>
-						<Card
-							className={`rounded-lg overflow-hidden border-none ${
-								resolvedTheme === "dark"
-									? "bg-neutral-900 text-white"
-									: "bg-white text-black"
-							}`}
-						>
-							<CardHeader
-								className={`p-0 flex items-center h-8 relative ${
-									resolvedTheme === "dark" ? "bg-neutral-800" : "bg-neutral-200"
-								}`}
-							>
-								<div className="flex space-x-2 mt-[10px] ml-4 items-center absolute left-0">
-									<div className="w-3 h-3 rounded-full bg-red-500" />
-									<div className="w-3 h-3 rounded-full bg-yellow-500" />
-									<div className="w-3 h-3 rounded-full bg-green-500" />
-								</div>
-								<div className="text-sm font-semibold w-full text-center">
-									{vscode.title}
-								</div>
-							</CardHeader>
-							<ScrollArea className="w-full">
-								<TabsList className="mb-4 space-x-2 bg-transparent p-4 rounded-lg inline-flex w-max">
-									{WhatIDoData.map((vscode) => (
-										<TabsTrigger
-											key={vscode.file}
-											value={vscode.file}
-											className="data-[state=active]:bg-neutral-200 dark:data-[state=active]:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-800"
-										>
-											{vscode.file}
-										</TabsTrigger>
-									))}
-								</TabsList>
-								<ScrollBar orientation="horizontal" />
-							</ScrollArea>
-							<CardContent
-								className={` ${
-									resolvedTheme === "dark" ? "bg-neutral-900" : "bg-white"
-								} transition-all ease-in-out`}
-							>
-								<TypedSyntaxHighlighter
-									code={vscode.snippet}
-									language={vscode.language}
-								/>
-							</CardContent>
-						</Card>
-					</TabsContent>
-				))}
-			</Tabs>
-		</Section>
-	);
+            {/* IDE WINDOW */}
+            <Card
+                className={`rounded-xl overflow-hidden border-none ${resolvedTheme === "dark"
+                    ? "bg-neutral-900 text-white"
+                    : "bg-white text-black"
+                    }`}
+            >
+                <IDEWindow
+                    vscode={WhatIDoData[0]}
+                    resolvedTheme={resolvedTheme}
+                    activeFile={activeFile}
+                    onFileChange={setActiveFile}
+                />
+            </Card>
+        </Section>
+    );
 };
 
 export default WhatIDoSection;
