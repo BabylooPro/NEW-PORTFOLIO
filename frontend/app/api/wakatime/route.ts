@@ -12,6 +12,21 @@ let cachedData: CachedWakaTimeData | null = null;
 
 // THRESHOLD SETTINGS
 const CACHE_DURATION_SECONDS = 300; // 5 MINUTES
+const AVAILABLE_THRESHOLD = 15 * 60 * 1000; // 15 MINUTES IN MILLISECONDS
+const AWAY_THRESHOLD = 60 * 60 * 1000; // 1 HOUR IN MILLISECONDS
+
+function determineStatus(lastActivityTime: number): "available" | "away" | "busy" {
+    const now = Date.now();
+    const timeSinceLastActivity = now - lastActivityTime;
+
+    if (timeSinceLastActivity <= AVAILABLE_THRESHOLD) {
+        return "available";
+    } else if (timeSinceLastActivity <= AWAY_THRESHOLD) {
+        return "away";
+    } else {
+        return "busy";
+    }
+}
 
 // FETCH SKILL ID BY NAME
 async function getSkillIdByName(name: string): Promise<number | null> {
@@ -127,7 +142,9 @@ async function fetchDataWithCache(revalidate: boolean = false) {
     if (cachedData && !revalidate) {
         const cacheAge = now - cachedData.lastCachedAt;
         if (cacheAge < CACHE_DURATION_SECONDS * 1000) {
-            return cachedData; // RETURN CACHED DATA IF STILL VALID
+            // UPDATE STATUS BASED ON LAST ACTIVITY TIME
+            const status = determineStatus(cachedData.lastActivityAt);
+            return { ...cachedData, status };
         }
     }
 
@@ -181,7 +198,8 @@ async function fetchDataWithCache(revalidate: boolean = false) {
                 }
             },
             status: "available",
-            lastCachedAt: Date.now()
+            lastCachedAt: Date.now(),
+            lastActivityAt: now // INITIALIZE LAST ACTIVITY TIME
         };
 
         // ENSURE DEFAULT VALUES FOR EMPTY ARRAYS
@@ -282,8 +300,9 @@ async function fetchDataWithCache(revalidate: boolean = false) {
                 languages: languages,
                 grand_total: data.data.grand_total,
             },
-            status: data.status,
+            status: "available", // THIS WILL BE UPDATED BELOW
             lastCachedAt: now,
+            lastActivityAt: now // INITIALIZE LAST ACTIVITY TIME
         };
 
         // UPDATE LAST_USED FOR OPERATING SYSTEMS
@@ -298,8 +317,14 @@ async function fetchDataWithCache(revalidate: boolean = false) {
             filteredData.data.grand_total.total_seconds > cachedData.data.grand_total.total_seconds
         ) {
             // ACTIVITY DETECTED
-            console.log('New activity detected');
+            filteredData.lastActivityAt = now;
+        } else if (cachedData) {
+            // NO NEW ACTIVITY, KEEP PREVIOUS ACTIVITY TIME
+            filteredData.lastActivityAt = cachedData.lastActivityAt;
         }
+
+        // SET STATUS BASED ON LAST ACTIVITY
+        filteredData.status = determineStatus(filteredData.lastActivityAt);
 
         cachedData = filteredData; // UPDATE CACHED DATA
         return cachedData; // RETURN CACHED DATA

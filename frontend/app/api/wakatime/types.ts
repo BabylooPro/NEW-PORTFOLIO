@@ -8,8 +8,9 @@ export interface WakaTimeData {
         grand_total: GrandTotal;
         range: Range;
     };
-    status: string;
+    status: "available" | "away" | "busy";
     lastCachedAt: number;
+    lastActivityAt: number;
 }
 
 export interface CachedWakaTimeData {
@@ -24,6 +25,7 @@ export interface CachedWakaTimeData {
     };
     status: string;
     lastCachedAt: number;
+    lastActivityAt: number;
 }
 
 export interface Category {
