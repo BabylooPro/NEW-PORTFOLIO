@@ -20,7 +20,7 @@ export const TermsOfUse = () => {
                 <div>
                     <h2 className="text-2xl font-semibold">1. Acceptance of Terms</h2>
                     <p>
-                        By accessing this Website, you acknowledge that you have read, understood, and agree to comply with these Terms of Use. If you do not agree with any part of these terms, please do not use this Website.
+                        By accessing this Website, you acknowledge that you have read, understood, and agree to comply with these Terms of Use. If you don&apos;t agree with any part of these terms, please do not use this Website.
                     </p>
                 </div>
 
@@ -52,7 +52,7 @@ export const TermsOfUse = () => {
                         <li>Impersonate any person or entity</li>
                     </ul>
                     <p className="mt-4">
-                        Note: While the Website's source code is available under the MIT License and can be freely used,
+                        Note: While the Website&apos;s source code is available under the MIT License and can be freely used,
                         modified and distributed (see Section 11), the content, images, and branding elements remain
                         protected by copyright unless otherwise specified.
                     </p>
@@ -91,7 +91,7 @@ export const TermsOfUse = () => {
                 <div>
                     <h2 className="text-2xl font-semibold">6. Disclaimer</h2>
                     <p>
-                        This Website is provided "as is" without any warranties, express or implied. I do not guarantee that:
+                        This Website is provided &quot;as is&quot; without any warranties, express or implied. I do not guarantee that:
                     </p>
                     <ul className="list-disc pl-6">
                         <li>The Website will be available at all times</li>
@@ -152,7 +152,7 @@ export const TermsOfUse = () => {
                     <ul className="list-disc pl-6">
                         <li>You can use, copy, modify, merge, publish, distribute, and sell copies of the code</li>
                         <li>You must include the original copyright notice and MIT License in any copy of the code</li>
-                        <li>The software is provided "as is" without warranty of any kind</li>
+                        <li>The software is provided &quot;as is&quot; without warranty of any kind</li>
                     </ul>
                     <p className="mt-4">
                         For the complete license terms, please see the LICENSE file in the GitHub repository: <br />
