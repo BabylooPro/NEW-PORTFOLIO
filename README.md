@@ -41,7 +41,18 @@ The portfolio uses **Strapi** as a headless CMS and is deployed on **AWS EC2 Lin
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. This means you can:
+
+- ✅ Use this code for personal or commercial projects
+- ✅ Modify and distribute the code
+- ✅ Use the code in your own projects
+
+However, you must:
+
+- ℹ️ Include the original copyright notice
+- ℹ️ Include the MIT License text
+
+Read the complete [LICENSE](LICENSE) file for details.
 
 ## Contact
 
