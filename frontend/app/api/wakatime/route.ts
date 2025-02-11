@@ -359,7 +359,7 @@ export async function GET() {
         console.log("GET request received");
         console.log("Environment variables:", {
             WAKATIME_API_KEY: process.env.WAKATIME_API_KEY ? "Set" : "Not set",
-            STRAPI_TOKEN: process.env.STRAPI_TOKEN ? "Set" : "Not set",
+            STRAPI_TOKEN: process.env.STRAPI_API_TOKEN ? "Set" : "Not set",
         });
 
         const data = await fetchDataWithCache();
