@@ -241,7 +241,7 @@ const IDEWindow: React.FC<{
             </CardHeader>
 
             {/* BUTTONS FOR CODE, TERMINAL, PREVIEW */}
-            <div className="absolute right-0 top-[30px] flex gap-2 z-10 p-2 rounded-bl-md bg-neutral-200 dark:bg-neutral-800">
+            <div className="absolute right-0 top-[30px] flex max-sm:flex-col gap-2 z-10 p-2 rounded-bl-md bg-neutral-200 dark:bg-neutral-800">
                 <Button
                     size="sm"
                     variant={showPreview ? "ghost" : "secondary"}
@@ -302,7 +302,7 @@ const IDEWindow: React.FC<{
             </div>
 
             {/* TABS FOR SWITCHING FILES */}
-            <div className="pr-[300px] border-b border-neutral-200 dark:border-neutral-800">
+            <div className="pr-[300px] max-sm:pr-[111px] border-b border-neutral-200 dark:border-neutral-800">
                 <ScrollArea className="w-full">
                     <div className="flex items-center px-4">
                         <div className="flex space-x-2 bg-transparent py-2 rounded-lg w-max">
