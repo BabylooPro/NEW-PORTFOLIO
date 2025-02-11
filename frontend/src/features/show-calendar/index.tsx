@@ -11,9 +11,10 @@ import { getLocalTimeZone } from "@internationalized/date";
 import { useCalendarData } from "./hooks/useCalendarData";
 import { RightPanel } from "./panel/right-panel";
 import { useState } from "react";
-import { AlertTriangle, MousePointerBan } from "lucide-react";
+import { AlertTriangle, Loader, MousePointerBan } from "lucide-react";
 import { CombinedFormValues, FormValues } from "@/features/show-calendar/utils/schema";
 import { useQueryParams } from "./hooks/useQueryParams";
+import { Suspense } from "react";
 
 export function ShowCalendarIndex() {
     const { setQueryParams } = useQueryParams();
@@ -146,35 +147,43 @@ export function ShowCalendarIndex() {
             >
                 {/* TABS CONTENT */}
                 <div className="flex gap-6">
-                    <LeftPanel
-                        showForm={showFormState}
-                        currentView={currentView}
-                        onViewChange={handleViewChange}
-                        selectedDateTime={selectedDateTime}
-                    />
+                    <Suspense fallback={<Loader className="animate-spin" />}>
+                        <LeftPanel
+                            showForm={showFormState}
+                            currentView={currentView}
+                            onViewChange={handleViewChange}
+                            selectedDateTime={selectedDateTime}
+                        />
+                    </Suspense>
 
                     {/* SHOW FORM OR CALENDAR */}
                     {showFormState ? (
-                        <FormPanel onBack={handleFormBack} />
+                        <Suspense fallback={<Loader className="animate-spin" />}>
+                            <FormPanel onBack={handleFormBack} />
+                        </Suspense>
                     ) : (
                         // SHOW CENTER PANEL AND RIGHT PANEL
                         <>
-                            <CenterPanel
-                                date={date}
-                                focusedDate={focusedDate}
-                                calendarData={calendarData}
-                                handleChangeDate={handleChangeDate}
-                                setFocusedDate={setFocusedDate}
-                                setSelectedPlatform={setSelectedPlatform}
-                                currentView={currentView}
-                            />
-                            <RightPanel
-                                timeZone={getLocalTimeZone()}
-                                date={date}
-                                calendarData={calendarData}
-                                onTimeSelect={handleTimeSelection}
-                                onDateTimeChange={setSelectedDateTime}
-                            />
+                            <Suspense fallback={<Loader className="animate-spin" />}>
+                                <CenterPanel
+                                    date={date}
+                                    focusedDate={focusedDate}
+                                    calendarData={calendarData}
+                                    handleChangeDate={handleChangeDate}
+                                    setFocusedDate={setFocusedDate}
+                                    setSelectedPlatform={setSelectedPlatform}
+                                    currentView={currentView}
+                                />
+                            </Suspense>
+                            <Suspense fallback={<Loader className="animate-spin" />}>
+                                <RightPanel
+                                    timeZone={getLocalTimeZone()}
+                                    date={date}
+                                    calendarData={calendarData}
+                                    onTimeSelect={handleTimeSelection}
+                                    onDateTimeChange={setSelectedDateTime}
+                                />
+                            </Suspense>
                         </>
                     )}
                 </div>
