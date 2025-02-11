@@ -232,96 +232,110 @@ export const VisitorCounter = () => {
                     )}
                 </Card>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-hidden p-6">
-                <DialogHeader className="pb-4">
-                    <DialogTitle>Visitor Analytics</DialogTitle>
-                    <DialogDescription>
-                        View the number of visitors over time
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="w-full h-[400px]">
-                    <ChartContainer config={chartConfig}>
-                        <div className="flex h-full flex-col">
-                            <div className="flex justify-end mb-4">
-                                <Button
-                                    variant="outline"
-                                    onClick={handleReset}
-                                    disabled={!startTime && !endTime}
-                                    className="text-xs sm:text-sm"
-                                >
-                                    Reset Zoom
-                                </Button>
-                            </div>
-                            <div className="flex-1">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <ComposedChart
-                                        data={zoomedHistory}
-                                        margin={{ top: 10, right: 10, left: 0, bottom: 10 }}
-                                        onMouseDown={handleMouseDown}
-                                        onMouseMove={handleMouseMove}
-                                        onMouseUp={handleMouseUp}
-                                        onMouseLeave={handleMouseUp}
-                                        style={{
-                                            cursor: isSelecting ? 'grabbing' : 'grab',
-                                            userSelect: 'none'
-                                        }}
+            <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-hidden p-3 sm:p-6">
+                <div className="flex flex-col h-full gap-4 sm:gap-6">
+                    <DialogHeader>
+                        <DialogTitle>Visitor Analytics</DialogTitle>
+                        <DialogDescription>
+                            Check how many people have visited my portfolio in 2025
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex-1 min-h-0 w-full h-[280px] sm:h-[350px] lg:h-[400px]">
+                        <ChartContainer config={chartConfig}>
+                            <div className="flex h-full flex-col gap-3 sm:gap-4">
+                                <div className="flex justify-end">
+                                    <Button
+                                        variant="outline"
+                                        onClick={handleReset}
+                                        disabled={!startTime && !endTime}
+                                        className="text-xs h-7 sm:h-8 sm:text-sm"
                                     >
-                                        <defs>
-                                            <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="rgb(16, 185, 129)" stopOpacity={0.8} />
-                                                <stop offset="95%" stopColor="rgb(16, 185, 129)" stopOpacity={0.1} />
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid vertical={false} />
-                                        <XAxis
-                                            dataKey="timestamp"
-                                            tickFormatter={formatXAxisTick}
-                                            tickLine={false}
-                                            axisLine={false}
-                                            tickMargin={4}
-                                            minTickGap={16}
-                                            style={{ fontSize: '10px', userSelect: 'none' }}
-                                        />
-                                        <YAxis
-                                            tickLine={false}
-                                            axisLine={false}
-                                            style={{ fontSize: '10px', userSelect: 'none' }}
-                                            width={30}
-                                        />
-                                        <ChartTooltip
-                                            cursor={false}
-                                            content={
-                                                <ChartTooltipContent
-                                                    className="w-[150px] sm:w-[200px] font-mono text-xs sm:text-sm"
-                                                    nameKey="count"
-                                                    labelFormatter={(value) => new Date(value).toLocaleString().replace(/:\d{2} /, ' ')}
-                                                />
-                                            }
-                                        />
-                                        <Area
-                                            type="monotone"
-                                            dataKey="count"
-                                            name="count"
-                                            stroke="rgb(16, 185, 129)"
-                                            fill="url(#colorVisitors)"
-                                            fillOpacity={1}
-                                            strokeWidth={2}
-                                            isAnimationActive={false}
-                                        />
-                                        {refAreaLeft && refAreaRight && (
-                                            <ReferenceArea
-                                                x1={refAreaLeft}
-                                                x2={refAreaRight}
-                                                strokeOpacity={0.3}
-                                                fill="hsl(var(--muted))"
-                                                fillOpacity={0.2}
+                                        Reset Zoom
+                                    </Button>
+                                </div>
+                                <div className="flex-1 -ml-2 sm:ml-0">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <ComposedChart
+                                            data={zoomedHistory}
+                                            margin={{ top: 5, right: 5, left: -5, bottom: 0, ...(!startTime && !endTime && { right: 10, left: 0 }) }}
+                                            onMouseDown={handleMouseDown}
+                                            onMouseMove={handleMouseMove}
+                                            onMouseUp={handleMouseUp}
+                                            onMouseLeave={handleMouseUp}
+                                            style={{
+                                                cursor: isSelecting ? 'grabbing' : 'grab',
+                                                userSelect: 'none'
+                                            }}
+                                        >
+                                            <defs>
+                                                <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="rgb(16, 185, 129)" stopOpacity={0.8} />
+                                                    <stop offset="95%" stopColor="rgb(16, 185, 129)" stopOpacity={0.1} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid vertical={false} />
+                                            <XAxis
+                                                dataKey="timestamp"
+                                                tickFormatter={formatXAxisTick}
+                                                tickLine={false}
+                                                axisLine={false}
+                                                tickMargin={8}
+                                                minTickGap={30}
+                                                interval="preserveEnd"
+                                                dy={2}
+                                                angle={0}
+                                                textAnchor="middle"
+                                                style={{
+                                                    fontSize: '10px',
+                                                    userSelect: 'none'
+                                                }}
+                                                className="text-[10px] sm:text-xs"
                                             />
-                                        )}
-                                    </ComposedChart>
-                                </ResponsiveContainer>
+                                            <YAxis
+                                                tickLine={false}
+                                                axisLine={false}
+                                                style={{
+                                                    fontSize: '10px',
+                                                    userSelect: 'none'
+                                                }}
+                                                className="text-[10px] sm:text-xs"
+                                                width={25}
+                                            />
+                                            <ChartTooltip
+                                                cursor={false}
+                                                content={
+                                                    <ChartTooltipContent
+                                                        className="w-[120px] sm:w-[180px] lg:w-[200px] font-mono text-[10px] sm:text-xs lg:text-sm"
+                                                        nameKey="count"
+                                                        labelFormatter={(value) => new Date(value).toLocaleString().replace(/:\d{2} /, ' ')}
+                                                    />
+                                                }
+                                            />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="count"
+                                                name="count"
+                                                stroke="rgb(16, 185, 129)"
+                                                fill="url(#colorVisitors)"
+                                                fillOpacity={1}
+                                                strokeWidth={2}
+                                                isAnimationActive={false}
+                                            />
+                                            {refAreaLeft && refAreaRight && (
+                                                <ReferenceArea
+                                                    x1={refAreaLeft}
+                                                    x2={refAreaRight}
+                                                    strokeOpacity={0.3}
+                                                    fill="hsl(var(--muted))"
+                                                    fillOpacity={0.2}
+                                                />
+                                            )}
+                                        </ComposedChart>
+                                    </ResponsiveContainer>
+                                </div>
                             </div>
-                        </div>
-                    </ChartContainer>
+                        </ChartContainer>
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>
