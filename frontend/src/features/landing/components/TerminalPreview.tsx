@@ -37,6 +37,7 @@ export const TerminalPreview: React.FC<TerminalPreviewProps> = ({ commands, proj
 
     // AUTO SCROLL TO BOTTOM
     useEffect(() => {
+        // OBSERVE SCROLL AREA
         const observer = new MutationObserver(() => {
             if (scrollAreaRef.current?.viewport) {
                 const viewport = scrollAreaRef.current.viewport;
@@ -44,6 +45,7 @@ export const TerminalPreview: React.FC<TerminalPreviewProps> = ({ commands, proj
             }
         });
 
+        // OBSERVE CONTENT REF
         if (contentRef.current) {
             observer.observe(contentRef.current, {
                 childList: true,
@@ -52,7 +54,7 @@ export const TerminalPreview: React.FC<TerminalPreviewProps> = ({ commands, proj
             });
         }
 
-        return () => observer.disconnect();
+        return () => observer.disconnect(); // DISCONNECT OBSERVER
     }, []);
 
     // TYPE COMMANDS AND DISPLAY OUTPUT
@@ -151,20 +153,29 @@ export const TerminalPreview: React.FC<TerminalPreviewProps> = ({ commands, proj
 
     return (
         <ScrollArea ref={scrollAreaRef} className="h-[350px]">
-            <div ref={contentRef} className="font-mono text-sm p-4 text-green-400">
+            <div ref={contentRef} className="font-mono text-sm p-4 text-green-400 break-all max-w-full">
                 {displayedCommands.map((cmd, idx) => (
                     <div key={`${idx}-${cmd.command}`} className="mb-4">
-                        <div className="flex items-center">
+                        {/* DISPLAY COMMAND */}
+                        <div className="flex items-center flex-wrap">
                             <span className="text-blue-400 mr-1">~/{currentProject.name}</span>
                             <span className="text-neutral-400">{currentProject.branch}*</span>
                             <span className="text-pink-400 ml-2">&gt;</span>
-                            <span className="ml-2">{cmd.typedCommand}</span>
+                            <span className="ml-2 break-all">
+                                {cmd.typedCommand.split(' ').map((word, i) => (
+                                    <span key={i} className={i === 0 ? 'text-green-400' : 'text-white'}>
+                                        {i > 0 ? ` ${word}` : word}
+                                    </span>
+                                ))}
+                            </span>
                             {cmd.isTypingCommand && (
                                 <span className="inline-block w-2 h-4 bg-green-400 animate-pulse ml-1" />
                             )}
                         </div>
+
+                        {/* DISPLAY OUTPUT */}
                         {!cmd.isTypingCommand && cmd.typedOutput && (
-                            <div className="mt-1 whitespace-pre-line">
+                            <div className="mt-1 whitespace-pre-wrap break-all text-green-400">
                                 {cmd.typedOutput}
                             </div>
                         )}
