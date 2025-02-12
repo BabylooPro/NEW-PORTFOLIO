@@ -44,7 +44,9 @@ const useTree = () => {
     return context
 }
 
-interface TreeViewComponentProps extends React.HTMLAttributes<HTMLDivElement> { }
+interface TreeViewComponentProps extends React.HTMLAttributes<HTMLDivElement> {
+    children?: React.ReactNode;
+}
 
 type Direction = "rtl" | "ltr" | undefined
 
@@ -71,7 +73,6 @@ const Tree = forwardRef<HTMLDivElement, TreeViewProps>(
             dir,
             ...props
         },
-        ref,
     ) => {
         const [selectedId, setSelectedId] = useState<string | undefined>(
             initialSelectedId,
@@ -134,7 +135,7 @@ const Tree = forwardRef<HTMLDivElement, TreeViewProps>(
             if (initialSelectedId) {
                 expandSpecificTargetedElements(elements, initialSelectedId)
             }
-        }, [initialSelectedId, elements])
+        }, [initialSelectedId, elements, expandSpecificTargetedElements])
 
         const direction = dir === "rtl" ? "rtl" : "ltr"
 
@@ -200,8 +201,9 @@ const TreeIndicator = forwardRef<
 
 TreeIndicator.displayName = "TreeIndicator"
 
-interface FolderComponentProps
-    extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item> { }
+interface FolderComponentProps extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item> {
+    children?: React.ReactNode;
+}
 
 type FolderProps = {
     expandedItems?: string[]
@@ -224,7 +226,6 @@ const Folder = forwardRef<
             children,
             ...props
         },
-        ref,
     ) => {
         const {
             direction,
@@ -349,8 +350,9 @@ const CollapseButton = forwardRef<
     {
         elements: TreeViewElement[]
         expandAll?: boolean
+        className?: string
     } & React.HTMLAttributes<HTMLButtonElement>
->(({ className, elements, expandAll = false, children, ...props }, ref) => {
+>(({ elements, expandAll = false, children, ...props }, ref) => {
     const { expandedItems, setExpandedItems } = useTree()
 
     const expendAllTree = useCallback((elements: TreeViewElement[]) => {
@@ -363,18 +365,17 @@ const CollapseButton = forwardRef<
         }
 
         elements.forEach(expandTree)
-    }, [])
+    }, [setExpandedItems])
 
     const closeAll = useCallback(() => {
         setExpandedItems?.([])
-    }, [])
+    }, [setExpandedItems])
 
     useEffect(() => {
-        console.log(expandAll)
         if (expandAll) {
             expendAllTree(elements)
         }
-    }, [expandAll])
+    }, [expandAll, elements, expendAllTree])
 
     return (
         <Button
