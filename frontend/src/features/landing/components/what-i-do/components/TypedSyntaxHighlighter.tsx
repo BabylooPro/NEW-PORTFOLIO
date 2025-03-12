@@ -3,6 +3,14 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useTheme } from "next-themes";
 
+// ACCESS THE SAME GLOBAL STATE AS USEIDSTATE
+declare global {
+    interface Window {
+        __animationId?: number;
+        __shouldAnimate?: boolean;
+    }
+}
+
 interface TypedSyntaxHighlighterProps {
     code: string;
     language: string;
@@ -11,6 +19,7 @@ interface TypedSyntaxHighlighterProps {
     activeFile: string;
     progress: number;
     onProgressChange: (progress: number) => void;
+    isPaused?: boolean;
 }
 
 export const TypedSyntaxHighlighter: React.FC<TypedSyntaxHighlighterProps> = ({
@@ -20,83 +29,117 @@ export const TypedSyntaxHighlighter: React.FC<TypedSyntaxHighlighterProps> = ({
     onComplete,
     activeFile,
     progress,
-    onProgressChange
+    onProgressChange,
+    isPaused = false
 }) => {
     const [displayedCode, setDisplayedCode] = useState("");
     const [showCursor, setShowCursor] = useState(true);
-    const [isTyping, setIsTyping] = useState(true);
+    const [isTyping, setIsTyping] = useState(false);
     const { resolvedTheme } = useTheme();
     const containerRef = useRef<HTMLDivElement>(null);
+    const animationRef = useRef<number | null>(null);
+    const animationIdRef = useRef<number>(0);
+    const typeSpeedRef = useRef<number>(20); // MS PER CHARACTER
+    const lastTimestampRef = useRef<number>(0);
+    const indexRef = useRef<number>(0);
 
-    // OBSERVE SCROLL AREA
+    // LOAD INITIAL STATE ONLY ONCE
     useEffect(() => {
-        // OBSERVE SCROLL AREA
-        const observer = new MutationObserver(() => {
-            if (containerRef.current) {
-                containerRef.current.scrollTop = containerRef.current.scrollHeight;
-            }
-        });
+        if (typeof window === 'undefined') return;
 
-        // OBSERVE CONTENT REF
-        if (containerRef.current) {
-            observer.observe(containerRef.current, {
-                childList: true,
-                subtree: true,
-                characterData: true
-            });
-        }
+        // INITIALIZE STATE BASED ON PROPS
+        indexRef.current = progress;
+        setDisplayedCode(code.slice(0, progress));
 
-        return () => observer.disconnect(); // DISCONNECT OBSERVER
-    }, []);
-
-    useEffect(() => {
-        // IF COMPLETED, SET DISPLAYED CODE AND STOP TYPING
-        if (isCompleted) {
-            setDisplayedCode(code);
-            setIsTyping(false);
-            setShowCursor(false);
-        } else {
-            // IF NOT COMPLETED, SET DISPLAYED CODE AND START TYPING
-            setDisplayedCode(code.slice(0, progress));
-            setIsTyping(true);
-            setShowCursor(true);
-        }
-    }, [code, isCompleted, activeFile, progress]);
-
-    // TYPING EFFECT
-    useEffect(() => {
-        if (isCompleted) return; // IF COMPLETED, RETURN
-        if (!isTyping) return; // IF NOT TYPING, RETURN
-
-        let index = displayedCode.length; // SET INDEX TO DISPLAYED CODE LENGTH
-
-        // TYPING INTERVAL
-        const typingInterval = setInterval(() => {
-            if (index < code.length) {
-                setDisplayedCode((prev) => prev + code[index]);
-                onProgressChange(index + 1);
-                index++;
-            } else {
-                setIsTyping(false);
-                onComplete();
-                clearInterval(typingInterval);
-            }
-        }, 20);
-
-        return () => clearInterval(typingInterval);
-    }, [code, isTyping, onComplete, isCompleted, displayedCode, onProgressChange]);
-
-    // CURSOR EFFECT
-    useEffect(() => {
-        if (isTyping) return; // IF NOT TYPING, RETURN
-
-        // CURSOR INTERVAL
+        // SETUP CURSOR BLINK INTERVAL
         const cursorInterval = setInterval(() => {
-            setShowCursor((prev) => !prev);
+            if (!isCompleted) {
+                setShowCursor(prev => !prev);
+            }
         }, 500);
 
-        return () => clearInterval(cursorInterval);
-    }, [isTyping]);
+        return () => {
+            // CLEANUP
+            clearInterval(cursorInterval);
+            if (animationRef.current) {
+                cancelAnimationFrame(animationRef.current);
+                animationRef.current = null;
+            }
+        };
+    }, []);
+
+    // AUTO-SCROLL TO BOTTOM AS CONTENT CHANGES
+    useEffect(() => {
+        if (containerRef.current) {
+            containerRef.current.scrollTop = containerRef.current.scrollHeight;
+        }
+    }, [displayedCode]);
+
+    // USE EFFECT FOR ANIMATION RUNNING
+    useEffect(() => {
+        // SKIP IN SSR
+        if (typeof window === 'undefined') return;
+
+        // REFS TO TRACK CURRENT STATE
+        const shouldBeTyping = !isPaused && !isCompleted && progress < code.length;
+
+        // ONLY UPDATE STATE IF NEEDED TO PREVENT RENDER LOOPS
+        if (shouldBeTyping !== isTyping) {
+            setIsTyping(shouldBeTyping);
+        }
+
+        // CLEAN UP PREVIOUS ANIMATION
+        if (!shouldBeTyping && animationRef.current) {
+            cancelAnimationFrame(animationRef.current);
+            animationRef.current = null;
+        }
+
+        // UPDATE DISPLAYED CODE ONLY IF PROGRESS CHANGED
+        if (progress !== indexRef.current) {
+            indexRef.current = progress;
+            setDisplayedCode(code.slice(0, progress));
+        }
+    }, [code, isPaused, isCompleted, progress, isTyping]);
+
+    // SEPARATE EFFECT FOR ANIMATION FRAME HANDLING
+    useEffect(() => {
+        if (!isTyping) return;
+
+        let isMounted = true;
+        let lastTime = 0;
+
+        // ANIMATION FUNCTION
+        const animate = (time: number) => {
+            if (!isMounted) return;
+
+            if (!lastTime) lastTime = time;
+            const delta = time - lastTime;
+
+            if (delta > typeSpeedRef.current) {
+                lastTime = time;
+                if (progress < code.length && !isPaused && !isCompleted && isTyping) {
+                    onProgressChange(progress + 1);
+                }
+            }
+
+            // CONTINUE ANIMATION IF CONDITIONS ARE MET
+            if (progress < code.length && !isPaused && !isCompleted && isTyping) {
+                animationRef.current = requestAnimationFrame(animate);
+            }
+        };
+
+        // START ANIMATION
+        animationRef.current = requestAnimationFrame(animate);
+
+        // CLEANUP
+        return () => {
+            isMounted = false;
+            if (animationRef.current) {
+                cancelAnimationFrame(animationRef.current);
+                animationRef.current = null;
+            }
+        };
+    }, [isTyping, isPaused, isCompleted, progress, code.length, onProgressChange, typeSpeedRef]);
 
     return (
         <div ref={containerRef} className="h-[500px] overflow-auto">

@@ -1,6 +1,12 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { backendDevelopment } from "../projects/backend-development/backend-development";
 import type { ProjectData } from "../types";
+
+// GLOBAL ANIMATION CONTROLLER
+const globalAnimationState = {
+    currentId: 0,
+    shouldAnimate: false
+};
 
 export const useIDEState = (
     WhatIDoData: ProjectData[],
@@ -18,6 +24,25 @@ export const useIDEState = (
     const [closedTabs, setClosedTabs] = useState<string[]>(
         WhatIDoData.filter(tab => tab.file !== backendDevelopment[0].file).map(tab => tab.file)
     );
+    const [isTypingPaused, setIsTypingPaused] = useState(true); // TYPING IS PAUSED BY DEFAULT
+    const animationIdRef = useRef(0);
+
+    // LOG INITIAL STATE ONLY - NO AUTO START
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        // CLEAR GLOBAL STATE ON MOUNT TO ENSURE A FRESH START
+        globalAnimationState.shouldAnimate = false;
+        globalAnimationState.currentId = Date.now();
+        animationIdRef.current = globalAnimationState.currentId;
+
+        return () => {
+            // CLEAN UP GLOBAL STATE ON UNMOUNT
+            if (animationIdRef.current === globalAnimationState.currentId) {
+                globalAnimationState.shouldAnimate = false;
+            }
+        };
+    }, []);
 
     const activeSnippet = WhatIDoData.find(item => item.file === activeFile);
     const isCodeComplete = completedSnippets[activeFile] || false;
@@ -58,12 +83,12 @@ export const useIDEState = (
     };
 
     // HANDLE CODE COMPLETE
-    const handleCodeComplete = () => {
+    const handleCodeComplete = useCallback(() => {
         setCompletedSnippets(prev => ({
             ...prev,
             [activeFile]: true
         }));
-    };
+    }, [activeFile]);
 
     // HANDLE TERMINAL USE
     const handleTerminalUse = () => {
@@ -83,7 +108,7 @@ export const useIDEState = (
     };
 
     // HANDLE PROGRESS CHANGE
-    const handleProgressChange = (progress: number) => {
+    const handleProgressChange = useCallback((progress: number) => {
         // SET TYPING PROGRESS
         setTypingProgress(prev => ({
             ...prev,
@@ -97,7 +122,32 @@ export const useIDEState = (
                 [activeFile]: true
             }));
         }
-    };
+    }, [activeFile, activeSnippet?.snippet?.length]);
+
+    // SIMPLIFIED ANIMATION CONTROL FUNCTION
+    const setTypingActive = useCallback((isActive: boolean) => {
+        // AVOID STATE UPDATES IF NO CHANGE NEEDED
+        if (!isActive && isTypingPaused) {
+            return;
+        }
+
+        if (isActive && !isTypingPaused) {
+            return;
+        }
+
+        // UPDATE GLOBAL STATE FIRST
+        globalAnimationState.shouldAnimate = isActive;
+
+        // UPDATE STATE - ONE SIMPLE UPDATE
+        setIsTypingPaused(!isActive);
+
+        // UPDATE ANIMATION ID ONLY WHEN ACTIVATING
+        if (isActive) {
+            const newId = Date.now();
+            globalAnimationState.currentId = newId;
+            animationIdRef.current = newId;
+        }
+    }, [isTypingPaused]);
 
     return {
         activeFile,
@@ -117,12 +167,14 @@ export const useIDEState = (
         hasUsedTerminalForFile,
         areAllTabsClosed,
         isTerminalProcessing,
+        isTypingPaused,
         handleFileChange,
         handleCloseTab,
         handleFileSelect,
         handleCodeComplete,
         handleTerminalUse,
         handleTerminalComplete,
-        handleProgressChange
+        handleProgressChange,
+        setTypingActive
     };
 }; 

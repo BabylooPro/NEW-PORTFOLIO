@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, forwardRef, useImperativeHandle } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { ScrollArea, ScrollBar, type ScrollAreaRef } from "@/components/ui/scroll-area";
 import { TerminalPreview } from "../../TerminalPreview";
@@ -22,7 +22,11 @@ interface IDEWindowProps {
     onCloseFile: (file: string) => void;
 }
 
-export const IDEWindow: React.FC<IDEWindowProps> = ({
+export interface IDEWindowHandle {
+    setTypingActive: (isActive: boolean) => void;
+}
+
+export const IDEWindow = forwardRef<IDEWindowHandle, IDEWindowProps>(({
     resolvedTheme,
     activeFile,
     openFiles,
@@ -30,8 +34,18 @@ export const IDEWindow: React.FC<IDEWindowProps> = ({
     initialCompletedSnippets,
     onFileChange,
     onCloseFile
-}) => {
+}, ref) => {
     const [showSidebar, setShowSidebar] = useState(true); // SHOW SIDEBAR
+    const ideContainerRef = useRef<HTMLDivElement>(null); // CONTAINER REF
+    const [isClientMounted, setIsClientMounted] = useState(false);
+    const [isVisible, setIsVisible] = useState<boolean | null>(null);
+
+    // ENSURE ONLY EXECUTE CLIENT-SIDE CODE AFTER MOUNT
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setIsClientMounted(true);
+        }
+    }, []);
 
     // IDE STATE
     const {
@@ -56,10 +70,100 @@ export const IDEWindow: React.FC<IDEWindowProps> = ({
         handleTerminalComplete,
         handleProgressChange,
         setClosedTabs,
-        isTerminalProcessing
+        isTerminalProcessing,
+        isTypingPaused,
+        setTypingActive
     } = useIDEState(WhatIDoData, initialTypingProgress, initialCompletedSnippets);
 
+    // EXPOSE METHODS TO PARENT VIA REF
+    useImperativeHandle(ref, () => ({
+        setTypingActive
+    }), [setTypingActive]);
+
     const scrollAreaRef = useRef<ScrollAreaRef>(null); // SCROLL AREA REF
+
+    // LOG MOUNT FOR DEBUGGING
+    useEffect(() => {
+        let isComponentMounted = true;
+
+        // FORCE START TYPING AFTER A DELAY - ONLY IF STILL MOUNTED
+        const forceStartTimer = setTimeout(() => {
+            if (setTypingActive && isComponentMounted) {
+                setTypingActive(true);
+            }
+        }, 500); // FASTER STARTUP
+
+        // CLEANUP ON UNMOUNT - CRITICAL
+        return () => {
+            isComponentMounted = false;
+            clearTimeout(forceStartTimer);
+
+            // ENSURE ANIMATION IS STOPPED ON UNMOUNT
+            if (setTypingActive) {
+                setTypingActive(false);
+            }
+        };
+    }, [activeFile, setTypingActive]);
+
+    // EFFECT TO HANDLE COMPONENT VISIBILITY - SEPARATE FROM MOUNT/UNMOUNT
+    useEffect(() => {
+        // SKIP IN SSR
+        if (typeof window === 'undefined') return;
+
+        let timeoutId: NodeJS.Timeout | null = null;
+
+        // ONLY HANDLE VISIBILITY CHANGES, NOT INITIAL MOUNT
+        if (isVisible !== null) {
+            if (isVisible) {
+                // DELAY TO PREVENT RAPID STATE CHANGES
+                timeoutId = setTimeout(() => {
+                    if (setTypingActive) {
+                        setTypingActive(true);
+                    }
+                }, 300);
+            } else {
+                if (setTypingActive) {
+                    setTypingActive(false);
+                }
+            }
+        }
+
+        return () => {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        };
+    }, [isVisible, setTypingActive]);
+
+    // INTERSECTION OBSERVER FOR VISIBILITY
+    useEffect(() => {
+        if (!ideContainerRef.current || typeof window === 'undefined') return;
+
+        let observerInstance: IntersectionObserver;
+
+        // VISIBILITY DETECTION USING INTERSECTION OBSERVER
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const [entry] = entries;
+                const newIsVisible = entry.isIntersecting;
+
+                // ONLY UPDATE IF VISIBILITY CHANGED TO PREVENT LOOPS
+                if (isVisible !== newIsVisible) {
+                    setIsVisible(newIsVisible);
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        observer.observe(ideContainerRef.current);
+        observerInstance = observer;
+
+        return () => {
+            if (observerInstance) {
+                observerInstance.disconnect();
+            }
+        };
+    }, [isVisible]);
 
     // SCROLL AREA REF
     useEffect(() => {
@@ -72,7 +176,7 @@ export const IDEWindow: React.FC<IDEWindowProps> = ({
     if (areAllTabsClosed) {
         return (
             // IDE WINDOW
-            <div className="relative flex flex-col h-[600px] overflow-hidden">
+            <div ref={ideContainerRef} className="relative flex flex-col h-[600px] overflow-hidden">
                 {/* HEADER */}
                 <div className={`p-0 flex items-center border-none h-8 relative ${resolvedTheme === "dark" ? "bg-neutral-800" : "bg-neutral-200"}`}>
                     <div className="flex space-x-2 ml-4 items-center absolute left-0">
@@ -119,7 +223,7 @@ export const IDEWindow: React.FC<IDEWindowProps> = ({
 
     return (
         // IDE WINDOW
-        <div className="relative flex flex-col h-[600px] overflow-hidden">
+        <div ref={ideContainerRef} className="relative flex flex-col h-[600px] overflow-hidden">
             {/* HEADER */}
             <div className={`p-0 flex items-center border-none h-8 relative ${resolvedTheme === "dark" ? "bg-neutral-800" : "bg-neutral-200"}`}>
                 <div className="flex space-x-2 ml-4 items-center absolute left-0">
@@ -179,6 +283,7 @@ export const IDEWindow: React.FC<IDEWindowProps> = ({
                                 activeFile={activeFile}
                                 progress={typingProgress[activeFile] || 0}
                                 onProgressChange={handleProgressChange}
+                                isPaused={isTypingPaused}
                             />
                         </div>
                         {showPreview && activeSnippet.preview && (
@@ -258,4 +363,4 @@ export const IDEWindow: React.FC<IDEWindowProps> = ({
             </Dialog>
         </div>
     );
-};
+});
