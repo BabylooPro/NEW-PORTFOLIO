@@ -283,67 +283,88 @@ const Folder = forwardRef<
 
 Folder.displayName = "Folder"
 
-const File = forwardRef<
-    HTMLButtonElement,
-    {
-        value: string
-        handleSelect?: (id: string) => void
-        isSelectable?: boolean
-        isSelect?: boolean
-        fileIcon?: React.ReactNode
-    } & React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger>
->(
-    (
-        {
-            value,
-            className,
-            handleSelect,
-            isSelectable = true,
-            isSelect,
-            fileIcon,
-            children,
-            ...props
-        },
-        ref,
-    ) => {
-        const { direction, selectedId, selectItem } = useTree()
-        const isSelected = isSelect ?? selectedId === value
+interface FileProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    value: string;
+    handleSelect?: (value: string) => void;
+    fileIcon?: React.ReactNode;
+    isSelect?: boolean;
+}
 
-        // Modifiez cette partie pour gérer le clic
-        const handleClick = () => {
-            if (handleSelect) {
-                handleSelect(value);
-            }
-            selectItem(value);
-        };
+// ERROR BOUNDARY
+class FileTreeErrorBoundary extends React.Component<
+    { children: React.ReactNode },
+    { hasError: boolean }
+> {
+    constructor(props: { children: React.ReactNode }) {
+        super(props);
+        this.state = { hasError: false };
+    }
 
-        return (
-            <AccordionPrimitive.Item value={value} className="relative">
-                <button
-                    ref={ref}
-                    {...props}
-                    dir={direction}
-                    disabled={!isSelectable}
-                    aria-label="File"
-                    className={cn(
-                        "flex items-center gap-1 cursor-pointer text-sm pr-1 rtl:pl-1 rtl:pr-0 rounded-md duration-200 ease-in-out w-full",
-                        {
-                            "bg-muted": isSelected && isSelectable,
-                        },
-                        isSelectable ? "cursor-pointer" : "opacity-50 cursor-not-allowed",
-                        className,
-                    )}
-                    onClick={handleClick}
+    static getDerivedStateFromError() {
+        return { hasError: true };
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return <div className="p-2 text-red-500">A error has occurred in the file component</div>;
+        }
+        return this.props.children;
+    }
+}
+
+const File = forwardRef<HTMLButtonElement, FileProps>(function FileComponent(props, ref) {
+    const {
+        className,
+        children,
+        fileIcon,
+        value,
+        handleSelect,
+        isSelect,
+        ...rest
+    } = props;
+
+    const { selectItem, selectedId, indicator, direction } = useTree();
+
+    const handleClick = useCallback(() => {
+        selectItem(value);
+        if (handleSelect) {
+            handleSelect(value);
+        }
+    }, [value, selectItem, handleSelect]);
+
+    return (
+        <FileTreeErrorBoundary>
+            <Button
+                ref={ref}
+                variant="ghost"
+                className={cn(
+                    "flex h-8 items-center text-xs overflow-hidden relative gap-1.5 font-normal w-full justify-start px-2 py-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-900",
+                    {
+                        "bg-primary/5 text-primary": selectedId === value || isSelect,
+                    },
+                    className
+                )}
+                onClick={handleClick}
+                {...rest}
+            >
+                {indicator && <TreeIndicator className="translate-y-[7px]" />}
+                <div
+                    className={cn("flex items-center gap-1.5", {
+                        "pl-6": direction === "ltr" && indicator,
+                        "pr-6": direction === "rtl" && indicator,
+                    })}
                 >
-                    {fileIcon ?? <FileIcon className="size-4" />}
-                    {children}
-                </button>
-            </AccordionPrimitive.Item>
-        )
-    },
-)
+                    {fileIcon ? fileIcon : <FileIcon className="h-3.5 w-3.5" />}
+                    <span className="whitespace-nowrap overflow-hidden text-ellipsis">
+                        {children}
+                    </span>
+                </div>
+            </Button>
+        </FileTreeErrorBoundary>
+    );
+});
 
-File.displayName = "File"
+File.displayName = "FileTree"
 
 const CollapseButton = forwardRef<
     HTMLButtonElement,
@@ -397,4 +418,163 @@ const CollapseButton = forwardRef<
 
 CollapseButton.displayName = "CollapseButton"
 
-export { CollapseButton, File, Folder, Tree, type TreeViewElement }
+// REFACTORED STATIC VERSION WITH MORE ROBUST ERROR HANDLING
+const FileTreeStatic = ({
+    className,
+    children,
+    fileIcon,
+    value,
+    handleSelect,
+    isSelect,
+    ...rest
+}: FileProps) => {
+    if (!value) {
+        console.warn("FileTreeStatic: value prop is required");
+        return null;
+    }
+
+    // DEFENSIVE HOOK USAGE
+    const treeContext = useContext(TreeContext);
+
+    if (!treeContext) {
+        console.warn("FileTreeStatic: must be used within a TreeProvider");
+        return (
+            <Button variant="ghost" className={className} {...rest}>
+                {fileIcon || <FileIcon className="h-3.5 w-3.5" />}
+                <span>{children}</span>
+            </Button>
+        );
+    }
+
+    const { selectItem, selectedId, indicator, direction } = treeContext;
+
+    const handleClick = useCallback(() => {
+        if (value && selectItem) {
+            selectItem(value);
+            if (handleSelect) {
+                handleSelect(value);
+            }
+        }
+    }, [value, selectItem, handleSelect]);
+
+    // ENSURE ALL VALUES EXIST BEFORE RENDERING
+    return (
+        <FileTreeErrorBoundary>
+            <Button
+                type="button"
+                variant="ghost"
+                className={cn(
+                    "flex h-8 items-center text-xs overflow-hidden relative gap-1.5 font-normal w-full justify-start px-2 py-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-900",
+                    {
+                        "bg-primary/5 text-primary": selectedId === value || isSelect,
+                    },
+                    className
+                )}
+                onClick={handleClick}
+                {...rest}
+            >
+                {indicator && <TreeIndicator className="translate-y-[7px]" />}
+                <div
+                    className={cn("flex items-center gap-1.5", {
+                        "pl-6": direction === "ltr" && indicator,
+                        "pr-6": direction === "rtl" && indicator,
+                    })}
+                >
+                    {fileIcon ? fileIcon : <FileIcon className="h-3.5 w-3.5" />}
+                    <span className="whitespace-nowrap overflow-hidden text-ellipsis">
+                        {children}
+                    </span>
+                </div>
+            </Button>
+        </FileTreeErrorBoundary>
+    );
+};
+
+// PURE IMPLEMENTATION WITHOUT FORWARDREF
+const DirectFileTree = (props: {
+    className?: string;
+    children?: React.ReactNode;
+    fileIcon?: React.ReactNode;
+    value: string;
+    handleSelect?: (value: string) => void;
+    isSelect?: boolean;
+    [key: string]: any;
+}) => {
+    const {
+        className,
+        children,
+        fileIcon,
+        value,
+        handleSelect,
+        isSelect,
+        ...rest
+    } = props;
+
+    if (!value) {
+        console.warn("DirectFileTree: value prop is required");
+        return null;
+    }
+
+    // USE DIRECTLY THE HOOKS WITHOUT CONTEXT IF NECESSARY
+    const treeContext = useContext(TreeContext);
+
+    if (!treeContext) {
+        console.warn("DirectFileTree: must be used within a TreeProvider");
+        return (
+            <Button variant="ghost" className={className} {...rest}>
+                {fileIcon || <FileIcon className="h-3.5 w-3.5" />}
+                <span>{children}</span>
+            </Button>
+        );
+    }
+
+    const { selectItem, selectedId, indicator, direction } = treeContext;
+
+    // INTERNAL FUNCTION WITHOUT USEEFFECT OR USECALLBACK
+    function handleClick() {
+        if (typeof value === "string" && selectItem) {
+            selectItem(value);
+            if (handleSelect) {
+                handleSelect(value);
+            }
+        }
+    }
+
+    return (
+        <Button
+            type="button"
+            variant="ghost"
+            className={cn(
+                "flex h-8 items-center text-xs overflow-hidden relative gap-1.5 font-normal w-full justify-start px-2 py-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-900",
+                {
+                    "bg-primary/5 text-primary": selectedId === value || isSelect,
+                },
+                className
+            )}
+            onClick={handleClick}
+            {...rest}
+        >
+            {indicator && <TreeIndicator className="translate-y-[7px]" />}
+            <div
+                className={cn("flex items-center gap-1.5", {
+                    "pl-6": direction === "ltr" && indicator,
+                    "pr-6": direction === "rtl" && indicator,
+                })}
+            >
+                {fileIcon ? fileIcon : <FileIcon className="h-3.5 w-3.5" />}
+                <span className="whitespace-nowrap overflow-hidden text-ellipsis">
+                    {children}
+                </span>
+            </div>
+        </Button>
+    );
+};
+
+// UPDATE INDIVIDUAL EXPORTS
+export { Tree }
+export { Folder }
+export { File as FileTree }
+export { FileTreeStatic as FileTreeAlt } //! ALTERNATIVE VERSION WITHOUT REF
+export { DirectFileTree as SafeFileTree } //! VERSION WITHOUT REF AND REACT.FC
+export { CollapseButton }
+export type { TreeViewElement }
