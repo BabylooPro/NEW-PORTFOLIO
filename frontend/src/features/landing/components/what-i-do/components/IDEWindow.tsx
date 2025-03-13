@@ -35,17 +35,10 @@ export const IDEWindow = forwardRef<IDEWindowHandle, IDEWindowProps>(({
     onFileChange,
     onCloseFile
 }, ref) => {
-    const [showSidebar, setShowSidebar] = useState(true); // SHOW SIDEBAR
-    const ideContainerRef = useRef<HTMLDivElement>(null); // CONTAINER REF
-    const [isClientMounted, setIsClientMounted] = useState(false);
+    const [showSidebar, setShowSidebar] = useState(true);
+    const ideContainerRef = useRef<HTMLDivElement>(null);
     const [isVisible, setIsVisible] = useState<boolean | null>(null);
-
-    // ENSURE ONLY EXECUTE CLIENT-SIDE CODE AFTER MOUNT
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            setIsClientMounted(true);
-        }
-    }, []);
+    const isInitialMount = useRef(true);
 
     // IDE STATE
     const {
@@ -65,7 +58,6 @@ export const IDEWindow = forwardRef<IDEWindowHandle, IDEWindowProps>(({
         handleFileChange,
         handleCloseTab,
         handleFileSelect,
-        handleCodeComplete,
         handleTerminalUse,
         handleTerminalComplete,
         handleProgressChange,
@@ -80,74 +72,38 @@ export const IDEWindow = forwardRef<IDEWindowHandle, IDEWindowProps>(({
         setTypingActive
     }), [setTypingActive]);
 
-    const scrollAreaRef = useRef<ScrollAreaRef>(null); // SCROLL AREA REF
+    const scrollAreaRef = useRef<ScrollAreaRef>(null);
 
-    // LOG MOUNT FOR DEBUGGING
+    // COMBINED INITIALIZATION AND VISIBILITY EFFECT
     useEffect(() => {
-        let isComponentMounted = true;
-
-        // FORCE START TYPING AFTER A DELAY - ONLY IF STILL MOUNTED
-        const forceStartTimer = setTimeout(() => {
-            if (setTypingActive && isComponentMounted) {
-                setTypingActive(true);
-            }
-        }, 500); // FASTER STARTUP
-
-        // CLEANUP ON UNMOUNT - CRITICAL
-        return () => {
-            isComponentMounted = false;
-            clearTimeout(forceStartTimer);
-
-            // ENSURE ANIMATION IS STOPPED ON UNMOUNT
-            if (setTypingActive) {
-                setTypingActive(false);
-            }
-        };
-    }, [activeFile, setTypingActive]);
-
-    // EFFECT TO HANDLE COMPONENT VISIBILITY - SEPARATE FROM MOUNT/UNMOUNT
-    useEffect(() => {
-        // SKIP IN SSR
         if (typeof window === 'undefined') return;
 
-        let timeoutId: NodeJS.Timeout | null = null;
-
-        // ONLY HANDLE VISIBILITY CHANGES, NOT INITIAL MOUNT
-        if (isVisible !== null) {
-            if (isVisible) {
-                // DELAY TO PREVENT RAPID STATE CHANGES
-                timeoutId = setTimeout(() => {
-                    if (setTypingActive) {
-                        setTypingActive(true);
-                    }
-                }, 300);
-            } else {
-                if (setTypingActive) {
-                    setTypingActive(false);
-                }
-            }
+        // INITIAL MOUNT SETUP
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            setTypingActive(true);
+            return;
         }
 
-        return () => {
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
-        };
+        // VISIBILITY CHANGES
+        if (isVisible !== null) {
+            const timeoutId = setTimeout(() => {
+                setTypingActive(isVisible);
+            }, isVisible ? 300 : 0);
+
+            return () => clearTimeout(timeoutId);
+        }
     }, [isVisible, setTypingActive]);
 
     // INTERSECTION OBSERVER FOR VISIBILITY
     useEffect(() => {
         if (!ideContainerRef.current || typeof window === 'undefined') return;
 
-        let observerInstance: IntersectionObserver;
-
-        // VISIBILITY DETECTION USING INTERSECTION OBSERVER
+        const currentRef = ideContainerRef.current;
         const observer = new IntersectionObserver(
             (entries) => {
                 const [entry] = entries;
                 const newIsVisible = entry.isIntersecting;
-
-                // ONLY UPDATE IF VISIBILITY CHANGED TO PREVENT LOOPS
                 if (isVisible !== newIsVisible) {
                     setIsVisible(newIsVisible);
                 }
@@ -155,20 +111,21 @@ export const IDEWindow = forwardRef<IDEWindowHandle, IDEWindowProps>(({
             { threshold: 0.1 }
         );
 
-        observer.observe(ideContainerRef.current);
-        observerInstance = observer;
+        observer.observe(currentRef);
 
         return () => {
-            if (observerInstance) {
-                observerInstance.disconnect();
-            }
+            observer.disconnect();
         };
     }, [isVisible]);
 
-    // SCROLL AREA REF
+    // SCROLL AREA EFFECT
     useEffect(() => {
         if (scrollAreaRef.current?.viewport) {
-            scrollAreaRef.current.viewport.scrollLeft = scrollAreaRef.current.viewport.scrollWidth;
+            requestAnimationFrame(() => {
+                if (scrollAreaRef.current?.viewport) {
+                    scrollAreaRef.current.viewport.scrollLeft = scrollAreaRef.current.viewport.scrollWidth;
+                }
+            });
         }
     }, [openFiles]);
 
@@ -279,8 +236,6 @@ export const IDEWindow = forwardRef<IDEWindowHandle, IDEWindowProps>(({
                                 code={activeSnippet.snippet || ""}
                                 language={activeSnippet.language || "plaintext"}
                                 isCompleted={isCodeComplete}
-                                onComplete={handleCodeComplete}
-                                activeFile={activeFile}
                                 progress={typingProgress[activeFile] || 0}
                                 onProgressChange={handleProgressChange}
                                 isPaused={isTypingPaused}
@@ -364,3 +319,5 @@ export const IDEWindow = forwardRef<IDEWindowHandle, IDEWindowProps>(({
         </div>
     );
 });
+
+IDEWindow.displayName = 'IDEWindow';

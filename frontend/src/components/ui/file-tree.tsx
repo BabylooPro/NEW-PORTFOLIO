@@ -428,13 +428,20 @@ const FileTreeStatic = ({
     isSelect,
     ...rest
 }: FileProps) => {
+    const treeContext = useContext(TreeContext);
+    const handleClick = useCallback(() => {
+        if (value && treeContext?.selectItem) {
+            treeContext.selectItem(value);
+            if (handleSelect) {
+                handleSelect(value);
+            }
+        }
+    }, [value, treeContext, handleSelect]);
+
     if (!value) {
         console.warn("FileTreeStatic: value prop is required");
         return null;
     }
-
-    // DEFENSIVE HOOK USAGE
-    const treeContext = useContext(TreeContext);
 
     if (!treeContext) {
         console.warn("FileTreeStatic: must be used within a TreeProvider");
@@ -446,18 +453,8 @@ const FileTreeStatic = ({
         );
     }
 
-    const { selectItem, selectedId, indicator, direction } = treeContext;
+    const { selectedId, indicator, direction } = treeContext;
 
-    const handleClick = useCallback(() => {
-        if (value && selectItem) {
-            selectItem(value);
-            if (handleSelect) {
-                handleSelect(value);
-            }
-        }
-    }, [value, selectItem, handleSelect]);
-
-    // ENSURE ALL VALUES EXIST BEFORE RENDERING
     return (
         <FileTreeErrorBoundary>
             <Button
@@ -490,16 +487,16 @@ const FileTreeStatic = ({
     );
 };
 
-// PURE IMPLEMENTATION WITHOUT FORWARDREF
-const DirectFileTree = (props: {
+interface DirectFileTreeProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'value'> {
     className?: string;
     children?: React.ReactNode;
     fileIcon?: React.ReactNode;
     value: string;
     handleSelect?: (value: string) => void;
     isSelect?: boolean;
-    [key: string]: any;
-}) => {
+}
+
+const DirectFileTree = (props: DirectFileTreeProps) => {
     const {
         className,
         children,
@@ -510,13 +507,20 @@ const DirectFileTree = (props: {
         ...rest
     } = props;
 
+    const treeContext = useContext(TreeContext);
+    const handleClick = useCallback(() => {
+        if (treeContext?.selectItem) {
+            treeContext.selectItem(value);
+            if (handleSelect) {
+                handleSelect(value);
+            }
+        }
+    }, [value, treeContext, handleSelect]);
+
     if (!value) {
         console.warn("DirectFileTree: value prop is required");
         return null;
     }
-
-    // USE DIRECTLY THE HOOKS WITHOUT CONTEXT IF NECESSARY
-    const treeContext = useContext(TreeContext);
 
     if (!treeContext) {
         console.warn("DirectFileTree: must be used within a TreeProvider");
@@ -528,17 +532,7 @@ const DirectFileTree = (props: {
         );
     }
 
-    const { selectItem, selectedId, indicator, direction } = treeContext;
-
-    // INTERNAL FUNCTION WITHOUT USEEFFECT OR USECALLBACK
-    function handleClick() {
-        if (typeof value === "string" && selectItem) {
-            selectItem(value);
-            if (handleSelect) {
-                handleSelect(value);
-            }
-        }
-    }
+    const { selectedId, indicator, direction } = treeContext;
 
     return (
         <Button

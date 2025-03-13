@@ -152,6 +152,7 @@ const WhatIDoSection: React.FC = () => {
     useEffect(() => {
         if (!sectionRef.current || typeof window === 'undefined') return;
 
+        const currentRef = sectionRef.current; // STORE REF VALUE
         const observer = new IntersectionObserver(
             (entries) => {
                 const [entry] = entries;
@@ -160,12 +161,10 @@ const WhatIDoSection: React.FC = () => {
             { threshold: 0.15 }
         );
 
-        observer.observe(sectionRef.current);
+        observer.observe(currentRef);
 
         return () => {
-            if (sectionRef.current) {
-                observer.unobserve(sectionRef.current);
-            }
+            observer.unobserve(currentRef);
         };
     }, [handleVisibilityChange]);
 

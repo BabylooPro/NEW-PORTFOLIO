@@ -22,6 +22,7 @@ export const Section = (props: SectionProps) => {
     const ref = useRef(null);
     const [isInView, setIsInView] = useState(false);
     const prevIsInViewRef = useRef(false); // TRACK PREVIOUS STATE TO PREVENT DUPLICATE NOTIFICATIONS
+    const { onVisibilityChange } = props;
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -31,9 +32,9 @@ export const Section = (props: SectionProps) => {
                     setIsInView(newIsInView);
 
                     // ONLY NOTIFY WHEN STATE ACTUALLY CHANGES TO PREVENT LOOPS
-                    if (props.onVisibilityChange && prevIsInViewRef.current !== newIsInView) {
+                    if (onVisibilityChange && prevIsInViewRef.current !== newIsInView) {
                         prevIsInViewRef.current = newIsInView;
-                        props.onVisibilityChange(newIsInView);
+                        onVisibilityChange(newIsInView);
                     }
                 });
             },
@@ -48,7 +49,7 @@ export const Section = (props: SectionProps) => {
                 observer.unobserve(ref.current);
             }
         };
-    }, [ref, props.onVisibilityChange]);
+    }, [onVisibilityChange]);
 
     const variants = {
         hidden: { opacity: 0, y: 50, scale: 0.9 },

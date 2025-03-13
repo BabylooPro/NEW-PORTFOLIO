@@ -16,8 +16,6 @@ interface TypedSyntaxHighlighterProps {
     code: string;
     language: string;
     isCompleted: boolean;
-    onComplete: () => void;
-    activeFile: string;
     progress: number;
     onProgressChange: (progress: number) => void;
     isPaused?: boolean;
@@ -27,8 +25,6 @@ export const TypedSyntaxHighlighter: React.FC<TypedSyntaxHighlighterProps> = ({
     code,
     language,
     isCompleted,
-    onComplete,
-    activeFile,
     progress,
     onProgressChange,
     isPaused = false
@@ -42,7 +38,7 @@ export const TypedSyntaxHighlighter: React.FC<TypedSyntaxHighlighterProps> = ({
     const typeSpeedRef = useRef<number>(20); // MS PER CHARACTER
     const indexRef = useRef<number>(0);
 
-    // LOAD INITIAL STATE ONLY ONCE
+    // LOAD INITIAL STATE AND SETUP CURSOR BLINK
     useEffect(() => {
         if (typeof window === 'undefined') return;
 
@@ -65,7 +61,7 @@ export const TypedSyntaxHighlighter: React.FC<TypedSyntaxHighlighterProps> = ({
                 animationRef.current = null;
             }
         };
-    }, []);
+    }, [code, progress, isCompleted]);
 
     // AUTO-SCROLL TO BOTTOM AS CONTENT CHANGES
     useEffect(() => {
@@ -138,7 +134,7 @@ export const TypedSyntaxHighlighter: React.FC<TypedSyntaxHighlighterProps> = ({
                 animationRef.current = null;
             }
         };
-    }, [isTyping, isPaused, isCompleted, progress, code.length, onProgressChange, typeSpeedRef]);
+    }, [isTyping, isPaused, isCompleted, progress, code.length, onProgressChange]);
 
     return (
         <ScrollArea ref={containerRef} className="h-[520px] overflow-auto">

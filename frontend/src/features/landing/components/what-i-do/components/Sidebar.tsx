@@ -89,7 +89,6 @@ const SimpleFolder = ({
 
 // SIMPLIFIED FILE COMPONENT - MORE COMPACT
 const FileItem = ({
-    value,
     children,
     handleSelect,
     className,
@@ -97,14 +96,12 @@ const FileItem = ({
     isSelect,
     ...rest
 }: {
-    value: string;
     children?: React.ReactNode;
     handleSelect?: () => void;
     className?: string;
     fileIcon?: React.ReactNode;
     isSelect?: boolean;
-    [key: string]: any;
-}) => {
+} & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'className' | 'onClick'>) => {
     return (
         <button
             type="button"
@@ -217,7 +214,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                                             return (
                                                                 <FileItem
                                                                     key={file.id}
-                                                                    value={file.id}
                                                                     handleSelect={() => handleFileSelect(file.id)}
                                                                     className={textColor}
                                                                     isSelect={isActive}
@@ -248,7 +244,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                                 return (
                                                     <FileItem
                                                         key={item.id}
-                                                        value={item.id}
                                                         handleSelect={() => handleFileSelect(item.id)}
                                                         className={textColor}
                                                         isSelect={isActive}
