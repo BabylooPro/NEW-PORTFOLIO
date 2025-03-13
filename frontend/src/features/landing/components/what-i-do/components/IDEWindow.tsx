@@ -12,7 +12,7 @@ import { WhatIDoData } from "../constants/what-i-do-data";
 import type { ProjectData } from "../types";
 
 interface IDEWindowProps {
-    vscode: ProjectData;
+    neovim: ProjectData;
     resolvedTheme?: string;
     activeFile: string;
     openFiles: string[];
@@ -185,7 +185,7 @@ export const IDEWindow = forwardRef<IDEWindowHandle, IDEWindowProps>(({
                         <div className="w-3 h-3 rounded-full bg-green-500" />
                     </div>
                     <div className="text-sm font-semibold w-full text-center">
-                        Visual Studio Code
+                        Neovim
                     </div>
                 </div>
 
@@ -193,7 +193,7 @@ export const IDEWindow = forwardRef<IDEWindowHandle, IDEWindowProps>(({
                 <div className="flex flex-1 overflow-hidden">
                     {/* EMPTY CONTENT */}
                     <div className="flex-1 flex items-center justify-center flex-col gap-4 bg-neutral-50 dark:bg-neutral-900">
-                        <i className="devicon-vscode-plain text-[15rem] text-neutral-200 dark:text-neutral-800" />
+                        <i className="devicon-neovim-plain text-[15rem] text-neutral-200 dark:text-neutral-800" />
                         <p className="text-neutral-400 dark:text-neutral-600">All tabs are closed</p>
                     </div>
 

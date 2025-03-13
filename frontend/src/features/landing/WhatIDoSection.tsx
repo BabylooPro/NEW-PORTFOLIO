@@ -29,7 +29,7 @@ const ClientOnly = ({ children, id }: { children: React.ReactNode, id?: string }
         return (
             <div id={id} className="h-[600px] w-full flex items-center justify-center">
                 <div className="text-center text-neutral-400">
-                    <i className="devicon-vscode-plain text-[4rem] mb-4"></i>
+                    <i className="devicon-neovim-plain text-[4rem] mb-4"></i>
                     <p>IDE content will load when in view</p>
                 </div>
             </div>
@@ -40,7 +40,7 @@ const ClientOnly = ({ children, id }: { children: React.ReactNode, id?: string }
         <Suspense fallback={
             <div className="h-[600px] w-full flex items-center justify-center">
                 <div className="text-center text-neutral-400">
-                    <i className="devicon-vscode-plain text-[4rem] mb-4"></i>
+                    <i className="devicon-neovim-plain text-[4rem] mb-4"></i>
                     <p>Loading IDE...</p>
                 </div>
             </div>
@@ -222,7 +222,7 @@ const WhatIDoSection: React.FC = () => {
                         <ClientOnly id="ide-container">
                             <div ref={sectionRef}>
                                 <IDEWindow
-                                    vscode={activeProject}
+                                    neovim={activeProject}
                                     resolvedTheme={resolvedTheme}
                                     activeFile={activeFile}
                                     openFiles={openFiles}
@@ -237,7 +237,7 @@ const WhatIDoSection: React.FC = () => {
                     ) : (
                         <div className="h-[600px] w-full flex items-center justify-center">
                             <div className="text-center text-neutral-400">
-                                <i className="devicon-vscode-plain text-[4rem] mb-4"></i>
+                                <i className="devicon-neovim-plain text-[4rem] mb-4"></i>
                                 <p>IDE content will load when in view</p>
                             </div>
                         </div>
