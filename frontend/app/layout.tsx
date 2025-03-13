@@ -5,11 +5,11 @@ import { cn } from "@/lib/utils";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-	title: {
-		template: "%s | Max Remy Dev",
-		default: "Max Remy Dev",
-	},
-	description: "Max Remy Portfolio Website",
+    title: {
+        template: "%s | Max Remy Dev",
+        default: "Max Remy Dev",
+    },
+    description: "Max Remy Portfolio Website",
 };
 
 // const poppins = Poppins({
@@ -18,21 +18,21 @@ export const metadata: Metadata = {
 // });
 
 const montserrat = Montserrat({
-	subsets: ["latin"],
-	weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+    subsets: ["latin"],
+    weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
 export default function RootLayout({
-	children,
+    children,
 }: Readonly<{
-	children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
-	return (
-		<html lang="en" suppressHydrationWarning>
-			<head />
-			<body className={cn(montserrat.className, "h-full")}>
-				<Providers>{children}</Providers>
-			</body>
-		</html>
-	);
+    return (
+        <html lang="en" suppressHydrationWarning>
+            <head />
+            <body className={cn(montserrat.className, "h-full")} suppressHydrationWarning>
+                <Providers>{children}</Providers>
+            </body>
+        </html>
+    );
 }
