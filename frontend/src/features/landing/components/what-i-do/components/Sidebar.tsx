@@ -79,7 +79,7 @@ const SimpleFolder = ({
             </button>
 
             {isExpanded && (
-                <div className="ml-3 pl-2 flex flex-col gap-0 border-l border-gray-700 dark:border-gray-600">
+                <div className="ml-3 pl-2 flex flex-col gap-0">
                     {children}
                 </div>
             )}
