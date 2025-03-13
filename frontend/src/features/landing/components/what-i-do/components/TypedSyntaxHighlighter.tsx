@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useTheme } from "next-themes";
+import { ScrollArea, ScrollAreaRef } from "@/components/ui/scroll-area";
 
 // ACCESS THE SAME GLOBAL STATE AS USEIDSTATE
 declare global {
@@ -36,11 +37,9 @@ export const TypedSyntaxHighlighter: React.FC<TypedSyntaxHighlighterProps> = ({
     const [showCursor, setShowCursor] = useState(true);
     const [isTyping, setIsTyping] = useState(false);
     const { resolvedTheme } = useTheme();
-    const containerRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<ScrollAreaRef>(null);
     const animationRef = useRef<number | null>(null);
-    const animationIdRef = useRef<number>(0);
     const typeSpeedRef = useRef<number>(20); // MS PER CHARACTER
-    const lastTimestampRef = useRef<number>(0);
     const indexRef = useRef<number>(0);
 
     // LOAD INITIAL STATE ONLY ONCE
@@ -70,10 +69,10 @@ export const TypedSyntaxHighlighter: React.FC<TypedSyntaxHighlighterProps> = ({
 
     // AUTO-SCROLL TO BOTTOM AS CONTENT CHANGES
     useEffect(() => {
-        if (containerRef.current) {
-            containerRef.current.scrollTop = containerRef.current.scrollHeight;
+        if (containerRef.current && !isCompleted) {
+            containerRef.current.scrollToBottom();
         }
-    }, [displayedCode]);
+    }, [displayedCode, isCompleted]);
 
     // USE EFFECT FOR ANIMATION RUNNING
     useEffect(() => {
@@ -142,7 +141,7 @@ export const TypedSyntaxHighlighter: React.FC<TypedSyntaxHighlighterProps> = ({
     }, [isTyping, isPaused, isCompleted, progress, code.length, onProgressChange, typeSpeedRef]);
 
     return (
-        <div ref={containerRef} className="h-[500px] overflow-auto">
+        <ScrollArea ref={containerRef} className="h-[520px] overflow-auto">
             <SyntaxHighlighter
                 language={language}
                 style={resolvedTheme === "dark" ? vscDarkPlus : vs}
@@ -160,6 +159,6 @@ export const TypedSyntaxHighlighter: React.FC<TypedSyntaxHighlighterProps> = ({
                 {/* DISPLAYED CODE WITH CURSOR */}
                 {displayedCode + (showCursor && !isCompleted ? "|" : "")}
             </SyntaxHighlighter>
-        </div>
+        </ScrollArea>
     );
 }; 
