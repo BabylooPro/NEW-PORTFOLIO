@@ -53,7 +53,7 @@
     "libphonenumber-js": "^1.11.16",
     "lucide-react": "^0.464.0",
     "motion": "^11.15.0",
-    "next": "15.0.3",
+    "next": "15.1.2",
     "next-themes": "^0.4.3",
     "prismjs": "^1.29.0",
     "react": "19.0.0-rc-66855b96-20241106",
