@@ -90,7 +90,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
     }, [hasUsedTerminalForFile, isTerminalProcessing, activeSnippet?.preview]);
 
     return (
-        <div className="p-[.61rem] border-b pl-1 border-neutral-200 dark:border-neutral-800">
+        <div className="p-[.61rem] border-b pl-1 border-neutral-200 dark:border-neutral-800 hidden md:block">
             <div className="flex gap-1">
                 {/* FILES BUTTON (SHOW SIDEBAR)*/}
                 <Button

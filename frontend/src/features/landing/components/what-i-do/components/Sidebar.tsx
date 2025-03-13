@@ -173,7 +173,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     };
 
     return (
-        <div className={`border-l flex flex-col h-full transition-all duration-200 ${showSidebar ? "w-[250px]" : "w-0"} ${resolvedTheme === "dark" ? "border-neutral-800 bg-neutral-900" : "border-neutral-200 bg-neutral-100"}`}>
+        <div className={`border-l flex flex-col h-full transition-all duration-200 hidden md:flex ${showSidebar ? "w-[250px]" : "w-0"} ${resolvedTheme === "dark" ? "border-neutral-800 bg-neutral-900" : "border-neutral-200 bg-neutral-100"}`}>
             <SidebarErrorBoundary theme={resolvedTheme}>
                 <div className={`flex-1 overflow-y-auto ${areAllTabsClosed ? "pt-[1rem]" : "pt-[4.25rem]"} ${!showSidebar ? "hidden" : ""}`}>
                     {/* TITLE */}
