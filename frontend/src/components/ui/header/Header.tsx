@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { LayoutGroup, motion } from "framer-motion";
 import { Separator } from "@/components/ui/separator";
 import { OneClickModeToggle } from "../../../features/themes/OneClickModeToggle";
@@ -36,8 +36,7 @@ export default function Header() {
         toggleDebugBorders,
     } = useHeaderLogic();
     // INITIALIZE DATA
-    const { data: headerData, isLoading: headerDataLoading } = useHeaderSection();
-    const isLoading = headerLogicLoading || headerDataLoading;
+    const { data: headerData, isLoading: headerDataLoading, error } = useHeaderSection();
 
     // WAKA TIME DATA
     const wakaTimeData = useWakaTimeData();
@@ -54,15 +53,30 @@ export default function Header() {
     const separatorRef = useRef(null);
     const socialLinksRef = useRef<HTMLDivElement>(null);
 
-    // LOADING SKELETON
-    if (isLoading || !headerData) {
+    //! DEBUG CHROME ISSUE - ADD CONSOLE LOG BE BECAUSE DATA NO FETCHED
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+            console.log('Header render state:', {
+                browser: isChrome ? 'Chrome' : 'Not Chrome',
+                hasData: !!headerData,
+                isLoading: headerDataLoading,
+                error: error?.message
+            });
+        }
+    }, [headerData, headerDataLoading, error]);
+
+    // NEVER SHOW SKELETON - ALWAYS USE DATA (FALLBACK PROVIDED IN HOOK)
+    // This ensures Chrome users always see content
+    if (!headerData) {
+        console.error('Header data still null after fallbacks');
         return <HeaderSkeleton />;
     }
 
     return (
         <>
             {/* WIP BADGE */}
-            {!isLoading && showWIPBadge && (
+            {showWIPBadge && (
                 <WIPBadge
                     showDebugButton={showDebugButton}
                     toggleDebugBorders={toggleDebugBorders}
