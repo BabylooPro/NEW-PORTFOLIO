@@ -54,6 +54,7 @@ interface HeaderData {
 const HEADER_QUERY_KEY = ['headerSection'];
 
 // DIRECT API CALL AS FALLBACK FOR CHROME
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const fetchWithXHR = (url: string): Promise<any> => {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -217,7 +218,7 @@ export const useHeaderSection = () => {
                     .catch(err => console.error('Failed to prefetch header data:', err));
             }
         }
-    }, [queryClient]);
+    }, [queryClient, cachedData]);
 
     const { data, isLoading, error } = useQuery({
         queryKey: HEADER_QUERY_KEY,

@@ -26,14 +26,14 @@ export default function Header() {
         isScrolling,
         isClient,
         isCompact,
-        isLoading: headerLogicLoading,
+        // isLoading: headerLogicLoading,
         showWIPBadge,
         lastCommitInfo,
         showDebugButton,
         pathname,
         handleBackNavigation,
         getPreviousPageTitle,
-        toggleDebugBorders,
+        // toggleDebugBorders,
     } = useHeaderLogic();
     // INITIALIZE DATA
     const { data: headerData, isLoading: headerDataLoading, error } = useHeaderSection();
@@ -79,7 +79,7 @@ export default function Header() {
             {showWIPBadge && (
                 <WIPBadge
                     showDebugButton={showDebugButton}
-                    toggleDebugBorders={toggleDebugBorders}
+                    // toggleDebugBorders={toggleDebugBorders}
                     lastCommitInfo={lastCommitInfo}
                 />
             )}
