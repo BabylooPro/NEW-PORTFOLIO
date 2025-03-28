@@ -4,18 +4,8 @@ import { NextResponse } from 'next/server';
 const STRAPI_URL = process.env.STRAPI_API_URL;
 const STRAPI_TOKEN = process.env.STRAPI_API_TOKEN;
 
-// CACHE DURATION IN SECONDS
-const CACHE_DURATION = {
-    DEFAULT: 60 * 30, // 30 MINUTES
-    HEADER: 60 * 60, // 1 HOUR
-    LONG: 60 * 60 * 24, // 1 DAY
-};
-
 // HANDLE GET REQUESTS
 export async function GET(request: Request) {
-    const { searchParams } = new URL(request.url);
-    const path = searchParams.get('path') ?? '';
-    const noCache = searchParams.get('no-cache') === 'true';
 
     if (!STRAPI_URL || !STRAPI_TOKEN) {
         console.error('Missing Strapi configuration');
@@ -25,74 +15,65 @@ export async function GET(request: Request) {
         );
     }
 
+    const { searchParams } = new URL(request.url);
+    const path = searchParams.get('path') ?? '';
+
     try {
         // CLEAN THE PATH
         const cleanPath = path.startsWith('/') ? path.slice(1) : path;
 
-        // DETERMINE CACHE DURATION BASED ON PATH
-        let cacheDuration = CACHE_DURATION.DEFAULT;
-        // HEADER SECTIONS GET SHORTER CACHE PERIOD TO FIX CHROME ISSUES
-        if (cleanPath.includes('header-section')) {
-            cacheDuration = noCache ? 0 : CACHE_DURATION.HEADER;
-        } else if (
-            cleanPath.includes('about-section') ||
-            cleanPath.includes('expertise-section')
-        ) {
-            cacheDuration = CACHE_DURATION.LONG;
-        }
-
         // PROPER POPULATION BASED ON PATH
         let populatedPath = cleanPath;
         if (['about-section', 'header-section'].includes(cleanPath)) {
-            populatedPath = `${cleanPath}?populate=deep,10`;
+            populatedPath = cleanPath.includes('?') ?
+                `${cleanPath}&populate[0]=audioFile` :
+                `${cleanPath}?populate[0]=audioFile`;
+        } else if (cleanPath === 'expertise-section') {
+            populatedPath = `${cleanPath}?populate[0]=expertises`;
+        } else if (cleanPath === 'soft-skills-section') {
+            populatedPath = `${cleanPath}?populate[0]=softSkills`;
+        } else if (cleanPath === 'development-methodologies-section') {
+            populatedPath = `${cleanPath}?populate[0]=methodologies`;
+        } else if (cleanPath === 'projects-section') {
+            populatedPath = `${cleanPath}?populate[projects][populate]=*&populate[projects][populate][tags][populate]=*&populate[projects][populate][icon][populate]=*&populate[projects][fields][0]=title&populate[projects][fields][1]=description&populate[projects][fields][2]=builtWith&populate[projects][fields][3]=status&populate[projects][fields][4]=tags&populate[projects][fields][5]=githubUrl&populate[projects][fields][6]=demoUrl&populate[projects][fields][7]=icon&populate[projects][fields][8]=featured&populate[projects][fields][9]=online&populate[projects][fields][10]=wip&populate[projects][fields][11]=name&populate[projects][fields][12]=url&populate[projects][fields][13]=notes&populate[projects][fields][14]=technologies&populate[projects][fields][15]=deployDate&populate[projects][fields][16]=isPrivate&populate[projects][fields][17]=language&populate[projects][fields][18]=stargazers_count&populate[projects][fields][19]=forks_count&populate[projects][fields][20]=languages&populate[projects][fields][21]=topics&populate[projects][fields][22]=created_at&populate[projects][fields][23]=updated_at&populate[projects][fields][24]=license&populate[projects][fields][25]=default_branch&populate[projects][fields][26]=homepage`;
+            console.log('Projects section URL:', `${STRAPI_URL}/api/${populatedPath}`);
+        } else if (cleanPath === 'live-projects') {
+            populatedPath = `${cleanPath}?populate=*&fields[0]=name&fields[1]=url&fields[2]=isOnline&fields[3]=isWip&fields[4]=notes&fields[5]=technologies&fields[6]=deployDate&fields[7]=publishedAt`;
+            console.log('Live projects URL:', `${STRAPI_URL}/api/${populatedPath}`);
         } else if (cleanPath.includes('projects')) {
-            populatedPath = `${cleanPath}&populate=deep,10`;
-        } else if (cleanPath.includes('portfolio')) {
-            populatedPath = `${cleanPath}&populate=deep,10`;
-        } else if (cleanPath.includes('expertise')) {
-            populatedPath = `${cleanPath}&populate=deep,10`;
+            populatedPath = `${cleanPath}?populate[0]=*&populate[1]=tags&populate[2]=icon&populate[3]=technologies`;
         }
 
         const url = `${STRAPI_URL}/api/${populatedPath}`;
 
-        const fetchOptions: RequestInit = {
+        // FETCH DATA FROM STRAPI
+        const response = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${STRAPI_TOKEN}`,
                 'Content-Type': 'application/json',
-                'Cache-Control': noCache ? 'no-cache, no-store' : 'max-age=' + cacheDuration
             },
-            next: noCache ? { revalidate: 0 } : { revalidate: cacheDuration }
-        };
+            cache: 'no-store'
+        });
 
-        console.log(`Fetching ${cleanPath} with cache duration: ${noCache ? 'no-cache' : cacheDuration}s`);
-        const response = await fetch(url, fetchOptions);
-
+        // CHECK IF RESPONSE IS OK
         if (!response.ok) {
-            throw new Error(`Strapi responded with status: ${response.status}`);
+            const errorText = await response.text();
+            console.error('Strapi error response:', {
+                status: response.status,
+                statusText: response.statusText,
+                body: errorText
+            });
+            throw new Error(`Strapi responded with status: ${response.status} - ${errorText}`);
         }
 
         const data = await response.json();
 
-        // VALIDATE DATA FOR HEADER SECTION TO DEBUG CHROME ISSUES
-        if (cleanPath === 'header-section' && (!data.data || !data.data.profile)) {
-            console.error('Invalid header data received:', data);
-        }
-
-        // ENSURE CONSISTENT CACHE HEADERS
-        const cacheControl = noCache
-            ? 'no-cache, no-store, must-revalidate'
-            : `public, max-age=${cacheDuration}, s-maxage=${cacheDuration}, stale-while-revalidate=${cacheDuration * 2}`;
-
-        return new NextResponse(JSON.stringify(data), {
-            status: 200,
-            headers: {
-                'Content-Type': 'application/json',
-                'Cache-Control': cacheControl,
-                'Vary': 'Accept, User-Agent'  // IMPORTANT FOR CHROME CACHING
-            }
-        });
+        return NextResponse.json(data);
     } catch (error) {
-        console.error('API Route Error:', error instanceof Error ? error.message : 'Unknown error');
+        console.error('API Route Error:', {
+            message: error instanceof Error ? error.message : 'Unknown error',
+            error
+        });
         return NextResponse.json(
             { error: error instanceof Error ? error.message : 'Failed to fetch data' },
             { status: 500 }
