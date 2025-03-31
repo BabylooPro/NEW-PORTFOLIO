@@ -1,3 +1,5 @@
+"use client";
+
 import { LucideIcon, Bug, Ruler, Cpu, Box, Route, Grid, Grid3X3, MemoryStick, Network, Cookie, Clock, Database, Activity, Palette, Keyboard, History, Gauge, MousePointer, ChevronRight, Play, Pause, Pipette, Accessibility, Paintbrush, ChevronDown, Rewind } from "lucide-react";
 import { forwardRef, useEffect, useState, useCallback, useRef } from "react";
 import { cva, type VariantProps } from "class-variance-authority"
@@ -2265,6 +2267,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({ title, children, defa
 };
 export const DevTools = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const [isProduction, setIsProduction] = useState(true);
     const {
         componentInspectorActive,
         setComponentInspectorActive,
@@ -2274,6 +2277,11 @@ export const DevTools = () => {
         setGridActive,
         gridSettings
     } = useDevToolsStore();
+
+    useEffect(() => {
+        setIsProduction(process.env.NODE_ENV === 'production');
+    }, []);
+
     useEffect(() => {
         if (bordersActive) {
             document.body.classList.add('debug-borders');
@@ -2292,6 +2300,7 @@ export const DevTools = () => {
             if (styleEl) styleEl.remove();
         };
     }, [bordersActive]);
+
     useEffect(() => {
         updateGridOverlay(gridActive, gridSettings);
         return () => {
@@ -2301,7 +2310,8 @@ export const DevTools = () => {
             }
         };
     }, [gridActive, gridSettings]);
-    if (process.env.NODE_ENV === 'production') return null;
+
+    if (isProduction) return null;
     return (
         <TooltipProvider>
             <div data-devtools>
