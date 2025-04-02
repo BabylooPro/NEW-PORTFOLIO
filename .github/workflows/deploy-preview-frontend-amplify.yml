@@ -1,4 +1,4 @@
-name: Deploy Staging Frontend AWS Amplify
+name: Pre-Deploy Preview Frontend AWS Amplify
 
 on:
   workflow_dispatch:
@@ -171,7 +171,7 @@ jobs:
         run: |
           APP_ID=${{ secrets.AWS_AMPLIFY_APP_ID }}
           REGION="us-east-1"
-          BRANCH="staging"
+          BRANCH="preview"
 
           aws amplify update-app --app-id $APP_ID --platform WEB_COMPUTE --region $REGION
 
@@ -185,7 +185,7 @@ jobs:
       - name: Update environment variables in Amplify
         run: |
           APP_ID=${{ secrets.AWS_AMPLIFY_APP_ID }}
-          BRANCH="staging"
+          BRANCH="preview"
 
           cat > env-vars.json << EOL
           {
@@ -209,10 +209,10 @@ jobs:
       - name: Deploy to AWS Amplify
         run: |
           APP_ID=${{ secrets.AWS_AMPLIFY_APP_ID }}
-          BRANCH="staging"
+          BRANCH="preview"
 
           echo "Triggering Amplify deployment via start-job..."
           aws amplify start-job --app-id $APP_ID --branch-name $BRANCH --job-type RELEASE
 
           echo "Amplify build triggered. Check the Amplify Console for build progress."
-          echo "Console URL: https://console.aws.amazon.com/amplify/home?region=us-east-1#/$APP_ID/staging"
+          echo "Console URL: https://console.aws.amazon.com/amplify/home?region=us-east-1#/$APP_ID/preview"
