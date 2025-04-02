@@ -215,4 +215,3 @@ jobs:
           aws amplify start-job --app-id $APP_ID --branch-name $BRANCH --job-type RELEASE
 
           echo "Amplify build triggered. Check the Amplify Console for build progress."
-          echo "Console URL: https://console.aws.amazon.com/amplify/home?region=us-east-1#/$APP_ID/preview"
