@@ -50,8 +50,6 @@ const toastVariants = cva(
 
 type CustomToastProps = {
     headerBottom?: number;
-    headerHeight?: number;
-    isHeaderMoved?: boolean;
     isCompact?: boolean;
     showIcon?: boolean;
 };
@@ -70,8 +68,6 @@ const Toast = React.forwardRef<
             className,
             variant,
             headerBottom = 0,
-            headerHeight,
-            isHeaderMoved,
             isCompact = false,
             showIcon = false,
             children,
