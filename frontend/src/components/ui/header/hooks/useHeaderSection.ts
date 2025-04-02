@@ -1,6 +1,13 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
+// DECLARE CUSTOM WINDOW PROPERTY
+declare global {
+    interface Window {
+        __headerFetchAttempts: number;
+    }
+}
+
 interface ProfileTitle {
     order: number;
     id: number;
@@ -145,9 +152,15 @@ const FALLBACK_DATA: HeaderData = {
 };
 
 const fetchHeaderData = async (): Promise<HeaderData> => {
+    // TRACK FETCH ATTEMPTS FOR THIS SESSION
+    if (typeof window !== 'undefined' && !window.__headerFetchAttempts) {
+        window.__headerFetchAttempts = 0;
+    }
+
     try {
-        // USE DIRECT OPTIONS FOR CONSISTENT BEHAVIOR IN CHROME
-        const response = await fetch('/api/strapi?path=header-section&no-cache=true', {
+        // USE DIRECT OPTIONS FOR CONSISTENT BEHAVIOR ACROSS BROWSERS
+        const timestamp = Date.now(); // ADD CACHE BUSTING
+        const response = await fetch(`/api/strapi?path=header-section&no-cache=true&_=${timestamp}`, {
             method: 'GET',
             headers: {
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -159,14 +172,19 @@ const fetchHeaderData = async (): Promise<HeaderData> => {
         });
 
         if (!response.ok) {
-            throw new Error('Failed to fetch header data');
+            throw new Error(`Failed to fetch header data: ${response.status} ${response.statusText}`);
         }
 
         const result = await response.json();
 
         // VALIDATE DATA STRUCTURE
         if (!result.data || !result.data.profile || !result.data.socialLinks) {
+            console.error('Invalid header data structure:', result);
             throw new Error('Invalid header data structure');
+        }
+
+        if (typeof window !== 'undefined') {
+            window.__headerFetchAttempts = 0; // RESET ATTEMPTS ON SUCCESS
         }
 
         // SAVE TO LOCAL STORAGE FOR FASTER INITIAL RENDERS
@@ -176,56 +194,68 @@ const fetchHeaderData = async (): Promise<HeaderData> => {
         console.error('Error fetching header data with fetch, trying XHR:', error);
 
         try {
-            // TRY XHR AS FALLBACK FOR CHROME
-            const result = await fetchWithXHR('/api/strapi?path=header-section&no-cache=true');
+            // INCREMENT FETCH ATTEMPTS
+            if (typeof window !== 'undefined') {
+                window.__headerFetchAttempts = (window.__headerFetchAttempts || 0) + 1;
+            }
+
+            // TRY XHR AS FALLBACK WITH CACHE BUSTING
+            const timestamp = Date.now();
+            const result = await fetchWithXHR(`/api/strapi?path=header-section&no-cache=true&_=${timestamp}`);
 
             if (result?.data && result.data.profile && result.data.socialLinks) {
                 saveToLocalStorage(result.data);
                 return result.data;
             }
+
+            throw new Error('XHR data validation failed');
         } catch (xhrError) {
             console.error('XHR fallback also failed:', xhrError);
-        }
 
-        // FALLBACK TO LOCALSTORAGE IF FETCH FAILS
-        const localStorageData = getLocalStorageData();
-        if (localStorageData) {
-            return localStorageData;
-        }
+            // FALLBACK TO LOCALSTORAGE IF FETCH FAILS
+            const localStorageData = getLocalStorageData();
+            if (localStorageData) {
+                return localStorageData;
+            }
 
-        // LAST RESORT - USE HARDCODED FALLBACK DATA
-        return FALLBACK_DATA;
+            // ONLY LOG AFTER MULTIPLE ATTEMPTS
+            if (typeof window !== 'undefined' && window.__headerFetchAttempts > 2) {
+                console.error('Header data fetch failed multiple times - using fallback data');
+            }
+
+            // LAST RESORT - USE HARDCODED FALLBACK DATA
+            return FALLBACK_DATA;
+        }
     }
 };
 
 export const useHeaderSection = () => {
     const queryClient = useQueryClient();
 
+    // PRELOAD DATA ON INITIAL RENDER REGARDLESS OF BROWSER
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            // FORCE IMMEDIATE DATA FETCH ON COMPONENT MOUNT FOR ALL BROWSERS
+            fetchHeaderData()
+                .then(data => {
+                    queryClient.setQueryData(HEADER_QUERY_KEY, data);
+                })
+                .catch(err => console.error('Failed to prefetch header data:', err));
+        }
+    }, [queryClient]);
+
     // GET DATA FROM DIFFERENT SOURCES IN ORDER OF PRIORITY
     const cachedData = queryClient.getQueryData<HeaderData>(HEADER_QUERY_KEY);
     const localStorageData = getLocalStorageData();
     const initialData = cachedData || localStorageData || FALLBACK_DATA;
 
-    // FORCE DATA LOADING FOR CHROME ON COMPONENT MOUNT
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-            if (isChrome && !cachedData) {
-                fetchHeaderData()
-                    .then(data => {
-                        queryClient.setQueryData(HEADER_QUERY_KEY, data);
-                    })
-                    .catch(err => console.error('Failed to prefetch header data:', err));
-            }
-        }
-    }, [queryClient, cachedData]);
-
     const { data, isLoading, error } = useQuery({
         queryKey: HEADER_QUERY_KEY,
         queryFn: fetchHeaderData,
-        staleTime: 60 * 1000, // DATA STAYS FRESH FOR 1 MINUTE
+        staleTime: 5 * 60 * 1000, // DATA STAYS FRESH FOR 5 MINUTES
         gcTime: 60 * 60 * 1000, // KEEP IN CACHE FOR 1 HOUR
-        retry: 2,
+        retry: 3, // INCREASE RETRY ATTEMPTS
+        retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 10000), // EXPONENTIAL BACKOFF
         // USE PLACEHOLDER DATA TO AVOID SKELETON FLICKER
         placeholderData: initialData,
         // USE INITIAL DATA IF AVAILABLE
@@ -233,13 +263,16 @@ export const useHeaderSection = () => {
     });
 
     // UPDATE LOCAL STORAGE WHEN WE GET NEW DATA
-    if (data) {
-        saveToLocalStorage(data);
-    }
+    useEffect(() => {
+        if (data && Object.keys(data.profile || {}).length > 0) {
+            saveToLocalStorage(data);
+        }
+    }, [data]);
 
+    // ALWAYS RETURN DATA, NEVER NULL
     return {
-        data: data || initialData, // ALWAYS ENSURE DATA IS RETURNED
-        isLoading: isLoading && !data,
+        data: data || initialData,
+        isLoading: isLoading && !data && !initialData,
         error
     };
 }; 

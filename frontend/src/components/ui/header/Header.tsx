@@ -35,8 +35,23 @@ export default function Header() {
         getPreviousPageTitle,
         // toggleDebugBorders,
     } = useHeaderLogic();
+
     // INITIALIZE DATA
     const { data: headerData, isLoading: headerDataLoading, error } = useHeaderSection();
+
+    // FORCE DATA REFETCH ON COMPONENT MOUNT - EXTRA PRECAUTION AGAINST DATA INCONSISTENCIES
+    useEffect(() => {
+        // WAIT A SHORT TIME TO ENSURE DATA IS FETCHED - PREVENTS FLASHING
+        const timer = setTimeout(() => {
+            if (!headerData || !headerData.profile?.name) {
+                console.warn('Header data not loaded properly, forcing refetch');
+                // RELOAD THE PAGE TO FORCE A FRESH FETCH
+                window.location.reload();
+            }
+        }, 2000); // WAIT 2 SECONDS
+
+        return () => clearTimeout(timer);
+    }, [headerData]);
 
     // WAKA TIME DATA
     const wakaTimeData = useWakaTimeData();

@@ -17,6 +17,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const path = searchParams.get('path') ?? '';
+    const noCache = searchParams.get('no-cache') === 'true';
 
     try {
         // CLEAN THE PATH
@@ -51,8 +52,14 @@ export async function GET(request: Request) {
             headers: {
                 'Authorization': `Bearer ${STRAPI_TOKEN}`,
                 'Content-Type': 'application/json',
+                ...(noCache && {
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                })
             },
-            cache: 'no-store'
+            cache: noCache ? 'no-store' : 'default',
+            next: noCache ? { revalidate: 0 } : undefined
         });
 
         // CHECK IF RESPONSE IS OK
@@ -68,7 +75,15 @@ export async function GET(request: Request) {
 
         const data = await response.json();
 
-        return NextResponse.json(data);
+        // FOR HEADER SECTION, ADD STRICT CACHE CONTROL HEADERS TO THE RESPONSE
+        const headers = new Headers();
+        if (cleanPath === 'header-section') {
+            headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+            headers.set('Pragma', 'no-cache');
+            headers.set('Expires', '0');
+        }
+
+        return NextResponse.json(data, { headers });
     } catch (error) {
         console.error('API Route Error:', {
             message: error instanceof Error ? error.message : 'Unknown error',
