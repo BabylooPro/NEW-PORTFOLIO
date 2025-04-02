@@ -157,60 +157,74 @@ export default function Header() {
                             layout="position"
                         >
                             {/* PROFILE */}
-                            <motion.div
-                                variants={MULTIDIRECTION_SLIDE_VARIANTS}
-                                initial="initial"
-                                animate="animate"
-                                exit="exit"
-                                custom={isCompact ? -1 : 1}
-                                style={{
-                                    willChange: "transform",
-                                    backfaceVisibility: "hidden",
-                                }}
-                            >
-                                <motion.div
-                                    ref={profileRef}
-                                    className={`flex items-center justify-center z-10 ${isCompact ? "space-x-2" : "space-x-2 sm:space-x-4"
-                                        }`}
-                                    initial={false}
-                                    animate={{
-                                        opacity: 1,
-                                        x: 0,
-                                        scale: 1,
-                                    }}
-                                    transition={{
-                                        duration: 2.5,
-                                        ease: [0.34, 1.56, 0.64, 1],
-                                        scale: {
-                                            type: "spring",
-                                            damping: 15,
-                                            stiffness: 90,
-                                            duration: 3,
-                                        },
-                                    }}
-                                    layout
-                                >
-                                    <motion.div
-                                        className="flex items-center justify-center space-x-2"
-                                        animate={{
-                                            opacity: 1,
-                                            x: isCompact ? 0 : 0,
-                                        }}
-                                        transition={{
-                                            duration: 2.5,
-                                            ease: [0.34, 1.56, 0.64, 1],
-                                            delay: 0.6,
-                                        }}
-                                    >
+                            {isSmallScreen ? (
+                                <div className="flex items-center justify-center z-10 space-x-2">
+                                    <div className="flex items-center justify-center space-x-2">
                                         <ProfileContent wakaTimeData={wakaTimeData} />
                                         <ProfileDescription
                                             isSmallScreen={isSmallScreen}
                                             isCompact={isCompact}
                                             profile={headerData.profile}
                                         />
+                                    </div>
+                                </div>
+                            ) : (
+                                <motion.div
+                                    variants={MULTIDIRECTION_SLIDE_VARIANTS}
+                                    initial="initial"
+                                    animate="animate"
+                                    exit="exit"
+                                    custom={isCompact ? -1 : 1}
+                                    style={{
+                                        willChange: "transform",
+                                        backfaceVisibility: "hidden",
+                                    }}
+                                >
+                                    <motion.div
+                                        ref={profileRef}
+                                        className={`flex items-center justify-center z-10 ${isCompact ? "space-x-2" : "space-x-2 sm:space-x-4"
+                                            }`}
+                                        initial={false}
+                                        animate={{
+                                            opacity: 1,
+                                            x: 0,
+                                            scale: 1,
+                                        }}
+                                        transition={{
+                                            duration: 2.5,
+                                            ease: [0.34, 1.56, 0.64, 1],
+                                            scale: {
+                                                type: "spring",
+                                                damping: 15,
+                                                stiffness: 90,
+                                                duration: 3,
+                                            },
+                                        }}
+                                        layout
+                                    >
+                                        <motion.div
+                                            className="flex items-center justify-center space-x-2"
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{
+                                                opacity: 1,
+                                                x: isCompact ? 0 : 0,
+                                            }}
+                                            transition={{
+                                                duration: 2.5,
+                                                ease: [0.34, 1.56, 0.64, 1],
+                                                delay: 0.6,
+                                            }}
+                                        >
+                                            <ProfileContent wakaTimeData={wakaTimeData} />
+                                            <ProfileDescription
+                                                isSmallScreen={isSmallScreen}
+                                                isCompact={isCompact}
+                                                profile={headerData.profile}
+                                            />
+                                        </motion.div>
                                     </motion.div>
                                 </motion.div>
-                            </motion.div>
+                            )}
 
                             {/* SEPARATOR */}
                             {!isCompact && (
