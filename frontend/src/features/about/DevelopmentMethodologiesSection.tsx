@@ -128,9 +128,6 @@ const DevelopmentMethodologiesSection: React.FC = () => {
         return <DevelopmentMethodologiesSkeleton status="no-data" />;
     }
 
-    // LOG THE ACTUAL DATA STRUCTURE FOR DEBUGGING
-    console.log('Methodologies data:', methodologiesData);
-
     const { title, titleDescription, methodologies } = methodologiesData.data;
 
     if (!methodologies || !Array.isArray(methodologies) || methodologies.length === 0) {

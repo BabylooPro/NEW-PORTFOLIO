@@ -103,12 +103,6 @@ export const useGitHubProjects = (): {
                 (!lastUpdateRef.current ||
                     new Date(newData.lastUpdate) > new Date(lastUpdateRef.current))
             ) {
-                console.log(
-                    "Updating lastUpdate from",
-                    lastUpdateRef.current,
-                    "to",
-                    newData.lastUpdate
-                );
                 lastUpdateRef.current = newData.lastUpdate;
                 setLastUpdateFormatted(
                     formatDistanceToNow(new Date(newData.lastUpdate), { addSuffix: true })

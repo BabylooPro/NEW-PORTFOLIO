@@ -74,7 +74,6 @@ export const useProjectsSection = () => {
 
                 // PARSE THE RESPONSE
                 const sectionData = await sectionRes.json();
-                console.log('Section Response:', sectionData);
 
                 // VALIDATE THE RESPONSE
                 if (!isValidStrapiResponse(sectionData)) {
@@ -89,7 +88,6 @@ export const useProjectsSection = () => {
                     // VALIDATE RESPONSE
                     if (liveProjectsRes.ok) {
                         const liveProjectsResponse = await liveProjectsRes.json();
-                        console.log('Live Projects Raw Response:', liveProjectsResponse);
 
                         // CHECK IF THE RESPONSE HAS DATA
                         if (!liveProjectsResponse?.data) {

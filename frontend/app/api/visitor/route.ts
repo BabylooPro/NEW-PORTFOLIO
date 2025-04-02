@@ -15,7 +15,6 @@ export async function GET() {
         }
 
         const data = await response.json();
-        console.log("Strapi GET response:", data);
         return NextResponse.json(data);
     } catch (error) {
         console.error("Failed to fetch visitor count:", error);
@@ -39,7 +38,6 @@ export async function POST() {
         }
 
         const data = await response.json();
-        console.log("Strapi POST response:", data);
         return NextResponse.json(data);
     } catch (error) {
         console.error("Failed to increment visitor count:", error);

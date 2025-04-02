@@ -30,7 +30,6 @@ function determineStatus(lastActivityTime: number): "available" | "away" | "busy
 
 // FETCH SKILL ID BY NAME
 async function getSkillIdByName(name: string): Promise<number | null> {
-    console.log(`Searching for skill with name: ${name}`);
     try {
         const path = `skills`;
         const params = new URLSearchParams({
@@ -38,10 +37,7 @@ async function getSkillIdByName(name: string): Promise<number | null> {
             'populate': '*'
         });
         const url = `${BASE_URL}/api/strapi?path=${path}&${params.toString()}`;
-        console.log(`Fetching from URL: ${url}`);
-
         const response = await fetch(url);
-        console.log(`Response status for ${name}:`, response.status);
 
         if (!response.ok) {
             console.error(`Failed to fetch skill ID for ${name}: ${response.statusText}`);
@@ -49,20 +45,21 @@ async function getSkillIdByName(name: string): Promise<number | null> {
         }
 
         const data = await response.json();
-        console.log(`Data received for ${name}:`, JSON.stringify(data, null, 2));
 
         // FIND FIRST SKILL WITH MATCHING NAME (PUBLISHED OR NOT)
         const skill = data.data?.find((s: { attributes: { name: string } }) =>
             s.attributes.name.toLowerCase() === name.toLowerCase()
         );
 
+
+        // TODO FIX: MAYBE DETETE OR WATCH THIS BECAUSE CAUSE EXTA CALL OR EXTA USE DATA FOR NOTHING
         if (skill) {
-            console.log(`Found skill ID for ${name}:`, skill.id);
             return skill.id;
+        } else {
+            // IF NO SKILL FOUND, CREATE ONE
+            console.warn(`No skill found for ${name}, creating new one`);
         }
 
-        // IF NO SKILL FOUND, CREATE ONE
-        console.log(`No skill found for ${name}, creating new one`);
         const createResponse = await fetch(`${BASE_URL}/api/strapi?path=${path}`, {
             method: 'POST',
             headers: {
@@ -83,7 +80,6 @@ async function getSkillIdByName(name: string): Promise<number | null> {
         }
 
         const createData = await createResponse.json();
-        console.log(`Created new skill for ${name}:`, createData);
         return createData.data.id;
     } catch (error) {
         console.error(`Error fetching skill ID for ${name}:`, error);
@@ -99,7 +95,6 @@ async function updateSkillStats(skillId: number, seconds: number) {
 
         // UPDATE OR CREATE STATS
         const updateUrl = `${BASE_URL}/api/strapi?path=${path}/upsert`;
-        console.log("Updating skill stats:", { skillId, seconds, date: today, url: updateUrl });
 
         const response = await fetch(updateUrl, {
             method: 'POST',
@@ -117,7 +112,6 @@ async function updateSkillStats(skillId: number, seconds: number) {
         });
 
         const responseText = await response.text();
-        console.log("Raw response:", responseText);
 
         if (!response.ok) {
             console.error(`Failed to update skill stats: ${response.status} - ${responseText}`);
@@ -125,7 +119,6 @@ async function updateSkillStats(skillId: number, seconds: number) {
         }
 
         const data = JSON.parse(responseText);
-        console.log("Stats update response:", data);
 
         return data;
     } catch (error) {
@@ -155,7 +148,6 @@ async function fetchDataWithCache(revalidate: boolean = false) {
     // FETCH DATA FROM WAKATIME API
     try {
         const authHeader = `Basic ${Buffer.from(WAKATIME_API_KEY ?? "").toString("base64")}`;
-        console.log('Authorization header length:', authHeader.length);
 
         const response = await fetch(wakatimeApiUrl, {
             headers: {
@@ -171,7 +163,6 @@ async function fetchDataWithCache(revalidate: boolean = false) {
         }
 
         const rawData = await response.json(); // PARSE JSON RESPONSE
-        console.log('Raw data from WakaTime:', rawData);
 
         // TRANSFORM THE DATA TO MATCH OUR INTERFACE
         const data: WakaTimeData = {
@@ -261,33 +252,22 @@ async function fetchDataWithCache(revalidate: boolean = false) {
                     percent: 0
                 }];
 
-        console.log('Processed languages:', languages);
-
         // UPDATE CMS FOR EACH LANGUAGE
         if (languages.length > 0) {
-            console.log('Starting language updates...');
 
             // LOOP THROUGH EACH LANGUAGE
             for (const language of languages) {
-                console.log(`Processing language: ${language.name}`);
-
                 if (language.name.toLowerCase() === "other") {
-                    console.log('Skipping "other" language');
                     continue;
                 }
 
                 const skillId = await getSkillIdByName(language.name);
                 if (skillId) {
-                    console.log(`Time for ${language.name}:`, {
-                        total_seconds: language.total_seconds
-                    });
-
                     await updateSkillStats(skillId, language.total_seconds);
                 } else {
-                    console.log(`No matching skill found for ${language.name}`);
+                    console.warn(`No matching skill found for ${language.name}`);
                 }
             }
-            console.log('Finished processing all languages');
         }
 
         const filteredData: CachedWakaTimeData = {
@@ -356,12 +336,6 @@ function updateOperatingSystemsLastUsed(
 // API ROUTE TO GET WAKATIME DATA
 export async function GET() {
     try {
-        console.log("GET request received");
-        console.log("Environment variables:", {
-            WAKATIME_API_KEY: process.env.WAKATIME_API_KEY ? "Set" : "Not set",
-            STRAPI_TOKEN: process.env.STRAPI_API_TOKEN ? "Set" : "Not set",
-        });
-
         const data = await fetchDataWithCache();
 
         // HANDLE TEST ENVIRONMENT DIFFERENTLY

@@ -37,10 +37,8 @@ export async function GET(request: Request) {
             populatedPath = `${cleanPath}?populate[0]=methodologies`;
         } else if (cleanPath === 'projects-section') {
             populatedPath = `${cleanPath}?populate[projects][populate]=*&populate[projects][populate][tags][populate]=*&populate[projects][populate][icon][populate]=*&populate[projects][fields][0]=title&populate[projects][fields][1]=description&populate[projects][fields][2]=builtWith&populate[projects][fields][3]=status&populate[projects][fields][4]=tags&populate[projects][fields][5]=githubUrl&populate[projects][fields][6]=demoUrl&populate[projects][fields][7]=icon&populate[projects][fields][8]=featured&populate[projects][fields][9]=online&populate[projects][fields][10]=wip&populate[projects][fields][11]=name&populate[projects][fields][12]=url&populate[projects][fields][13]=notes&populate[projects][fields][14]=technologies&populate[projects][fields][15]=deployDate&populate[projects][fields][16]=isPrivate&populate[projects][fields][17]=language&populate[projects][fields][18]=stargazers_count&populate[projects][fields][19]=forks_count&populate[projects][fields][20]=languages&populate[projects][fields][21]=topics&populate[projects][fields][22]=created_at&populate[projects][fields][23]=updated_at&populate[projects][fields][24]=license&populate[projects][fields][25]=default_branch&populate[projects][fields][26]=homepage`;
-            console.log('Projects section URL:', `${STRAPI_URL}/api/${populatedPath}`);
         } else if (cleanPath === 'live-projects') {
             populatedPath = `${cleanPath}?populate=*&fields[0]=name&fields[1]=url&fields[2]=isOnline&fields[3]=isWip&fields[4]=notes&fields[5]=technologies&fields[6]=deployDate&fields[7]=publishedAt`;
-            console.log('Live projects URL:', `${STRAPI_URL}/api/${populatedPath}`);
         } else if (cleanPath.includes('projects')) {
             populatedPath = `${cleanPath}?populate[0]=*&populate[1]=tags&populate[2]=icon&populate[3]=technologies`;
         }

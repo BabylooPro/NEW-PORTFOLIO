@@ -37,7 +37,7 @@ export default function Header() {
     } = useHeaderLogic();
 
     // INITIALIZE DATA
-    const { data: headerData, isLoading: headerDataLoading, error } = useHeaderSection();
+    const { data: headerData, isLoading: _headerDataLoading, error: _error } = useHeaderSection();
 
     // FORCE DATA REFETCH ON COMPONENT MOUNT - EXTRA PRECAUTION AGAINST DATA INCONSISTENCIES
     useEffect(() => {
@@ -68,21 +68,7 @@ export default function Header() {
     const separatorRef = useRef(null);
     const socialLinksRef = useRef<HTMLDivElement>(null);
 
-    //! DEBUG CHROME ISSUE - ADD CONSOLE LOG BE BECAUSE DATA NO FETCHED
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-            console.log('Header render state:', {
-                browser: isChrome ? 'Chrome' : 'Not Chrome',
-                hasData: !!headerData,
-                isLoading: headerDataLoading,
-                error: error?.message
-            });
-        }
-    }, [headerData, headerDataLoading, error]);
-
-    // NEVER SHOW SKELETON - ALWAYS USE DATA (FALLBACK PROVIDED IN HOOK)
-    // This ensures Chrome users always see content
+    // NEVER SHOW SKELETON - ALWAYS USE DATA (FALLBACK PROVIDED IN HOOK) //! CHECK IF THIS IS STILL NEEDED
     if (!headerData) {
         console.error('Header data still null after fallbacks');
         return <HeaderSkeleton />;
