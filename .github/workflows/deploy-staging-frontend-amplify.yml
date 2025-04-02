@@ -1,11 +1,6 @@
 name: Deploy Staging Frontend AWS Amplify
 
 on:
-  push:
-    branches:
-      - staging
-    paths:
-      - "frontend/**"
   workflow_dispatch:
 
 jobs:

@@ -1,11 +1,6 @@
 name: Deploy Production Frontend AWS Amplify
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "frontend/**"
   workflow_dispatch:
 
 jobs:
