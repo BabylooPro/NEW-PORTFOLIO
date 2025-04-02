@@ -56,11 +56,14 @@ type CustomToastProps = {
     showIcon?: boolean;
 };
 
+// OMIT HEADER HEIGHT AND IS HEADER MOVED TO PREVENT THEM FROM APPEARING ON DOM
+type ToastProps = React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
+    VariantProps<typeof toastVariants> &
+    CustomToastProps;
+
 const Toast = React.forwardRef<
     React.ElementRef<typeof ToastPrimitives.Root>,
-    React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
-    VariantProps<typeof toastVariants> &
-    CustomToastProps
+    ToastProps
 >(
     (
         {
@@ -105,16 +108,15 @@ const Toast = React.forwardRef<
             }
         };
 
-        const { open, ...restProps } = props;
-
-        console.log("DEBUG_TOAST:", { headerHeight, isHeaderMoved });
+        // ONLY USE THE STANDARD PROPS EXPECTED BY ToastPrimitives.Root
+        const { open, ...standardProps } = props;
 
         return (
             <AnimatePresence>
                 {open && (
                     <ToastPrimitives.Root
                         ref={ref}
-                        {...restProps}
+                        {...standardProps}
                     >
                         {isMobile ? (
                             <div className={cn(toastVariants({ variant }), className)}>
@@ -199,8 +201,6 @@ const ToastDescription = React.forwardRef<
     />
 ));
 ToastDescription.displayName = ToastPrimitives.Description.displayName;
-
-type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>;
 
 type ToastActionElement = React.ReactElement<typeof ToastAction>;
 
