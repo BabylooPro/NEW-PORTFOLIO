@@ -46,6 +46,7 @@
     "cmdk": "^1.0.4",
     "date-fns": "^4.1.0",
     "devicon": "^2.16.0",
+    "embla-carousel-react": "^8.6.0",
     "emoji-datasource-apple": "^15.1.2",
     "framer-motion": "^12.5.0",
     "isomorphic-fetch": "^3.0.0",
