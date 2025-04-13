@@ -252,7 +252,7 @@ const SideProjectsSection = () => {
     // HANDLE ERRORS
     if (projectsError || sectionError) {
         return (
-            <Section>
+            <Section id="projects">
                 <h2 className="text-2xl font-bold mb-6">Error Loading Projects</h2>
                 <p className="text-red-500">
                     An error occurred: {(projectsError ?? sectionError)?.toString()}
@@ -275,7 +275,7 @@ const SideProjectsSection = () => {
     // HANDLE LOADING
     if (projectsLoading || sectionLoading) {
         return (
-            <Section>
+            <Section id="projects">
                 <h2 className="text-2xl font-bold mb-6">Projects</h2>
                 <div className="flex pb-4 px-4 justify-between sm:justify-center lg:justify-end gap-2 sm:gap-6 md:gap-4 lg:gap-[0.6rem] sm:px-4">
                     <Skeleton className="h-10 w-[calc(50%-4px)] sm:w-full lg:w-[145px]" />
@@ -293,7 +293,7 @@ const SideProjectsSection = () => {
     }
 
     return (
-        <Section>
+        <Section id="projects">
             {/* HEADER */}
             <div className="relative mb-10">
                 <h2 className="text-2xl font-bold flex items-center gap-2 -mb-5">

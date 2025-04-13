@@ -158,7 +158,7 @@ const WhatIDoV2Section: React.FC = () => {
     const shouldUseCarousel = allVideos.length > 4;
 
     return (
-        <Section onVisibilityChange={handleVisibilityChange} disableAnimations={false}>
+        <Section id="whatido" onVisibilityChange={handleVisibilityChange} disableAnimations={false}>
             <style jsx global>{carouselStyles}</style>
             <div ref={sectionRef} className="w-full">
                 {/* TITLE */}

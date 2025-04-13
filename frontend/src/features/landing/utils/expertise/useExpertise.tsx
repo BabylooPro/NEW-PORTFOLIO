@@ -18,6 +18,7 @@ import { SkillsSkeleton } from "./SkillSkeleton";
 type ExpertiseItem = ExperienceItemProps | SkillYear; // UNION TYPE FOR POSSIBLE ITEM TYPES
 
 interface UseExpertiseProps {
+    id?: string;
     title: string;
     titleDescription: string;
     paragraphDescription: string;
@@ -42,6 +43,7 @@ const isSkillYearGroup = (item: ExpertiseItem): item is SkillYear => {
 };
 
 const UseExpertise: React.FC<UseExpertiseProps> = ({
+    id,
     title,
     titleDescription,
     paragraphDescription,
@@ -59,7 +61,7 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 
     if (error) {
         return (
-            <Section>
+            <Section id={id}>
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-2xl font-bold flex items-center gap-2">
                         <div className="flex items-center gap-2">
@@ -78,7 +80,7 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
 
     return (
         <TooltipProvider>
-            <Section>
+            <Section id={id}>
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-2xl font-bold flex items-center gap-2">
                         <div className="flex items-center gap-2">
