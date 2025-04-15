@@ -224,7 +224,7 @@ const WhatIDoV2Section: React.FC = () => {
                                 className="w-full"
                             >
                                 <CarouselContent className="-ml-2 md:-ml-4">
-                                    {videosData.map((video) => (
+                                    {videosData.slice().reverse().map((video) => (
                                         <CarouselItem key={video.id + (video.date || '')} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
                                             <div className="h-full w-full p-1">
                                                 <VideoCard
@@ -245,7 +245,7 @@ const WhatIDoV2Section: React.FC = () => {
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
-                            {videosData.map((video) => (
+                            {videosData.slice().reverse().map((video) => (
                                 <VideoCard
                                     key={video.id + (video.date || '')}
                                     video={video}
