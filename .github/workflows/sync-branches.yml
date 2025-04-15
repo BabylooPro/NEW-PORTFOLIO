@@ -1,0 +1,101 @@
+name: Sync Branches
+
+on:
+    workflow_dispatch:
+        inputs:
+            sync_target:
+                description: "Branch to sync"
+                required: true
+                default: "all"
+                type: choice
+                options:
+                    - preview
+                    - all
+            direction:
+                description: "Sync direction"
+                required: true
+                default: "from_main"
+                type: choice
+                options:
+                    - from_main
+                    - to_main
+
+permissions:
+    contents: write
+
+jobs:
+    sync-preview-branch:
+        name: Sync frontend folder to preview branch
+        runs-on: ubuntu-latest
+        if: ${{ github.event.inputs.direction == 'from_main' && (github.event.inputs.sync_target == 'preview' || github.event.inputs.sync_target == 'all') }}
+        steps:
+            - name: Checkout main branch
+              uses: actions/checkout@v3
+              with:
+                  ref: main
+                  fetch-depth: 0
+
+            - name: Configure Git
+              run: |
+                  git config user.name "GitHub Actions Bot"
+                  git config user.email "actions@github.com"
+
+            - name: Sync frontend folder to preview branch
+              run: |
+                  # Store frontend folder content from main
+                  mkdir -p /tmp/frontend_content
+                  cp -r frontend/* /tmp/frontend_content/ || true
+
+                  # Checkout preview branch
+                  git checkout preview
+
+                  # Replace frontend folder content with content from main
+                  rm -rf frontend/* || true
+                  cp -r /tmp/frontend_content/* frontend/ || true
+
+                  # Commit and push changes if any
+                  git add frontend/
+                  if git diff --staged --quiet; then
+                    echo "No changes to commit"
+                  else
+                    git commit -m "SYNC FRONTEND FOLDER FROM MAIN BRANCH"
+                    git push origin preview
+                  fi
+
+    sync-preview-to-main:
+        name: Sync frontend folder from preview branch to main
+        runs-on: ubuntu-latest
+        if: ${{ github.event.inputs.direction == 'to_main' && (github.event.inputs.sync_target == 'preview' || github.event.inputs.sync_target == 'all') }}
+        steps:
+            - name: Checkout preview branch
+              uses: actions/checkout@v3
+              with:
+                  ref: preview
+                  fetch-depth: 0
+
+            - name: Configure Git
+              run: |
+                  git config user.name "GitHub Actions Bot"
+                  git config user.email "actions@github.com"
+
+            - name: Sync frontend folder to main branch
+              run: |
+                  # Store frontend folder content from preview branch
+                  mkdir -p /tmp/frontend_content
+                  cp -r frontend/* /tmp/frontend_content/ || true
+
+                  # Checkout main branch
+                  git checkout main
+
+                  # Replace frontend folder content with content from preview branch
+                  rm -rf frontend/* || true
+                  cp -r /tmp/frontend_content/* frontend/ || true
+
+                  # Commit and push changes if any
+                  git add frontend/
+                  if git diff --staged --quiet; then
+                    echo "No changes to commit"
+                  else
+                    git commit -m "SYNC FRONTEND FOLDER FROM PREVIEW BRANCH"
+                    git push origin main
+                  fi
