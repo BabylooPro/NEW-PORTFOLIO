@@ -41,6 +41,10 @@ export async function GET(request: Request) {
             populatedPath = `${cleanPath}?populate=*&fields[0]=name&fields[1]=url&fields[2]=isOnline&fields[3]=isWip&fields[4]=notes&fields[5]=technologies&fields[6]=deployDate&fields[7]=publishedAt`;
         } else if (cleanPath.includes('projects')) {
             populatedPath = `${cleanPath}?populate[0]=*&populate[1]=tags&populate[2]=icon&populate[3]=technologies`;
+        } else if (cleanPath === 'showcase-videos') {
+            populatedPath = `${cleanPath}?populate=src`;
+        } else if (cleanPath.includes('showcase-video')) {
+            populatedPath = `${cleanPath}?populate=src`;
         }
 
         const url = `${STRAPI_URL}/api/${populatedPath}`;

@@ -6,7 +6,7 @@ import { ShowInfo } from "@/components/ui/show-info";
 import { Card } from "@/components/ui/card";
 import { useTheme } from "next-themes";
 import { useWhatIDoSection } from "./utils/useWhatIDoSection";
-import { allVideos } from "./components/what-i-do-v2/data/videos";
+import { useShowcaseVideos } from "./utils/useShowcaseVideos";
 import ClientOnly from "./components/what-i-do-v2/components/ClientOnly";
 import VideoPlayer from "./components/what-i-do-v2/components/VideoPlayer";
 import VideoCard from "./components/what-i-do-v2/components/VideoCard";
@@ -28,17 +28,25 @@ const carouselStyles = `
 const WhatIDoV2Section: React.FC = () => {
     const { resolvedTheme } = useTheme();
     const [isMounted, setIsMounted] = useState(false);
-    const { data: sectionData, isLoading } = useWhatIDoSection();
+    const { data: sectionData, isLoading: isSectionLoading } = useWhatIDoSection();
+    const { data: videosData, isLoading: isVideosLoading } = useShowcaseVideos();
     const sectionRef = useRef<HTMLDivElement>(null);
     const [isInView, setIsInView] = useState(false);
     const [_forceShow, setForceShow] = useState(false);
-    const [activeVideo, setActiveVideo] = useState(allVideos[0].id);
+    const [activeVideo, setActiveVideo] = useState("");
     const [videoPositions, setVideoPositions] = useState<Record<string, number>>({});
     const prevActiveVideoRef = useRef<string | null>(null);
     const videoPlayerRef = useRef<HTMLVideoElement | null>(null);
     const autoSwitchedRef = useRef(false);
     const finishedVideosRef = useRef<Set<string>>(new Set());
     const [resetTrigger, setResetTrigger] = useState(0);
+
+    // SET INITIAL ACTIVE VIDEO WHEN VIDEOS DATA LOADS
+    useEffect(() => {
+        if (videosData && videosData.length > 0 && !activeVideo) {
+            setActiveVideo(videosData[0].id);
+        }
+    }, [videosData, activeVideo]);
 
     // VISIBILITY CHANGE HANDLER
     const handleVisibilityChange = useCallback((isVisible: boolean) => {
@@ -85,20 +93,20 @@ const WhatIDoV2Section: React.FC = () => {
 
     // HANDLE VIDEO ENDED - MOVE TO NEXT VIDEO
     const handleVideoEnded = useCallback(() => {
-        if (activeVideo) {
+        if (activeVideo && videosData && videosData.length > 0) {
             // ADD TO FINISHED VIDEOS SET
             finishedVideosRef.current.add(activeVideo);
+
+            const currentIndex = videosData.findIndex(v => v.id === activeVideo);
+            const nextIndex = (currentIndex + 1) % videosData.length;
+            const nextVideoId = videosData[nextIndex].id;
+
+            // SET AUTO-SWITCHED FLAG
+            autoSwitchedRef.current = true;
+
+            handleVideoChange(nextVideoId);
         }
-
-        const currentIndex = allVideos.findIndex(v => v.id === activeVideo);
-        const nextIndex = (currentIndex + 1) % allVideos.length;
-        const nextVideoId = allVideos[nextIndex].id;
-
-        // SET AUTO-SWITCHED FLAG
-        autoSwitchedRef.current = true;
-
-        handleVideoChange(nextVideoId);
-    }, [activeVideo, handleVideoChange]);
+    }, [activeVideo, handleVideoChange, videosData]);
 
     // SET INITIAL ACTIVE VIDEO REF
     useEffect(() => {
@@ -148,14 +156,45 @@ const WhatIDoV2Section: React.FC = () => {
     }, [handleVisibilityChange]);
 
     // PRELIMINARY CHECKS
-    if (!resolvedTheme || !isMounted || isLoading) {
+    if (!resolvedTheme || !isMounted || isSectionLoading || isVideosLoading) {
         return null;
     }
 
-    const currentVideo = allVideos.find(v => v.id === activeVideo) || allVideos[0];
+    // NO VIDEOS TO DISPLAY
+    if (!videosData || videosData.length === 0) {
+        return (
+            <Section id="whatido" onVisibilityChange={handleVisibilityChange} disableAnimations={false}>
+                <div ref={sectionRef} className="w-full">
+                    <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
+                        {sectionData?.title || "What I Do"}
+                        <ShowInfo
+                            description={
+                                <>
+                                    {sectionData?.titleDescription} <br />{" "}
+                                    <span className="text-xs text-neutral-500">
+                                        {sectionData?.paragraphDescription}
+                                    </span>
+                                </>
+                            }
+                        />
+                    </h2>
+                    <div className="p-8 text-center border rounded-xl">
+                        <p>No showcase videos available.</p>
+                    </div>
+                </div>
+            </Section>
+        );
+    }
+
+    // USE FIRST VIDEO IF ACTIVE VIDEO IS NOT SET
+    if (!activeVideo && videosData.length > 0) {
+        setActiveVideo(videosData[0].id);
+    }
+
+    const currentVideo = videosData.find(v => v.id === activeVideo) || videosData[0];
     const initialTime = autoSwitchedRef.current ? 0 : videoPositions[currentVideo.id] || 0;
     const needsReset = resetTrigger > 0 && finishedVideosRef.current.has(currentVideo.id);
-    const shouldUseCarousel = allVideos.length > 4;
+    const shouldUseCarousel = videosData.length > 4;
 
     return (
         <Section id="whatido" onVisibilityChange={handleVisibilityChange} disableAnimations={false}>
@@ -185,8 +224,8 @@ const WhatIDoV2Section: React.FC = () => {
                                 className="w-full"
                             >
                                 <CarouselContent className="-ml-2 md:-ml-4">
-                                    {allVideos.map((video) => (
-                                        <CarouselItem key={video.id + video.date} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                                    {videosData.map((video) => (
+                                        <CarouselItem key={video.id + (video.date || '')} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
                                             <div className="h-full w-full p-1">
                                                 <VideoCard
                                                     video={video}
@@ -206,9 +245,9 @@ const WhatIDoV2Section: React.FC = () => {
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
-                            {allVideos.map((video) => (
+                            {videosData.map((video) => (
                                 <VideoCard
-                                    key={video.id + video.date}
+                                    key={video.id + (video.date || '')}
                                     video={video}
                                     isActive={isInView}
                                     onClick={() => handleVideoChange(video.id, true)}
@@ -219,35 +258,37 @@ const WhatIDoV2Section: React.FC = () => {
                     )}
 
                     {/* VIDEO PLAYER */}
-                    <Card
-                        className={`rounded-xl overflow-hidden border-none ${resolvedTheme === "dark" ? "bg-neutral-900 text-white" : "bg-white text-black"
-                            }`}
-                    >
-                        <ClientOnly id="video-container">
-                            <div className="relative h-[600px]">
-                                <VideoPlayer
-                                    ref={videoPlayerRef}
-                                    src={currentVideo.src}
-                                    isActive={isInView}
-                                    recap={currentVideo.recap}
-                                    project={currentVideo.project}
-                                    initialTime={initialTime}
-                                    onEnded={handleVideoEnded}
-                                    loop={false}
-                                    resetVideo={needsReset}
-                                    debug={false}
-                                    advancedDebug={false}
-                                />
-                                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
-                                    {currentVideo.project && (
-                                        <p className="text-sm font-medium text-white/80 mb-1">{currentVideo.project}</p>
-                                    )}
-                                    <h3 className="text-xl font-bold text-white">{currentVideo.title}</h3>
-                                    <p className="text-white/80">{currentVideo.description}</p>
+                    {currentVideo && (
+                        <Card
+                            className={`rounded-xl overflow-hidden border-none ${resolvedTheme === "dark" ? "bg-neutral-900 text-white" : "bg-white text-black"
+                                }`}
+                        >
+                            <ClientOnly id="video-container">
+                                <div className="relative h-[600px]">
+                                    <VideoPlayer
+                                        ref={videoPlayerRef}
+                                        src={currentVideo.src}
+                                        isActive={isInView}
+                                        recap={currentVideo.recap}
+                                        project={currentVideo.project}
+                                        initialTime={initialTime}
+                                        onEnded={handleVideoEnded}
+                                        loop={false}
+                                        resetVideo={needsReset}
+                                        debug={false}
+                                        advancedDebug={false}
+                                    />
+                                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
+                                        {currentVideo.project && (
+                                            <p className="text-sm font-medium text-white/80 mb-1">{currentVideo.project}</p>
+                                        )}
+                                        <h3 className="text-xl font-bold text-white">{currentVideo.title}</h3>
+                                        <p className="text-white/80">{currentVideo.description}</p>
+                                    </div>
                                 </div>
-                            </div>
-                        </ClientOnly>
-                    </Card>
+                            </ClientOnly>
+                        </Card>
+                    )}
                 </div>
             </div>
         </Section>
