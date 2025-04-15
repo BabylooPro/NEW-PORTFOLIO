@@ -603,6 +603,34 @@ export interface ApiProjectsSectionProjectsSection extends Struct.SingleTypeSche
     };
 }
 
+export interface ApiShowcaseVideoShowcaseVideo extends Struct.CollectionTypeSchema {
+    collectionName: "showcase_videos";
+    info: {
+        displayName: "Showcase Video";
+        pluralName: "showcase-videos";
+        singularName: "showcase-video";
+    };
+    options: {
+        draftAndPublish: true;
+    };
+    attributes: {
+        createdAt: Schema.Attribute.DateTime;
+        createdBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> & Schema.Attribute.Private;
+        customId: Schema.Attribute.String & Schema.Attribute.Required;
+        date: Schema.Attribute.Date;
+        description: Schema.Attribute.Text & Schema.Attribute.Required;
+        locale: Schema.Attribute.String & Schema.Attribute.Private;
+        localizations: Schema.Attribute.Relation<"oneToMany", "api::showcase-video.showcase-video"> & Schema.Attribute.Private;
+        project: Schema.Attribute.String;
+        publishedAt: Schema.Attribute.DateTime;
+        recap: Schema.Attribute.String;
+        src: Schema.Attribute.Media<"images" | "files" | "videos" | "audios"> & Schema.Attribute.Required;
+        title: Schema.Attribute.String & Schema.Attribute.Required;
+        updatedAt: Schema.Attribute.DateTime;
+        updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> & Schema.Attribute.Private;
+    };
+}
+
 export interface ApiSkillSectionSkillSection extends Struct.SingleTypeSchema {
     collectionName: "skill_sections";
     info: {
@@ -1223,6 +1251,7 @@ declare module "@strapi/strapi" {
             "api::hero-section.hero-section": ApiHeroSectionHeroSection;
             "api::live-project.live-project": ApiLiveProjectLiveProject;
             "api::projects-section.projects-section": ApiProjectsSectionProjectsSection;
+            "api::showcase-video.showcase-video": ApiShowcaseVideoShowcaseVideo;
             "api::skill-section.skill-section": ApiSkillSectionSkillSection;
             "api::skill-year.skill-year": ApiSkillYearSkillYear;
             "api::skill.skill": ApiSkillSkill;
