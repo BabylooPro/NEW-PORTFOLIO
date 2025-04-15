@@ -1,217 +1,237 @@
 name: Pre-Deploy Preview Frontend AWS Amplify
 
 on:
-  workflow_dispatch:
+    workflow_dispatch:
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    sync-branches:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Trigger sync workflow
+              uses: actions/github-script@v6
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      await github.rest.actions.createWorkflowDispatch({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        workflow_id: 'sync-branches.yml',
+                        ref: 'main',
+                        inputs: {
+                          sync_target: 'all',
+                          direction: 'from_main'
+                        }
+                      });
 
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: frontend/node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node_modules-
+    lint:
+        needs: sync-branches
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: frontend
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+            - name: Cache dependencies
+              uses: actions/cache@v3
+              with:
+                  path: frontend/node_modules
+                  key: ${{ runner.os }}-node_modules-${{ hashFiles('frontend/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node_modules-
 
-      - name: Run linting
-        run: npm run lint
+            - name: Install dependencies
+              run: npm ci --legacy-peer-deps
 
-  unit-tests:
-    needs: lint
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    env:
-      GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
-      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
-      COUNTRY_STATE_CITY_API_KEY: ${{ secrets.COUNTRY_STATE_CITY_API_KEY }}
-      STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
-      STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
-      NEXT_PUBLIC_STRAPI_API_URL: ${{ secrets.NEXT_PUBLIC_STRAPI_API_URL }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+            - name: Run linting
+              run: npm run lint
 
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: frontend/node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node_modules-
-
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
-
-      - name: Run unit tests
-        run: npm test
+    unit-tests:
+        needs: lint
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: frontend
         env:
-          TEST_ENV: jsdom
+            GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+            RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+            WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
+            COUNTRY_STATE_CITY_API_KEY: ${{ secrets.COUNTRY_STATE_CITY_API_KEY }}
+            STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
+            STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
+            NEXT_PUBLIC_STRAPI_API_URL: ${{ secrets.NEXT_PUBLIC_STRAPI_API_URL }}
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
 
-  integration-tests:
-    needs: lint
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    env:
-      GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
-      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
-      COUNTRY_STATE_CITY_API_KEY: ${{ secrets.COUNTRY_STATE_CITY_API_KEY }}
-      STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
-      STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
-      NEXT_PUBLIC_STRAPI_API_URL: ${{ secrets.NEXT_PUBLIC_STRAPI_API_URL }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+            - name: Cache dependencies
+              uses: actions/cache@v3
+              with:
+                  path: frontend/node_modules
+                  key: ${{ runner.os }}-node_modules-${{ hashFiles('frontend/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node_modules-
 
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: frontend/node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node_modules-
+            - name: Install dependencies
+              run: npm ci --legacy-peer-deps
 
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+            - name: Run unit tests
+              run: npm test
+              env:
+                  TEST_ENV: jsdom
 
-      - name: Run integration tests
-        run: npm run test:integration
+    integration-tests:
+        needs: lint
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: frontend
         env:
-          TEST_TYPE: integration
-          TEST_ENV: node
+            GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+            RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+            WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
+            COUNTRY_STATE_CITY_API_KEY: ${{ secrets.COUNTRY_STATE_CITY_API_KEY }}
+            STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
+            STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
+            NEXT_PUBLIC_STRAPI_API_URL: ${{ secrets.NEXT_PUBLIC_STRAPI_API_URL }}
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
 
-  build:
-    needs: [unit-tests, integration-tests]
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    env:
-      GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
-      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
-      COUNTRY_STATE_CITY_API_KEY: ${{ secrets.COUNTRY_STATE_CITY_API_KEY }}
-      STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
-      STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
-      NEXT_PUBLIC_STRAPI_API_URL: ${{ secrets.NEXT_PUBLIC_STRAPI_API_URL }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+            - name: Cache dependencies
+              uses: actions/cache@v3
+              with:
+                  path: frontend/node_modules
+                  key: ${{ runner.os }}-node_modules-${{ hashFiles('frontend/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node_modules-
 
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: frontend/node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node_modules-
+            - name: Install dependencies
+              run: npm ci --legacy-peer-deps
 
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+            - name: Run integration tests
+              run: npm run test:integration
+              env:
+                  TEST_TYPE: integration
+                  TEST_ENV: node
 
-      - name: Build application
-        run: |
-          NODE_OPTIONS="--max-old-space-size=3072" npm run build
+    build:
+        needs: [unit-tests, integration-tests]
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: frontend
+        env:
+            GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+            RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+            WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
+            COUNTRY_STATE_CITY_API_KEY: ${{ secrets.COUNTRY_STATE_CITY_API_KEY }}
+            STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
+            STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
+            NEXT_PUBLIC_STRAPI_API_URL: ${{ secrets.NEXT_PUBLIC_STRAPI_API_URL }}
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    env:
-      # AWS AMPLIFY ENVIRONMENT VARIABLES
-      AWS_AMPLIFY_APP_ID: ${{ secrets.AWS_AMPLIFY_APP_ID }}
-      AWS_ACCESS_KEY_ID_AMPLIFY: ${{ secrets.AWS_ACCESS_KEY_ID_AMPLIFY }}
-      AWS_SECRET_ACCESS_KEY_AMPLIFY: ${{ secrets.AWS_SECRET_ACCESS_KEY_AMPLIFY }}
+            - name: Cache dependencies
+              uses: actions/cache@v3
+              with:
+                  path: frontend/node_modules
+                  key: ${{ runner.os }}-node_modules-${{ hashFiles('frontend/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node_modules-
 
-      # NEXT.JS ENVIRONMENT VARIABLES
-      GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
-      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
-      COUNTRY_STATE_CITY_API_KEY: ${{ secrets.COUNTRY_STATE_CITY_API_KEY }}
-      STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
-      STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
-      NEXT_PUBLIC_STRAPI_API_URL: ${{ secrets.NEXT_PUBLIC_STRAPI_API_URL }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+            - name: Install dependencies
+              run: npm ci --legacy-peer-deps
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "18"
-          cache: "npm"
-          cache-dependency-path: "./frontend/package-lock.json"
+            - name: Build application
+              run: |
+                  NODE_OPTIONS="--max-old-space-size=3072" npm run build
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_AMPLIFY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_AMPLIFY }}
-          aws-region: us-east-1
+    deploy:
+        needs: build
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: frontend
+        env:
+            # AWS AMPLIFY ENVIRONMENT VARIABLES
+            AWS_AMPLIFY_APP_ID: ${{ secrets.AWS_AMPLIFY_APP_ID }}
+            AWS_ACCESS_KEY_ID_AMPLIFY: ${{ secrets.AWS_ACCESS_KEY_ID_AMPLIFY }}
+            AWS_SECRET_ACCESS_KEY_AMPLIFY: ${{ secrets.AWS_SECRET_ACCESS_KEY_AMPLIFY }}
 
-      - name: Configure Amplify for Next.js
-        run: |
-          APP_ID=${{ secrets.AWS_AMPLIFY_APP_ID }}
-          REGION="us-east-1"
-          BRANCH="preview"
+            # NEXT.JS ENVIRONMENT VARIABLES
+            GIT_HUB_ACCESS_TOKEN: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+            RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+            WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
+            COUNTRY_STATE_CITY_API_KEY: ${{ secrets.COUNTRY_STATE_CITY_API_KEY }}
+            STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
+            STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
+            NEXT_PUBLIC_STRAPI_API_URL: ${{ secrets.NEXT_PUBLIC_STRAPI_API_URL }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
 
-          aws amplify update-app --app-id $APP_ID --platform WEB_COMPUTE --region $REGION
+            - name: Setup Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: "18"
+                  cache: "npm"
+                  cache-dependency-path: "./frontend/package-lock.json"
 
-          aws amplify update-branch --app-id $APP_ID --branch-name $BRANCH --framework 'Next.js - SSR' --region $REGION
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v1
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_AMPLIFY }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_AMPLIFY }}
+                  aws-region: us-east-1
 
-          echo "Configured Amplify app platform and framework for Next.js"
+            - name: Configure Amplify for Next.js
+              run: |
+                  APP_ID=${{ secrets.AWS_AMPLIFY_APP_ID }}
+                  REGION="us-east-1"
+                  BRANCH="preview"
 
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+                  aws amplify update-app --app-id $APP_ID --platform WEB_COMPUTE --region $REGION
 
-      - name: Update environment variables in Amplify
-        run: |
-          APP_ID=${{ secrets.AWS_AMPLIFY_APP_ID }}
-          BRANCH="preview"
+                  aws amplify update-branch --app-id $APP_ID --branch-name $BRANCH --framework 'Next.js - SSR' --region $REGION
 
-          cat > env-vars.json << EOL
-          {
-            "environmentVariables": {
-              "GIT_HUB_ACCESS_TOKEN": "${{ secrets.GIT_HUB_ACCESS_TOKEN }}",
-              "RESEND_API_KEY": "${{ secrets.RESEND_API_KEY }}",
-              "WAKATIME_API_KEY": "${{ secrets.WAKATIME_API_KEY }}",
-              "COUNTRY_STATE_CITY_API_KEY": "${{ secrets.COUNTRY_STATE_CITY_API_KEY }}",
-              "STRAPI_API_TOKEN": "${{ secrets.STRAPI_API_TOKEN }}",
-              "STRAPI_API_URL": "${{ secrets.STRAPI_API_URL }}",
-              "NEXT_PUBLIC_STRAPI_API_URL": "${{ secrets.NEXT_PUBLIC_STRAPI_API_URL }}",
-              "AMPLIFY_MONOREPO_APP_ROOT": "frontend"
-            }
-          }
-          EOL
+                  echo "Configured Amplify app platform and framework for Next.js"
 
-          aws amplify update-branch --app-id $APP_ID --branch-name $BRANCH --environment-variables "$(cat env-vars.json | jq -c .environmentVariables)"
+            - name: Install dependencies
+              run: npm ci --legacy-peer-deps
 
-          echo "Updated environment variables in Amplify"
+            - name: Update environment variables in Amplify
+              run: |
+                  APP_ID=${{ secrets.AWS_AMPLIFY_APP_ID }}
+                  BRANCH="preview"
 
-      - name: Deploy to AWS Amplify
-        run: |
-          APP_ID=${{ secrets.AWS_AMPLIFY_APP_ID }}
-          BRANCH="preview"
+                  cat > env-vars.json << EOL
+                  {
+                    "environmentVariables": {
+                      "GIT_HUB_ACCESS_TOKEN": "${{ secrets.GIT_HUB_ACCESS_TOKEN }}",
+                      "RESEND_API_KEY": "${{ secrets.RESEND_API_KEY }}",
+                      "WAKATIME_API_KEY": "${{ secrets.WAKATIME_API_KEY }}",
+                      "COUNTRY_STATE_CITY_API_KEY": "${{ secrets.COUNTRY_STATE_CITY_API_KEY }}",
+                      "STRAPI_API_TOKEN": "${{ secrets.STRAPI_API_TOKEN }}",
+                      "STRAPI_API_URL": "${{ secrets.STRAPI_API_URL }}",
+                      "NEXT_PUBLIC_STRAPI_API_URL": "${{ secrets.NEXT_PUBLIC_STRAPI_API_URL }}",
+                      "AMPLIFY_MONOREPO_APP_ROOT": "frontend"
+                    }
+                  }
+                  EOL
 
-          echo "Triggering Amplify deployment via start-job..."
-          aws amplify start-job --app-id $APP_ID --branch-name $BRANCH --job-type RELEASE
+                  aws amplify update-branch --app-id $APP_ID --branch-name $BRANCH --environment-variables "$(cat env-vars.json | jq -c .environmentVariables)"
 
-          echo "Amplify build triggered. Check the Amplify Console for build progress."
+                  echo "Updated environment variables in Amplify"
+
+            - name: Deploy to AWS Amplify
+              run: |
+                  APP_ID=${{ secrets.AWS_AMPLIFY_APP_ID }}
+                  BRANCH="preview"
+
+                  echo "Triggering Amplify deployment via start-job..."
+                  aws amplify start-job --app-id $APP_ID --branch-name $BRANCH --job-type RELEASE
+
+                  echo "Amplify build triggered. Check the Amplify Console for build progress."
