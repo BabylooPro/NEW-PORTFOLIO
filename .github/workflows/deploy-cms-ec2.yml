@@ -1,120 +1,123 @@
 name: Deploy CMS to AWS EC2
 
 on:
-  workflow_dispatch:
+    workflow_dispatch:
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    defaults:
-      run:
-        working-directory: cms
-    env:
-      APP_KEYS: ${{ secrets.APP_KEYS }}
-      API_TOKEN_SALT: ${{ secrets.API_TOKEN_SALT }}
-      ADMIN_JWT_SECRET: ${{ secrets.ADMIN_JWT_SECRET }}
-      TRANSFER_TOKEN_SALT: ${{ secrets.TRANSFER_TOKEN_SALT }}
-      DATABASE_CLIENT: ${{ secrets.DATABASE_CLIENT }}
-      DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
-      DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
-      DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
-      DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
-      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
-      DATABASE_SSL: ${{ secrets.DATABASE_SSL }}
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
+    deploy:
+        runs-on: ubuntu-latest
+        timeout-minutes: 60
+        defaults:
+            run:
+                working-directory: cms
+        env:
+            APP_KEYS: ${{ secrets.APP_KEYS }}
+            API_TOKEN_SALT: ${{ secrets.API_TOKEN_SALT }}
+            ADMIN_JWT_SECRET: ${{ secrets.ADMIN_JWT_SECRET }}
+            TRANSFER_TOKEN_SALT: ${{ secrets.TRANSFER_TOKEN_SALT }}
+            DATABASE_CLIENT: ${{ secrets.DATABASE_CLIENT }}
+            DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
+            DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+            DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+            DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
+            DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+            DATABASE_SSL: ${{ secrets.DATABASE_SSL }}
+            JWT_SECRET: ${{ secrets.JWT_SECRET }}
+            STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
 
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: cms/node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('cms/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node_modules-
+            - name: Cache dependencies
+              uses: actions/cache@v3
+              with:
+                  path: cms/node_modules
+                  key: ${{ runner.os }}-node_modules-${{ hashFiles('cms/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node_modules-
 
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps --force
+            - name: Install dependencies
+              run: npm install --legacy-peer-deps --force
 
-      - name: Build project
-        run: npm run build
+            - name: Build project
+              run: npm run build
 
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v0.1.5
-        with:
-          host: ${{ secrets.CMS_EC2_HOST }}
-          username: ${{ secrets.CMS_EC2_USER }}
-          key: ${{ secrets.CMS_EC2_KEY }}
-          port: 22
-          command_timeout: 40m
-          script: |
-            cd /home/ubuntu
+            - name: Deploy to EC2
+              uses: appleboy/ssh-action@v0.1.5
+              with:
+                  host: ${{ secrets.CMS_EC2_HOST }}
+                  username: ${{ secrets.CMS_EC2_USER }}
+                  key: ${{ secrets.CMS_EC2_KEY }}
+                  port: 22
+                  command_timeout: 40m
+                  script: |
+                      cd /home/ubuntu
 
-            if [ ! -d "NEW-PORTFOLIO" ]; then
-              git clone https://github.com/BabylooPro/NEW-PORTFOLIO.git
-            fi
+                      if [ ! -d "NEW-PORTFOLIO" ]; then
+                        git clone https://github.com/BabylooPro/NEW-PORTFOLIO.git
+                      fi
 
-            cd NEW-PORTFOLIO/cms
+                      cd NEW-PORTFOLIO/cms
 
-            git pull origin main
+                      # HANDLE LOCAL CHANGES BEFORE PULLING
+                      git reset --hard HEAD
+                      git clean -fd
+                      git pull origin main
 
-            # CLEAN UP AND PREPARE
-            rm -rf node_modules
-            rm -rf .cache
-            rm -rf build
-            rm -rf dist
+                      # CLEAN UP AND PREPARE
+                      rm -rf node_modules
+                      rm -rf .cache
+                      rm -rf build
+                      rm -rf dist
 
-            # INSTALL WITH INCREASED MEMORY
-            export NODE_OPTIONS="--max-old-space-size=3072"
-            npm install --legacy-peer-deps --force
+                      # INSTALL WITH INCREASED MEMORY
+                      export NODE_OPTIONS="--max-old-space-size=3072"
+                      npm install --legacy-peer-deps --force
 
-            # BUILD WITH ENVIRONMENT VARIABLES
-            HOST=${{ secrets.HOST }} \
-            PORT=${{ secrets.PORT }} \
-            APP_KEYS=${{ secrets.APP_KEYS }} \
-            API_TOKEN_SALT=${{ secrets.API_TOKEN_SALT }} \
-            ADMIN_JWT_SECRET=${{ secrets.ADMIN_JWT_SECRET }} \
-            TRANSFER_TOKEN_SALT=${{ secrets.TRANSFER_TOKEN_SALT }} \
-            DATABASE_CLIENT=${{ secrets.DATABASE_CLIENT }} \
-            DATABASE_HOST=${{ secrets.DATABASE_HOST }} \
-            DATABASE_PORT=${{ secrets.DATABASE_PORT }} \
-            DATABASE_NAME=${{ secrets.DATABASE_NAME }} \
-            DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }} \
-            DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
-            DATABASE_SSL=${{ secrets.DATABASE_SSL }} \
-            JWT_SECRET=${{ secrets.JWT_SECRET }} \
-            STRAPI_API_TOKEN=${{ secrets.STRAPI_API_TOKEN }} \
-            STRAPI_API_URL=${{ secrets.STRAPI_API_URL }} \
-            NODE_ENV=production NODE_OPTIONS="--max-old-space-size=3072" npm run build
+                      # BUILD WITH ENVIRONMENT VARIABLES
+                      HOST=${{ secrets.HOST }} \
+                      PORT=${{ secrets.PORT }} \
+                      APP_KEYS=${{ secrets.APP_KEYS }} \
+                      API_TOKEN_SALT=${{ secrets.API_TOKEN_SALT }} \
+                      ADMIN_JWT_SECRET=${{ secrets.ADMIN_JWT_SECRET }} \
+                      TRANSFER_TOKEN_SALT=${{ secrets.TRANSFER_TOKEN_SALT }} \
+                      DATABASE_CLIENT=${{ secrets.DATABASE_CLIENT }} \
+                      DATABASE_HOST=${{ secrets.DATABASE_HOST }} \
+                      DATABASE_PORT=${{ secrets.DATABASE_PORT }} \
+                      DATABASE_NAME=${{ secrets.DATABASE_NAME }} \
+                      DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }} \
+                      DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
+                      DATABASE_SSL=${{ secrets.DATABASE_SSL }} \
+                      JWT_SECRET=${{ secrets.JWT_SECRET }} \
+                      STRAPI_API_TOKEN=${{ secrets.STRAPI_API_TOKEN }} \
+                      STRAPI_API_URL=${{ secrets.STRAPI_API_URL }} \
+                      NODE_ENV=production NODE_OPTIONS="--max-old-space-size=3072" npm run build
 
-            # VERIFY BUILD
-            if [ ! -d "dist" ]; then
-              echo "Build failed - dist directory not created"
-              exit 1
-            fi
+                      # VERIFY BUILD
+                      if [ ! -d "dist" ]; then
+                        echo "Build failed - dist directory not created"
+                        exit 1
+                      fi
 
-            # RESTART PM2
-            pm2 delete cms || true
-            HOST=${{ secrets.HOST }} \
-            PORT=${{ secrets.PORT }} \
-            APP_KEYS=${{ secrets.APP_KEYS }} \
-            API_TOKEN_SALT=${{ secrets.API_TOKEN_SALT }} \
-            ADMIN_JWT_SECRET=${{ secrets.ADMIN_JWT_SECRET }} \
-            TRANSFER_TOKEN_SALT=${{ secrets.TRANSFER_TOKEN_SALT }} \
-            DATABASE_CLIENT=${{ secrets.DATABASE_CLIENT }} \
-            DATABASE_HOST=${{ secrets.DATABASE_HOST }} \
-            DATABASE_PORT=${{ secrets.DATABASE_PORT }} \
-            DATABASE_NAME=${{ secrets.DATABASE_NAME }} \
-            DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }} \
-            DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
-            DATABASE_SSL=${{ secrets.DATABASE_SSL }} \
-            JWT_SECRET=${{ secrets.JWT_SECRET }} \
-            STRAPI_API_TOKEN=${{ secrets.STRAPI_API_TOKEN }} \
-            STRAPI_API_URL=${{ secrets.STRAPI_API_URL }} \
-            NODE_ENV=production NODE_OPTIONS="--max-old-space-size=3072" pm2 start npm --name cms -- run start
+                      # RESTART PM2
+                      pm2 delete cms || true
+                      HOST=${{ secrets.HOST }} \
+                      PORT=${{ secrets.PORT }} \
+                      APP_KEYS=${{ secrets.APP_KEYS }} \
+                      API_TOKEN_SALT=${{ secrets.API_TOKEN_SALT }} \
+                      ADMIN_JWT_SECRET=${{ secrets.ADMIN_JWT_SECRET }} \
+                      TRANSFER_TOKEN_SALT=${{ secrets.TRANSFER_TOKEN_SALT }} \
+                      DATABASE_CLIENT=${{ secrets.DATABASE_CLIENT }} \
+                      DATABASE_HOST=${{ secrets.DATABASE_HOST }} \
+                      DATABASE_PORT=${{ secrets.DATABASE_PORT }} \
+                      DATABASE_NAME=${{ secrets.DATABASE_NAME }} \
+                      DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }} \
+                      DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
+                      DATABASE_SSL=${{ secrets.DATABASE_SSL }} \
+                      JWT_SECRET=${{ secrets.JWT_SECRET }} \
+                      STRAPI_API_TOKEN=${{ secrets.STRAPI_API_TOKEN }} \
+                      STRAPI_API_URL=${{ secrets.STRAPI_API_URL }} \
+                      NODE_ENV=production NODE_OPTIONS="--max-old-space-size=3072" pm2 start npm --name cms -- run start
 
-            pm2 save
+                      pm2 save
