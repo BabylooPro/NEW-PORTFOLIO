@@ -6,12 +6,12 @@ import Header from "@/components/ui/header/Header";
 import HeroSection from "@/features/landing/HeroSection";
 import SkillSection from "@/features/landing/SkillSection";
 import SideProjectsSection from "@/features/landing/SideProjectsSection";
-import WhatIDoSection from "@/features/landing/WhatIDoSection";
 import SocialSection from "@/features/landing/SocialSection";
 import ContactSection from "@/features/landing/ContactSection";
-import { ScrollToContact } from '@/components/ScrollToContact';
+import { ScrollToSection } from '@/components/ScrollToSection';
 import { ShowCalendarIndex } from "@/features/show-calendar";
 import { Loader } from "lucide-react";
+import WhatIDoV2Section from "@/features/landing/WhatIDoV2Section";
 
 export const metadata: Metadata = {
     title: "Home",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 export default function Home() {
     return (
         <div className="flex flex-col gap-4">
-            <ScrollToContact />
+            <ScrollToSection />
             <div className="h-16 max-sm:h-12" />
             <Header />
             <HeroSection />
@@ -29,7 +29,7 @@ export default function Home() {
             <SkillSection />
             <ExperienceSection />
             <SideProjectsSection />
-            <WhatIDoSection />
+            <WhatIDoV2Section />
             <Suspense fallback={<Loader className="animate-spin" />}>
                 <ShowCalendarIndex />
             </Suspense>

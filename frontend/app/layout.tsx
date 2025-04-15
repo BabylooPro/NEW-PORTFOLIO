@@ -3,6 +3,7 @@ import "./styles/globals.css";
 import { Montserrat } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Providers } from "./providers";
+import { ScrollToTop } from "./components/ScrollToTop";
 
 export const metadata: Metadata = {
     title: {
@@ -11,11 +12,6 @@ export const metadata: Metadata = {
     },
     description: "Max Remy Portfolio Website",
 };
-
-// const poppins = Poppins({
-// 	subsets: ["latin"],
-// 	weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-// });
 
 const montserrat = Montserrat({
     subsets: ["latin"],
@@ -31,6 +27,7 @@ export default function RootLayout({
         <html lang="en" suppressHydrationWarning>
             <head />
             <body className={cn(montserrat.className, "h-full")} suppressHydrationWarning>
+                <ScrollToTop />
                 <Providers>{children}</Providers>
             </body>
         </html>
