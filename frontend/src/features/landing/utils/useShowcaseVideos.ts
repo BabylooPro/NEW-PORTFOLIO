@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { Video } from '../components/what-i-do-v2/types/videos';
-import { STRAPI_URL } from '@/config/constants';
 
 interface StrapiVideo {
     id: number;
@@ -37,6 +36,7 @@ export const useShowcaseVideos = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
     const [videos, setVideos] = useState<Video[]>([]);
+    const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
 
     // FETCH VIDEOS FROM STRAPI
     useEffect(() => {
