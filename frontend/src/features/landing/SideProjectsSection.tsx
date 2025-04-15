@@ -413,12 +413,10 @@ const SideProjectsSection = () => {
                                     <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                                         {project.description}
                                     </p>
-                                    <p className="text-xs mb-2">
-                                        Built With:{" "}
-                                        {project.languages.length === 0 ? (
-                                            <span className="text-muted-foreground">Not specified</span>
-                                        ) : (
-                                            project.languages
+                                    {project.languages.length > 0 && (
+                                        <p className="text-xs mb-2">
+                                            Built With:{" "}
+                                            {project.languages
                                                 .slice(0, 3)
                                                 .map((lang: string, index: number) => (
                                                     <span key={lang} className="font-semibold">
@@ -427,9 +425,9 @@ const SideProjectsSection = () => {
                                                             Math.min(project.languages.length, 3) - 1 &&
                                                             ", "}
                                                     </span>
-                                                ))
-                                        )}
-                                    </p>
+                                                ))}
+                                        </p>
+                                    )}
                                     <div className="flex flex-wrap gap-1 mt-2">
                                         {project.topics.slice(0, 3).map((topic: string) => (
                                             <Badge
