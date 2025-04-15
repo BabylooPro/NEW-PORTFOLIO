@@ -33,6 +33,8 @@ export const useHeaderLogic = () => {
             const excludedTerms = ["README.md", "TODO.md", "CHANGELOG.md", "LICENSE"];
             // REGEX PATTERN FOR WORKFLOW ENTRIES THAT HAVE PREFIXES LIKE "added(workflow):" OR "modified(workflow):"
             const workflowPattern = /\w+\(workflow\):/i;
+            // REGEX PATTERN FOR SYNC BRANCH COMMITS
+            const syncBranchPattern = /^SYNC FRONTEND FOLDER FROM (MAIN|PREVIEW) BRANCH$/i;
 
             // FETCH MORE COMMITS TO ALLOW FILTERING
             const response = await fetch(
@@ -48,9 +50,10 @@ export const useHeaderLogic = () => {
                     commitMessage.toLowerCase().includes(term.toLowerCase())
                 );
                 const isWorkflowCommit = workflowPattern.test(commitMessage);
+                const isSyncBranchCommit = syncBranchPattern.test(commitMessage);
 
-                // IF THE COMMIT DOESN'T CONTAIN AN EXCLUDED TERM AND ISN'T A WORKFLOW COMMIT, ADD IT TO THE FILTERED COMMIT
-                if (!containsExcludedTerm && !isWorkflowCommit) {
+                // IF THE COMMIT DOESN'T CONTAIN AN EXCLUDED TERM, ISN'T A WORKFLOW COMMIT, AND ISN'T A SYNC BRANCH COMMIT, ADD IT TO THE FILTERED COMMIT
+                if (!containsExcludedTerm && !isWorkflowCommit && !isSyncBranchCommit) {
                     filteredCommit = commit;
                     break;
                 }
