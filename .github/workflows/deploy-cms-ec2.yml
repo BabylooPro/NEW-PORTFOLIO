@@ -92,28 +92,28 @@ jobs:
                       # BUILD WITH ENVIRONMENT VARIABLES
                       NODE_ENV=production \
                       NODE_OPTIONS="--max-old-space-size=3072" \
-                      HOST=${{ secrets.HOST }} \
-                      PORT=${{ secrets.PORT }} \
-                      APP_KEYS=${{ secrets.APP_KEYS }} \
-                      API_TOKEN_SALT=${{ secrets.API_TOKEN_SALT }} \
-                      ADMIN_JWT_SECRET=${{ secrets.ADMIN_JWT_SECRET }} \
-                      TRANSFER_TOKEN_SALT=${{ secrets.TRANSFER_TOKEN_SALT }} \
-                      DATABASE_CLIENT=${{ secrets.DATABASE_CLIENT }} \
-                      DATABASE_HOST=${{ secrets.DATABASE_HOST }} \
-                      DATABASE_PORT=${{ secrets.DATABASE_PORT }} \
-                      DATABASE_NAME=${{ secrets.DATABASE_NAME }} \
-                      DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }} \
-                      DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
-                      DATABASE_SSL=${{ secrets.DATABASE_SSL }} \
-                      JWT_SECRET=${{ secrets.JWT_SECRET }} \
-                      STRAPI_API_TOKEN=${{ secrets.STRAPI_API_TOKEN }} \
-                      STRAPI_API_URL=${{ secrets.STRAPI_API_URL }} \
-                      AWS_REGION=${{ secrets.AWS_REGION }} \
-                      AWS_BUCKET=${{ secrets.AWS_BUCKET }} \
-                      AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
-                      AWS_ACCESS_SECRET=${{ secrets.AWS_ACCESS_SECRET }} \
-                      AWS_ACL=${{ secrets.AWS_ACL }} \
-                      AWS_SIGNED_URL_EXPIRES=${{ secrets.AWS_SIGNED_URL_EXPIRES }} \
+                      HOST="${{ secrets.HOST }}" \
+                      PORT="${{ secrets.PORT }}" \
+                      APP_KEYS="${{ secrets.APP_KEYS }}" \
+                      API_TOKEN_SALT="${{ secrets.API_TOKEN_SALT }}" \
+                      ADMIN_JWT_SECRET="${{ secrets.ADMIN_JWT_SECRET }}" \
+                      TRANSFER_TOKEN_SALT="${{ secrets.TRANSFER_TOKEN_SALT }}" \
+                      DATABASE_CLIENT="${{ secrets.DATABASE_CLIENT }}" \
+                      DATABASE_HOST="${{ secrets.DATABASE_HOST }}" \
+                      DATABASE_PORT="${{ secrets.DATABASE_PORT }}" \
+                      DATABASE_NAME="${{ secrets.DATABASE_NAME }}" \
+                      DATABASE_USERNAME="${{ secrets.DATABASE_USERNAME }}" \
+                      DATABASE_PASSWORD="${{ secrets.DATABASE_PASSWORD }}" \
+                      DATABASE_SSL="${{ secrets.DATABASE_SSL }}" \
+                      JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+                      STRAPI_API_TOKEN="${{ secrets.STRAPI_API_TOKEN }}" \
+                      STRAPI_API_URL="${{ secrets.STRAPI_API_URL }}" \
+                      AWS_REGION="${{ secrets.AWS_REGION }}" \
+                      AWS_BUCKET="${{ secrets.AWS_BUCKET }}" \
+                      AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
+                      AWS_ACCESS_SECRET="${{ secrets.AWS_ACCESS_SECRET }}" \
+                      AWS_ACL="${{ secrets.AWS_ACL }}" \
+                      AWS_SIGNED_URL_EXPIRES="${{ secrets.AWS_SIGNED_URL_EXPIRES }}" \
                       npm run build
 
                       # VERIFY BUILD
@@ -126,28 +126,28 @@ jobs:
                       pm2 delete cms || true
                       NODE_ENV=production \
                       NODE_OPTIONS="--max-old-space-size=3072" \
-                      HOST=${{ secrets.HOST }} \
-                      PORT=${{ secrets.PORT }} \
-                      APP_KEYS=${{ secrets.APP_KEYS }} \
-                      API_TOKEN_SALT=${{ secrets.API_TOKEN_SALT }} \
-                      ADMIN_JWT_SECRET=${{ secrets.ADMIN_JWT_SECRET }} \
-                      TRANSFER_TOKEN_SALT=${{ secrets.TRANSFER_TOKEN_SALT }} \
-                      DATABASE_CLIENT=${{ secrets.DATABASE_CLIENT }} \
-                      DATABASE_HOST=${{ secrets.DATABASE_HOST }} \
-                      DATABASE_PORT=${{ secrets.DATABASE_PORT }} \
-                      DATABASE_NAME=${{ secrets.DATABASE_NAME }} \
-                      DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }} \
-                      DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
-                      DATABASE_SSL=${{ secrets.DATABASE_SSL }} \
-                      JWT_SECRET=${{ secrets.JWT_SECRET }} \
-                      STRAPI_API_TOKEN=${{ secrets.STRAPI_API_TOKEN }} \
-                      STRAPI_API_URL=${{ secrets.STRAPI_API_URL }} \
-                      AWS_REGION=${{ secrets.AWS_REGION }} \
-                      AWS_BUCKET=${{ secrets.AWS_BUCKET }} \
-                      AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
-                      AWS_ACCESS_SECRET=${{ secrets.AWS_ACCESS_SECRET }} \
-                      AWS_ACL=${{ secrets.AWS_ACL }} \
-                      AWS_SIGNED_URL_EXPIRES=${{ secrets.AWS_SIGNED_URL_EXPIRES }} \
+                      HOST="${{ secrets.HOST }}" \
+                      PORT="${{ secrets.PORT }}" \
+                      APP_KEYS="${{ secrets.APP_KEYS }}" \
+                      API_TOKEN_SALT="${{ secrets.API_TOKEN_SALT }}" \
+                      ADMIN_JWT_SECRET="${{ secrets.ADMIN_JWT_SECRET }}" \
+                      TRANSFER_TOKEN_SALT="${{ secrets.TRANSFER_TOKEN_SALT }}" \
+                      DATABASE_CLIENT="${{ secrets.DATABASE_CLIENT }}" \
+                      DATABASE_HOST="${{ secrets.DATABASE_HOST }}" \
+                      DATABASE_PORT="${{ secrets.DATABASE_PORT }}" \
+                      DATABASE_NAME="${{ secrets.DATABASE_NAME }}" \
+                      DATABASE_USERNAME="${{ secrets.DATABASE_USERNAME }}" \
+                      DATABASE_PASSWORD="${{ secrets.DATABASE_PASSWORD }}" \
+                      DATABASE_SSL="${{ secrets.DATABASE_SSL }}" \
+                      JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+                      STRAPI_API_TOKEN="${{ secrets.STRAPI_API_TOKEN }}" \
+                      STRAPI_API_URL="${{ secrets.STRAPI_API_URL }}" \
+                      AWS_REGION="${{ secrets.AWS_REGION }}" \
+                      AWS_BUCKET="${{ secrets.AWS_BUCKET }}" \
+                      AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
+                      AWS_ACCESS_SECRET="${{ secrets.AWS_ACCESS_SECRET }}" \
+                      AWS_ACL="${{ secrets.AWS_ACL }}" \
+                      AWS_SIGNED_URL_EXPIRES="${{ secrets.AWS_SIGNED_URL_EXPIRES }}" \
                       pm2 start npm --name cms -- run start
 
                       pm2 save
