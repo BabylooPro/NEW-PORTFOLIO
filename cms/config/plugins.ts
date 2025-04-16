@@ -1,9 +1,21 @@
 export default ({ env }) => ({
     upload: {
         config: {
-            sizeLimit: 2 * 1024 * 1024 * 1024, // 2GB IN BYTES
+            provider: 'aws-s3',
             providerOptions: {
-                maxBodyLength: 2 * 1024 * 1024 * 1024, // 2GB IN BYTES
+                accessKeyId: env('AWS_ACCESS_KEY_ID'),
+                secretAccessKey: env('AWS_ACCESS_SECRET'),
+                region: env('AWS_REGION'),
+                params: {
+                    ACL: env('AWS_ACL', 'public-read'),
+                    signedUrlExpires: env('AWS_SIGNED_URL_EXPIRES', 15 * 60),
+                    Bucket: env('AWS_BUCKET'),
+                },
+            },
+            actionOptions: {
+                upload: {},
+                uploadStream: {},
+                delete: {},
             },
         },
     },
