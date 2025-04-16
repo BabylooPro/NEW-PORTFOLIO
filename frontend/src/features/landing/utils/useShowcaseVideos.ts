@@ -58,10 +58,8 @@ export const useShowcaseVideos = () => {
                     id: item.customId,
                     title: item.title,
                     project: item.project,
-                    // FALLBACK TO LOCAL ASSET PATH IF SRC IS NOT AVAILABLE
-                    src: item.src?.url
-                        ? `${STRAPI_URL}${item.src.url}`
-                        : `/assets/videos/timelapse_${item.customId === 'software' ? '1' : '2'}.mp4`,
+                    // USE DIRECT URL FROM S3 WITHOUT PREPENDING STRAPI_URL
+                    src: item.src?.url ? item.src.url : undefined,
                     recap: item.recap,
                     description: item.description,
                     date: item.date

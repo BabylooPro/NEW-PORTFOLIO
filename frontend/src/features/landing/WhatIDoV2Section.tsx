@@ -41,12 +41,17 @@ const WhatIDoV2Section: React.FC = () => {
     const finishedVideosRef = useRef<Set<string>>(new Set());
     const [resetTrigger, setResetTrigger] = useState(0);
 
+    // FILTER VIDEOS WITH VALID SRC
+    const validVideos = videosData?.filter(video => video.src) || [];
+
     // SET INITIAL ACTIVE VIDEO WHEN VIDEOS DATA LOADS
     useEffect(() => {
-        if (videosData && videosData.length > 0 && !activeVideo) {
-            setActiveVideo(videosData[0].id);
+        if (validVideos.length > 0 && !activeVideo) {
+            // REVERSE TO MATCH VISUAL ORDER (MOST RECENT ON LEFT)
+            const reversedVideos = [...validVideos].reverse();
+            setActiveVideo(reversedVideos[0].id);
         }
-    }, [videosData, activeVideo]);
+    }, [validVideos, activeVideo]);
 
     // VISIBILITY CHANGE HANDLER
     const handleVisibilityChange = useCallback((isVisible: boolean) => {
@@ -93,20 +98,20 @@ const WhatIDoV2Section: React.FC = () => {
 
     // HANDLE VIDEO ENDED - MOVE TO NEXT VIDEO
     const handleVideoEnded = useCallback(() => {
-        if (activeVideo && videosData && videosData.length > 0) {
+        if (activeVideo && validVideos.length > 0) {
             // ADD TO FINISHED VIDEOS SET
             finishedVideosRef.current.add(activeVideo);
 
-            const currentIndex = videosData.findIndex(v => v.id === activeVideo);
-            const nextIndex = (currentIndex + 1) % videosData.length;
-            const nextVideoId = videosData[nextIndex].id;
+            const currentIndex = validVideos.findIndex(v => v.id === activeVideo);
+            const nextIndex = (currentIndex + 1) % validVideos.length;
+            const nextVideoId = validVideos[nextIndex].id;
 
             // SET AUTO-SWITCHED FLAG
             autoSwitchedRef.current = true;
 
             handleVideoChange(nextVideoId);
         }
-    }, [activeVideo, handleVideoChange, videosData]);
+    }, [activeVideo, handleVideoChange, validVideos]);
 
     // SET INITIAL ACTIVE VIDEO REF
     useEffect(() => {
@@ -161,7 +166,7 @@ const WhatIDoV2Section: React.FC = () => {
     }
 
     // NO VIDEOS TO DISPLAY
-    if (!videosData || videosData.length === 0) {
+    if (!validVideos || validVideos.length === 0) {
         return (
             <Section id="whatido" onVisibilityChange={handleVisibilityChange} disableAnimations={false}>
                 <div ref={sectionRef} className="w-full">
@@ -186,15 +191,11 @@ const WhatIDoV2Section: React.FC = () => {
         );
     }
 
-    // USE FIRST VIDEO IF ACTIVE VIDEO IS NOT SET
-    if (!activeVideo && videosData.length > 0) {
-        setActiveVideo(videosData[0].id);
-    }
-
-    const currentVideo = videosData.find(v => v.id === activeVideo) || videosData[0];
+    // MAKE SURE ACTIVE VIDEO EXISTS AND HAS SRC
+    const currentVideo = validVideos.find(v => v.id === activeVideo) || validVideos[0];
     const initialTime = autoSwitchedRef.current ? 0 : videoPositions[currentVideo.id] || 0;
     const needsReset = resetTrigger > 0 && finishedVideosRef.current.has(currentVideo.id);
-    const shouldUseCarousel = videosData.length > 4;
+    const shouldUseCarousel = validVideos.length > 4;
 
     return (
         <Section id="whatido" onVisibilityChange={handleVisibilityChange} disableAnimations={false}>
@@ -224,7 +225,7 @@ const WhatIDoV2Section: React.FC = () => {
                                 className="w-full"
                             >
                                 <CarouselContent className="-ml-2 md:-ml-4">
-                                    {videosData.slice().reverse().map((video) => (
+                                    {validVideos.slice().reverse().map((video) => (
                                         <CarouselItem key={video.id + (video.date || '')} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
                                             <div className="h-full w-full p-1">
                                                 <VideoCard
@@ -245,7 +246,7 @@ const WhatIDoV2Section: React.FC = () => {
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
-                            {videosData.slice().reverse().map((video) => (
+                            {validVideos.slice().reverse().map((video) => (
                                 <VideoCard
                                     key={video.id + (video.date || '')}
                                     video={video}
@@ -258,7 +259,7 @@ const WhatIDoV2Section: React.FC = () => {
                     )}
 
                     {/* VIDEO PLAYER */}
-                    {currentVideo && (
+                    {currentVideo && currentVideo.src && (
                         <Card
                             className={`rounded-xl overflow-hidden border-none ${resolvedTheme === "dark" ? "bg-neutral-900 text-white" : "bg-white text-black"
                                 }`}
