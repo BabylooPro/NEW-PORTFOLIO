@@ -41,12 +41,18 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, isSelected }) => 
 
             {/* VIDEO CONTAINER */}
             <div className="h-full w-full">
-                <video
-                    className="w-full h-full object-cover"
-                    src={video.src}
-                    muted
-                    playsInline
-                />
+                {video.src ? (
+                    <video
+                        className="w-full h-full object-cover"
+                        src={video.src}
+                        muted
+                        playsInline
+                    />
+                ) : (
+                    <div className="w-full h-full bg-neutral-800 flex items-center justify-center">
+                        <span className="text-xs text-white/70">No video available</span>
+                    </div>
+                )}
             </div>
 
             {/* VIDEO INFO */}

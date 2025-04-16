@@ -3,7 +3,7 @@ export interface Video {
     id: string;
     title: string;
     project?: string;
-    src: string;
+    src?: string;
     recap?: string;
     description: string;
     date?: string;
