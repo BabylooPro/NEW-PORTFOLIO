@@ -11,6 +11,13 @@ export default ({ env }) => ({
                     signedUrlExpires: env('AWS_SIGNED_URL_EXPIRES', 15 * 60),
                     Bucket: env('AWS_BUCKET'),
                 },
+                logger: {
+                    debug: console.debug,
+                    info: console.info,
+                    warn: console.warn,
+                    error: console.error,
+                },
+                throwIfCredentialsNotProvided: true,
             },
             actionOptions: {
                 upload: {},
