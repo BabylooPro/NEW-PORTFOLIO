@@ -61,7 +61,15 @@ jobs:
                       cd /home/ubuntu
 
                       if [ ! -d "NEW-PORTFOLIO" ]; then
-                        git clone https://github.com/BabylooPro/NEW-PORTFOLIO.git
+                        mkdir -p NEW-PORTFOLIO
+                        cd NEW-PORTFOLIO
+                        git init
+                        git remote add origin https://github.com/BabylooPro/NEW-PORTFOLIO.git
+                        git config core.sparseCheckout true
+                        echo "cms/" > .git/info/sparse-checkout
+                        echo ".github/" >> .git/info/sparse-checkout
+                        git pull origin main
+                        cd ..
                       fi
 
                       cd NEW-PORTFOLIO/cms
