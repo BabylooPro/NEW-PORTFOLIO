@@ -26,22 +26,42 @@ module.exports = [
             },
         },
     },
-    'strapi::cors',
+    {
+        name: 'strapi::cors',
+        config: {
+            enabled: true,
+            headers: ['*'],
+            origin: ['*'],
+            maxAge: 31536000,
+            credentials: true,
+        },
+    },
     'strapi::poweredBy',
     'strapi::logger',
     'strapi::query',
     {
         name: 'strapi::body',
         config: {
-            formLimit: "2048mb",
-            jsonLimit: "2048mb",
-            textLimit: "2048mb",
+            formLimit: "10240mb", // 10GB in MB
+            jsonLimit: "10240mb", // 10GB in MB
+            textLimit: "10240mb", // 10GB in MB
             formidable: {
-                maxFileSize: 2 * 1024 * 1024 * 1024, // 2GB IN BYTES
+                maxFileSize: 10 * 1024 * 1024 * 1024, // 10GB IN BYTES
+                maxFieldsSize: 10 * 1024 * 1024, // 10MB (Increased for form metadata)
+                keepExtensions: true,
+                multiples: true,
+                maxFields: 100, // Maximum number of fields
             },
         },
     },
-    'strapi::session',
+    {
+        name: 'strapi::session',
+        config: {
+            cookieSecure: process.env.NODE_ENV === 'production',
+            maxAge: 86400000, // 24 hours in milliseconds
+        },
+    },
     'strapi::favicon',
     'strapi::public',
-]; 
+];
+
