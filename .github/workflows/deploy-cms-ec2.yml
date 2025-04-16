@@ -90,6 +90,8 @@ jobs:
                       npm install --legacy-peer-deps --force
 
                       # BUILD WITH ENVIRONMENT VARIABLES
+                      NODE_ENV=production \
+                      NODE_OPTIONS="--max-old-space-size=3072" \
                       HOST=${{ secrets.HOST }} \
                       PORT=${{ secrets.PORT }} \
                       APP_KEYS=${{ secrets.APP_KEYS }} \
@@ -112,7 +114,7 @@ jobs:
                       AWS_ACCESS_SECRET=${{ secrets.AWS_ACCESS_SECRET }} \
                       AWS_ACL=${{ secrets.AWS_ACL }} \
                       AWS_SIGNED_URL_EXPIRES=${{ secrets.AWS_SIGNED_URL_EXPIRES }} \
-                      NODE_ENV=production NODE_OPTIONS="--max-old-space-size=3072" npm run build
+                      npm run build
 
                       # VERIFY BUILD
                       if [ ! -d "dist" ]; then
@@ -122,6 +124,8 @@ jobs:
 
                       # RESTART PM2
                       pm2 delete cms || true
+                      NODE_ENV=production \
+                      NODE_OPTIONS="--max-old-space-size=3072" \
                       HOST=${{ secrets.HOST }} \
                       PORT=${{ secrets.PORT }} \
                       APP_KEYS=${{ secrets.APP_KEYS }} \
@@ -144,6 +148,6 @@ jobs:
                       AWS_ACCESS_SECRET=${{ secrets.AWS_ACCESS_SECRET }} \
                       AWS_ACL=${{ secrets.AWS_ACL }} \
                       AWS_SIGNED_URL_EXPIRES=${{ secrets.AWS_SIGNED_URL_EXPIRES }} \
-                      NODE_ENV=production NODE_OPTIONS="--max-old-space-size=3072" pm2 start npm --name cms -- run start
+                      pm2 start npm --name cms -- run start
 
                       pm2 save
