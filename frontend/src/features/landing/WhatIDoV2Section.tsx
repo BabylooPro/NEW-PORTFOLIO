@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Section } from "@/components/ui/section";
 import { ShowInfo } from "@/components/ui/show-info";
 import { Card } from "@/components/ui/card";
@@ -42,14 +42,21 @@ const WhatIDoV2Section: React.FC = () => {
     const [resetTrigger, setResetTrigger] = useState(0);
 
     // FILTER VIDEOS WITH VALID SRC
-    const validVideos = videosData?.filter(video => video.src) || [];
+    const validVideos = useMemo(() =>
+        videosData?.filter(video => video.src)
+            .sort((a, b) => {
+                // SORT BY DATE IN DESCENDING ORDER (NEWEST FIRST)
+                if (!a.date) return 1; // ITEMS WITHOUT DATE GO LAST
+                if (!b.date) return -1;
+                return new Date(b.date).getTime() - new Date(a.date).getTime();
+            }) || []
+        , [videosData]);
 
     // SET INITIAL ACTIVE VIDEO WHEN VIDEOS DATA LOADS
     useEffect(() => {
         if (validVideos.length > 0 && !activeVideo) {
-            // REVERSE TO MATCH VISUAL ORDER (MOST RECENT ON LEFT)
-            const reversedVideos = [...validVideos].reverse();
-            setActiveVideo(reversedVideos[0].id);
+            // USE FIRST VIDEO (NEWEST BY DATE) DIRECTLY FROM SORTED ARRAY
+            setActiveVideo(validVideos[0].id);
         }
     }, [validVideos, activeVideo]);
 
@@ -225,7 +232,7 @@ const WhatIDoV2Section: React.FC = () => {
                                 className="w-full"
                             >
                                 <CarouselContent className="-ml-2 md:-ml-4">
-                                    {validVideos.slice().reverse().map((video) => (
+                                    {validVideos.map((video) => (
                                         <CarouselItem key={video.id + (video.date || '')} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
                                             <div className="h-full w-full p-1">
                                                 <VideoCard
@@ -246,7 +253,7 @@ const WhatIDoV2Section: React.FC = () => {
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
-                            {validVideos.slice().reverse().map((video) => (
+                            {validVideos.map((video) => (
                                 <VideoCard
                                     key={video.id + (video.date || '')}
                                     video={video}

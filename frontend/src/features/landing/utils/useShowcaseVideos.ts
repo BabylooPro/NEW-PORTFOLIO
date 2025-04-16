@@ -36,7 +36,6 @@ export const useShowcaseVideos = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
     const [videos, setVideos] = useState<Video[]>([]);
-    const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
 
     // FETCH VIDEOS FROM STRAPI
     useEffect(() => {
