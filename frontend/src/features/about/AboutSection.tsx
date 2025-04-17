@@ -177,7 +177,9 @@ const AboutSection: React.FC = () => {
                     <ShowInfo.Title>{data.audioTitle}</ShowInfo.Title>
                     <ShowInfo.Description>{data.audioDescription}</ShowInfo.Description>
                     <ShowInfo.Content>
-                        <AudioReader src={`${process.env.NEXT_PUBLIC_STRAPI_API_URL}${data.audioFile.url}`} />
+                        <AudioReader src={data.audioFile.url.startsWith('http')
+                            ? data.audioFile.url
+                            : `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${data.audioFile.url}`} />
                     </ShowInfo.Content>
                 </ShowInfo>
             </h2>

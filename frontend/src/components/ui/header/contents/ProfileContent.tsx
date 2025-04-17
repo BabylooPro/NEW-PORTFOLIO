@@ -17,7 +17,9 @@ export const ProfileContent = ({
     const avatar = data?.profile?.avatar;
 
     const avatarUrl = avatar?.url
-        ? `${STRAPI_URL}/uploads/${avatar.url.split('/uploads/')[1]}`
+        ? avatar.url.startsWith('http')
+            ? avatar.url  // USE FULL URL DIRECTLY IF IT'S ALREADY AN ABSOLUTE URL
+            : `${STRAPI_URL}/uploads/${avatar.url.split('/uploads/')[1]}`  // OLD FORMAT HANDLING
         : '';
     const initials = data?.profile?.name?.split(' ').map(n => n[0]).join('') || 'MR';
 
