@@ -15,7 +15,7 @@ export default ({ env }) => ({
                         secretAccessKey: env('AWS_ACCESS_SECRET'),
                     },
                 },
-                baseUrl: `https://${env('AWS_BUCKET')}.s3.${env('AWS_REGION')}.amazonaws.com`,
+                baseUrl: env('CLOUDFRONT_URL') || `https://${env('AWS_BUCKET')}.s3.${env('AWS_REGION')}.amazonaws.com`,
                 logger: {
                     debug: console.debug,
                     info: console.info,

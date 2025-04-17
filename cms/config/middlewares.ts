@@ -13,6 +13,7 @@ module.exports = [
                         'blob:',
                         'dl.airtable.com',
                         `${process.env.AWS_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com`,
+                        process.env.CLOUDFRONT_URL,
                     ],
                     'media-src': [
                         "'self'",
@@ -20,6 +21,7 @@ module.exports = [
                         'blob:',
                         'dl.airtable.com',
                         `${process.env.AWS_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com`,
+                        process.env.CLOUDFRONT_URL,
                     ],
                     upgradeInsecureRequests: null,
                 },
