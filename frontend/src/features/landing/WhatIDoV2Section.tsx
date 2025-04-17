@@ -202,7 +202,7 @@ const WhatIDoV2Section: React.FC = () => {
     const currentVideo = validVideos.find(v => v.id === activeVideo) || validVideos[0];
     const initialTime = autoSwitchedRef.current ? 0 : videoPositions[currentVideo.id] || 0;
     const needsReset = resetTrigger > 0 && finishedVideosRef.current.has(currentVideo.id);
-    const shouldUseCarousel = validVideos.length > 4;
+    const shouldUseCarousel = validVideos.length >= 3;
 
     return (
         <Section id="whatido" onVisibilityChange={handleVisibilityChange} disableAnimations={false}>
@@ -233,7 +233,7 @@ const WhatIDoV2Section: React.FC = () => {
                             >
                                 <CarouselContent className="-ml-2 md:-ml-4">
                                     {validVideos.map((video) => (
-                                        <CarouselItem key={video.id + (video.date || '')} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                                        <CarouselItem key={video.id + (video.date || '')} className="pl-2 md:pl-4 basis-1/2 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
                                             <div className="h-full w-full p-1">
                                                 <VideoCard
                                                     video={video}
