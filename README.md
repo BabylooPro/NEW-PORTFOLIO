@@ -1,57 +1,49 @@
 # MAX REMY DEV - PORTFOLIO
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.2.2-gray)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React.js-19.0-gray)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-gray)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-gray)](https://tailwindcss.com/)
-[![Shadcn/UI](https://img.shields.io/badge/Shadcn/UI-gray)](https://shadcn.dev/)
-[![Framer Motion](https://img.shields.io/badge/Framer%20Motion-gray)](https://www.framer.com/motion/)
-[![Strapi CMS](https://img.shields.io/badge/Strapi-gray)](https://strapi.io/)
+My clean and minimal portfolio [maxremy.dev](https://maxremy.dev/) built with **Next.js**, **TypeScript**, and **Tailwind CSS**, using **Shadcn/UI** and **Framer Motion** for smooth UI. Fully self-hosted on my own **AWS** infrastructure: **Amplify** for the frontend, **Strapi CMS** on **EC2**, and **S3 + CloudFront** for scalable media delivery.  
+Behind the minimalist UI is a solid and production-grade architecture.
 
-## Description
+## Frontend
 
-This is my personal portfolio built using **Next.js**, leveraging the **App Router** architecture for modern page routing. The portfolio is designed using **TypeScript**, styled with **Tailwind CSS**, and utilizes **Shadcn/UI** for UI components. **Framer Motion** is employed for animations to provide smooth and engaging visual interactions.
+-   **Next.js (App Router)** – React.js framework with SSR, SSG, and nested layouts
+-   **TypeScript** – Static typing for better reliability and clarity
+-   **Tailwind CSS** – Utility-first CSS framework for rapid and responsive design
+-   **Shadcn/UI** – Modern and accessible component library
+-   **Framer Motion** – Smooth and dynamic UI animations
+-   **AWS Amplify** – Frontend hosting with continuous deployment
 
-The portfolio uses **Strapi** as a headless CMS and is deployed on **AWS EC2 Linux** to ensure reliable and scalable performance.
+## Backend
 
-## Technologies
-
-### Frontend
-
-- **Next.js (App Router)**: A React-based framework for creating server-side rendered applications and static websites
-- **TypeScript**: Ensures type safety and a more structured development process
-- **Tailwind CSS**: A utility-first CSS framework for rapid UI development
-- **Shadcn/UI**: Provides a modern and flexible UI component library
-- **Framer Motion**: Powers smooth and elegant animations throughout the site
-
-### Backend
-
-- **Strapi CMS**: Headless CMS for content management
-- **MySQL**: Database for storing CMS data
-- **AWS EC2**: For deploying both frontend and CMS in a secure and scalable environment
+-   **Strapi CMS** – Self-hosted headless CMS for content management
+-   **AWS EC2 (Linux)** – Hosting server for the backend and Strapi
+-   **MySQL** – Relational database for Strapi content
+-   **AWS S3 + CloudFront** – Scalable media storage and delivery via CDN
 
 ## Features
 
-- **Dynamic Routing**: Built using Next.js App Router, enabling seamless navigation and SSR/SSG optimizations
-- **Smooth Animations**: Interactive UI elements animated with Framer Motion
-- **Responsive Design**: Ensures optimal viewing across devices with Tailwind CSS
-- **Custom Components**: Leverages Shadcn/UI for customizable UI elements
-- **GitHub Integration**: Displays pinned projects from GitHub, using GraphQL API to fetch data
-- **Content Management**: Strapi CMS integration for easy content updates
-- **Automated Deployment**: GitHub Actions workflows for automated deployment to AWS EC2
+-   **Dynamic Routing**: Built with Next.js App Router for SSR, SSG, and nested layouts
+-   **Modern UI**: Minimalist and clean design powered by Shadcn/UI and Tailwind CSS
+-   **Theme Support**: Supports dark, light, and system themes
+-   **Framer Motion Animations**: Smooth transitions and animations for a polished UX
+-   **Fully Responsive**: Optimized for mobile, tablet, and desktop experiences
+-   **GitHub Integration**: Automatically fetches and displays pinned and top-starred repositories using the GitHub GraphQL API
+-   **Strapi CMS**: Self-hosted CMS on EC2 for managing dynamic content
+-   **Media Delivery**: Assets served via AWS S3 and CloudFront for performance and scalability
+-   **CI/CD Workflow**: GitHub Actions for containerization, build, and deploy
+-   **Preview Deployments**: A preview branch and environment are used to test code before merging to main website production
 
 ## License
 
 This project is licensed under the MIT License. This means you can:
 
-- ✅ Use this code for personal or commercial projects
-- ✅ Modify and distribute the code
-- ✅ Use the code in your own projects
+-   ✅ Use this code for personal or commercial projects
+-   ✅ Modify and distribute the code
+-   ✅ Use the code in your own projects
 
 However, you must:
 
-- ℹ️ Include the original copyright notice
-- ℹ️ Include the MIT License text
+-   ℹ️ Include the original copyright notice
+-   ℹ️ Include the MIT License text
 
 Read the complete [LICENSE](LICENSE) file for details.
 
@@ -59,6 +51,6 @@ Read the complete [LICENSE](LICENSE) file for details.
 
 For any inquiries, please feel free to contact me:
 
-- GitHub: [BabylooPro](https://github.com/BabylooPro)
-- LinkedIn: [maxremydev](https://www.linkedin.com/in/maxremydev/)
-- X: [BabylooPro](https://x.com/babyloopro)
+-   Portfolio : [https://maxremy.dev/contact](https://maxremy.dev/contact)
+-   LinkedIn: [https://www.linkedin.com/in/maxremydev/](https://www.linkedin.com/in/maxremydev/)
+-   X: [https://x.com/babyloopro](https://x.com/babyloopro)
