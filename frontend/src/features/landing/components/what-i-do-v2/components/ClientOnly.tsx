@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ClientOnlyProps {
     children: React.ReactNode;
@@ -17,9 +18,7 @@ const ClientOnly: React.FC<ClientOnlyProps> = ({ children, id }) => {
     if (!hasMounted) {
         return (
             <div id={id} className="h-[600px] w-full flex items-center justify-center">
-                <div className="text-center text-neutral-400">
-                    <p>Video content will load when in view</p>
-                </div>
+                <Skeleton className="h-[600px] w-full" />
             </div>
         );
     }
@@ -28,9 +27,7 @@ const ClientOnly: React.FC<ClientOnlyProps> = ({ children, id }) => {
     return (
         <Suspense fallback={
             <div className="h-[600px] w-full flex items-center justify-center">
-                <div className="text-center text-neutral-400">
-                    <p>Loading video...</p>
-                </div>
+                <Skeleton className="h-[600px] w-full" />
             </div>
         }>
             {children}

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { Section } from "@/components/ui/section";
 import { ShowInfo } from "@/components/ui/show-info";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useTheme } from "next-themes";
 import { useWhatIDoSection } from "./utils/useWhatIDoSection";
 import { useShowcaseVideos } from "./utils/useShowcaseVideos";
@@ -168,12 +169,7 @@ const WhatIDoV2Section: React.FC = () => {
     }, [handleVisibilityChange]);
 
     // PRELIMINARY CHECKS
-    if (!resolvedTheme || !isMounted || isSectionLoading || isVideosLoading) {
-        return null;
-    }
-
-    // NO VIDEOS TO DISPLAY
-    if (!validVideos || validVideos.length === 0) {
+    if (!resolvedTheme || !isMounted || isSectionLoading || isVideosLoading || !validVideos || validVideos.length === 0) {
         return (
             <Section id="whatido" onVisibilityChange={handleVisibilityChange} disableAnimations={false}>
                 <div ref={sectionRef} className="w-full">
@@ -190,8 +186,13 @@ const WhatIDoV2Section: React.FC = () => {
                             }
                         />
                     </h2>
-                    <div className="p-8 text-center border rounded-xl">
-                        <p>No showcase videos available.</p>
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
+                            {[1, 2, 3, 4].map((i) => (
+                                <Skeleton key={i} className="h-40 w-full rounded-xl" />
+                            ))}
+                        </div>
+                        <Skeleton className="h-[600px] w-full rounded-xl" />
                     </div>
                 </div>
             </Section>
