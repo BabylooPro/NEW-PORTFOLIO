@@ -28,12 +28,15 @@ module.exports = [
             },
         },
     },
+    './src/middlewares/rate-limit.ts', // Add rate limiting middleware
     {
         name: 'strapi::cors',
         config: {
             enabled: true,
-            headers: ['*'],
-            origin: ['*'],
+            headers: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+            origin: process.env.NODE_ENV === 'production' 
+                ? ['https://maxremy.dev', 'https://www.maxremy.dev', 'https://cms.maxremy.dev']
+                : ['http://localhost:3000', 'http://localhost:1337', 'http://127.0.0.1:3000', 'http://127.0.0.1:1337'],
             maxAge: 31536000,
             credentials: true,
         },
@@ -44,15 +47,15 @@ module.exports = [
     {
         name: 'strapi::body',
         config: {
-            formLimit: "10240mb", // 10GB in MB
-            jsonLimit: "10240mb", // 10GB in MB
-            textLimit: "10240mb", // 10GB in MB
+            formLimit: "100mb", // Reduced from 10GB to 100MB for security
+            jsonLimit: "10mb", // Reduced from 10GB to 10MB for security
+            textLimit: "10mb", // Reduced from 10GB to 10MB for security
             formidable: {
-                maxFileSize: 10 * 1024 * 1024 * 1024, // 10GB IN BYTES
-                maxFieldsSize: 10 * 1024 * 1024, // 10MB (Increased for form metadata)
+                maxFileSize: 100 * 1024 * 1024, // 100MB maximum file size
+                maxFieldsSize: 2 * 1024 * 1024, // 2MB for form metadata
                 keepExtensions: true,
                 multiples: true,
-                maxFields: 100, // Maximum number of fields
+                maxFields: 50, // Reduced from 100 to 50 fields maximum
             },
         },
     },
