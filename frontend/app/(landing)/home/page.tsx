@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
+//import { Suspense } from "react";
 import ExperienceSection from "@/features/landing/ExperienceSection";
 import Footer from "@/features/landing/Footer";
 import Header from "@/components/ui/header/Header";
@@ -9,8 +9,8 @@ import SideProjectsSection from "@/features/landing/SideProjectsSection";
 import SocialSection from "@/features/landing/SocialSection";
 import ContactSection from "@/features/landing/ContactSection";
 import { ScrollToSection } from '@/components/ScrollToSection';
-import { ShowCalendarIndex } from "@/features/show-calendar";
-import { Loader } from "lucide-react";
+//import { ShowCalendarIndex } from "@/features/show-calendar";
+//import { Loader } from "lucide-react";
 import WhatIDoV2Section from "@/features/landing/WhatIDoV2Section";
 
 export const metadata: Metadata = {
@@ -30,9 +30,9 @@ export default function Home() {
             <ExperienceSection />
             <SideProjectsSection />
             <WhatIDoV2Section />
-            <Suspense fallback={<Loader className="animate-spin" />}>
-                <ShowCalendarIndex />
-            </Suspense>
+            {/*<Suspense fallback={<Loader className="animate-spin" />}>
+                 <ShowCalendarIndex />
+            </Suspense>*/}
             <ContactSection />
             <Footer />
         </div>
