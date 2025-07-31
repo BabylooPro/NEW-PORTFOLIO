@@ -3,7 +3,9 @@ export const experiences = [
         title: "Software Engineer",
         company: "MUUM App",
         date: "May 2025 - Present",
-        description: "",
+        description: {
+            items: [""],
+        },
         location: "Vaud, Switzerland",
         skills: [""],
     },
