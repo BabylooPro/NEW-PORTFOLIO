@@ -1,10 +1,8 @@
 "use client";
 
 import AppleEmoji from "@/components/decoration/apple-emoji";
-import { Button } from "@/components/ui/button";
 import { Section } from "@/components/ui/section";
 import { motion, useMotionValue, useSpring } from "framer-motion";
-import Link from "next/link";
 import { PocketKnife } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { ShowInfo } from "@/components/ui/show-info";
@@ -145,10 +143,10 @@ export default function HeroSection() {
             {/* LEARN MORE REDIRECT */}
             <div className="text-base md:text-xl mt-4 flex justify-between items-center">
                 <div>
-                    {heroData.learnMoreText}
+                    {/* {heroData.learnMoreText}
                     <Button variant="linkHover1" className="text-base md:text-xl -ml-2">
                         <Link href="/about">{heroData.aboutMeText}</Link>
-                    </Button>
+                    </Button> */}
                 </div>
 
                 <ShowInfo wrapMode>
