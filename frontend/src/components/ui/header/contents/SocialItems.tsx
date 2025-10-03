@@ -19,11 +19,25 @@ const IconMap = {
 };
 
 export const SocialItems = (socialLinks: any[]) => {
-    return socialLinks.map((item, index) => ({
-        id: item.id || `social-${index}`,
-        title: item.title,
-        icon: IconMap[item.iconType as keyof typeof IconMap],
-        href: item.href,
-        target: item.target,
-    }));
+    const links = Array.isArray(socialLinks)
+        ? socialLinks : Array.isArray((socialLinks as any)?.socialLinks)
+            ? (socialLinks as any).socialLinks : [];
+
+    return links
+        .filter((item: any) => {
+            const hasHref = typeof item?.href === "string" && item.href.trim().length > 0;
+            const iconKey = item?.iconType as keyof typeof IconMap;
+            const hasIcon = iconKey in IconMap;
+            return hasHref && hasIcon;
+        })
+        .map((item: any, index: number) => {
+            const iconKey = item.iconType as keyof typeof IconMap;
+            const icon = IconMap[iconKey];
+            const href = item.href.trim();
+            const target = item.target || "_blank";
+            const id = item.id || `social-${iconKey}-${index}`;
+            const title = item.title || "";
+
+            return { id, title, icon, href, target };
+        });
 };

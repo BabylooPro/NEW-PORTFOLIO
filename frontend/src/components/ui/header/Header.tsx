@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { LayoutGroup, motion } from "framer-motion";
 import { Separator } from "@/components/ui/separator";
 import { OneClickModeToggle } from "../../../features/themes/OneClickModeToggle";
@@ -38,6 +38,12 @@ export default function Header() {
 
     // INITIALIZE DATA
     const { data: headerData, isLoading: _headerDataLoading, error: _error } = useHeaderSection();
+
+    // MOUNT GUARD TO AVOID HYDRATION MISMATCHES
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // FORCE DATA REFETCH ON COMPONENT MOUNT - EXTRA PRECAUTION AGAINST DATA INCONSISTENCIES
     useEffect(() => {
@@ -277,18 +283,20 @@ export default function Header() {
                                             ease: "easeOut",
                                         }}
                                     >
-                                        <Dock
-                                            items={SocialItems(headerData.socialLinks) ?? []}
-                                            className="bg-transparent dark:bg-transparent"
-                                            styles={{
-                                                hoverPosition: isCompact
-                                                    ? "expand-center"
-                                                    : "expand-down",
-                                                containerSize: {
-                                                    height: "4vh",
-                                                },
-                                            }}
-                                        />
+                                        {mounted ? (
+                                            <Dock
+                                                items={SocialItems(headerData.socialLinks) ?? []}
+                                                className="bg-transparent dark:bg-transparent"
+                                                styles={{
+                                                    hoverPosition: isCompact
+                                                        ? "expand-center"
+                                                        : "expand-down",
+                                                    containerSize: {
+                                                        height: "4vh",
+                                                    },
+                                                }}
+                                            />
+                                        ) : null}
                                     </motion.div>
                                 </motion.div>
                             </motion.div>
