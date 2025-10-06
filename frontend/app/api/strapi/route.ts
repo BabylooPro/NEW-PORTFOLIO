@@ -80,6 +80,57 @@ export async function GET(request: Request) {
                 statusText: response.statusText,
                 body: errorText
             });
+
+            // FALLBACK: IF SKILLS FAILS, TRY BUILDING FROM SKILL-YEARS
+            if (cleanPath === 'skills') {
+                try {
+                    const fallbackUrl = `${STRAPI_URL}/api/skill-years?populate=skills`;
+                    const fallbackResponse = await fetch(fallbackUrl, {
+                        headers: requestHeaders,
+                        cache: noCache ? 'no-store' : 'default',
+                        next: noCache ? { revalidate: 0 } : undefined
+                    });
+
+                    // IF RESPONSE IS OK, TRANSFORM DATA
+                    if (fallbackResponse.ok) {
+                        type FallbackSkill = {
+                            id: number;
+                            attributes: Record<string, unknown>;
+                        };
+
+                        type FallbackYearEntry = {
+                            id: number;
+                            attributes: {
+                                year?: string;
+                                skills?: { data?: FallbackSkill[] };
+                            };
+                        };
+
+                        const fallbackJson: { data?: FallbackYearEntry[] } = await fallbackResponse.json();
+
+                        // TRANSFORM SKILL-YEARS -> SKILLS SHAPE FRONTEND EXPECTS
+                        const transformed = {
+                            data: (fallbackJson?.data ?? []).flatMap((yearEntry) => {
+                                const year = yearEntry?.attributes?.year;
+                                const skillsData = yearEntry?.attributes?.skills?.data ?? [];
+                                return skillsData.map((skill) => ({
+                                    id: skill.id,
+                                    attributes: {
+                                        ...skill.attributes,
+                                        skillYear: { year }
+                                    }
+                                }));
+                            }),
+                            meta: {}
+                        };
+
+                        return NextResponse.json(transformed);
+                    }
+                } catch (fallbackError) {
+                    console.error('Fallback skill-years fetch failed:', fallbackError);
+                }
+            }
+
             return new NextResponse(errorText, {
                 status: response.status,
                 headers: {
