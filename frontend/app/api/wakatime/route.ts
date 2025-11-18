@@ -6,9 +6,24 @@ const STRAPI_TOKEN = process.env.STRAPI_API_TOKEN;
 const BASE_URL = process.env.NODE_ENV === 'production'
     ? 'https://maxremy.dev'
     : 'http://localhost:3000';
+const DISABLE_WAKATIME_CMS_SYNC = process.env.DISABLE_WAKATIME_CMS_SYNC === 'true';
+const SHOULD_SYNC_SKILL_STATS = Boolean(STRAPI_TOKEN) && !DISABLE_WAKATIME_CMS_SYNC;
 
 // CACHE SETTINGS
 let cachedData: CachedWakaTimeData | null = null;
+const skillIdCache = new Map<string, number | null>();
+
+class SkillSyncError extends Error {
+    status: number;
+    payload?: string;
+
+    constructor(status: number, payload?: string) {
+        super(`Failed to update skill stats: ${status}`);
+        this.name = "SkillSyncError";
+        this.status = status;
+        this.payload = payload;
+    }
+}
 
 // THRESHOLD SETTINGS
 const CACHE_DURATION_SECONDS = 300; // 5 MINUTES
@@ -30,12 +45,17 @@ function determineStatus(lastActivityTime: number): "available" | "away" | "busy
 
 // FETCH SKILL ID BY NAME
 async function getSkillIdByName(name: string): Promise<number | null> {
-    try {
-        const normalizedName = name.trim();
-        if (!normalizedName) {
-            return null;
-        }
+    const normalizedName = name.trim();
+    if (!normalizedName) {
+        return null;
+    }
 
+    const cacheKey = normalizedName.toLowerCase();
+    if (skillIdCache.has(cacheKey)) {
+        return skillIdCache.get(cacheKey) ?? null;
+    }
+
+    try {
         const path = `skills`;
         const params = new URLSearchParams({
             'filters[name][$eqi]': normalizedName,
@@ -59,12 +79,15 @@ async function getSkillIdByName(name: string): Promise<number | null> {
         // THROW ERROR IF SKILL DOES NOT EXIST
         if (!skill) {
             console.warn(`[WAKATIME] Missing skill "${normalizedName}" in CMS. Please add it manually before syncing stats.`);
+            skillIdCache.set(cacheKey, null);
             return null;
         }
 
+        skillIdCache.set(cacheKey, skill.id);
         return skill.id;
     } catch (error) {
         console.error(`Error fetching skill ID for ${name}:`, error);
+        skillIdCache.delete(cacheKey);
         return null;
     }
 }
@@ -97,7 +120,11 @@ async function updateSkillStats(skillId: number, seconds: number) {
 
         if (!response.ok) {
             console.error(`Failed to update skill stats: ${response.status} - ${responseText}`);
-            throw new Error(`Failed to update skill stats: ${response.status}`);
+            throw new SkillSyncError(response.status, responseText);
+        }
+
+        if (!responseText.trim()) {
+            return null;
         }
 
         const data = JSON.parse(responseText);
@@ -106,6 +133,44 @@ async function updateSkillStats(skillId: number, seconds: number) {
     } catch (error) {
         console.error("Error updating skill stats:", { skillId, error });
         throw error;
+    }
+}
+
+async function syncLanguagesWithCMS(languages: Language[]) {
+    if (!SHOULD_SYNC_SKILL_STATS || languages.length === 0) {
+        return;
+    }
+
+    for (const language of languages) {
+        const normalizedName = language.name?.trim();
+
+        if (!normalizedName || normalizedName.toLowerCase() === "other") {
+            continue;
+        }
+
+        const skillId = await getSkillIdByName(normalizedName);
+
+        if (!skillId) {
+            continue;
+        }
+
+        try {
+            await updateSkillStats(skillId, language.total_seconds);
+        } catch (error) {
+            const isSkillSyncError = error instanceof SkillSyncError;
+            const status = isSkillSyncError ? error.status : undefined;
+            const payload = isSkillSyncError ? error.payload : undefined;
+
+            console.warn(`[WAKATIME] Failed to sync "${normalizedName}" (ID ${skillId})`, {
+                status,
+                payload,
+                error
+            });
+
+            if (status === 404) {
+                skillIdCache.delete(normalizedName.toLowerCase());
+            }
+        }
     }
 }
 
@@ -235,22 +300,7 @@ async function fetchDataWithCache(revalidate: boolean = false) {
                 }];
 
         // UPDATE CMS FOR EACH LANGUAGE
-        if (languages.length > 0) {
-
-            // LOOP THROUGH EACH LANGUAGE
-            for (const language of languages) {
-                if (language.name.toLowerCase() === "other") {
-                    continue;
-                }
-
-                const skillId = await getSkillIdByName(language.name);
-                if (skillId) {
-                    await updateSkillStats(skillId, language.total_seconds);
-                } else {
-                    console.warn(`No matching skill found for ${language.name}`);
-                }
-            }
-        }
+        await syncLanguagesWithCMS(languages);
 
         const filteredData: CachedWakaTimeData = {
             cached_at: data.cached_at,
