@@ -8,6 +8,7 @@ const BASE_URL = process.env.NODE_ENV === 'production'
     : 'http://localhost:3000';
 const DISABLE_WAKATIME_CMS_SYNC = process.env.DISABLE_WAKATIME_CMS_SYNC === 'true';
 const SHOULD_SYNC_SKILL_STATS = Boolean(STRAPI_TOKEN) && !DISABLE_WAKATIME_CMS_SYNC;
+const MAX_STRAPI_ERROR_PREVIEW = 180;
 
 // CACHE SETTINGS
 let cachedData: CachedWakaTimeData | null = null;
@@ -23,6 +24,33 @@ class SkillSyncError extends Error {
         this.status = status;
         this.payload = payload;
     }
+}
+
+function summarizeStrapiErrorPayload(payload?: string) {
+    if (!payload) {
+        return "Unknown Strapi error";
+    }
+
+    try {
+        const parsed = JSON.parse(payload);
+        if (typeof parsed === "string") {
+            return parsed;
+        }
+
+        if (parsed?.error?.message) {
+            return parsed.error.message;
+        }
+
+        if (parsed?.message) {
+            return parsed.message;
+        }
+    } catch {
+        // IGNORE JSON PARSE FAILURES
+    }
+
+    return payload.length > MAX_STRAPI_ERROR_PREVIEW
+        ? `${payload.slice(0, MAX_STRAPI_ERROR_PREVIEW)}…`
+        : payload;
 }
 
 // THRESHOLD SETTINGS
@@ -119,8 +147,17 @@ async function updateSkillStats(skillId: number, seconds: number) {
         const responseText = await response.text();
 
         if (!response.ok) {
-            console.error(`Failed to update skill stats: ${response.status} - ${responseText}`);
-            throw new SkillSyncError(response.status, responseText);
+            const conciseMessage = summarizeStrapiErrorPayload(responseText);
+            const prefix = response.status === 404 ? "[WAKATIME] Skill missing" : "[WAKATIME] Skill sync error";
+            const logMessage = `${prefix} (ID ${skillId}) - ${conciseMessage}`;
+
+            if (response.status === 404) {
+                console.info(logMessage);
+            } else {
+                console.error(logMessage);
+            }
+
+            throw new SkillSyncError(response.status, conciseMessage);
         }
 
         if (!responseText.trim()) {
@@ -131,7 +168,8 @@ async function updateSkillStats(skillId: number, seconds: number) {
 
         return data;
     } catch (error) {
-        console.error("Error updating skill stats:", { skillId, error });
+        const fallbackMessage = error instanceof Error ? error.message : "Unknown error";
+        console.error(`[WAKATIME] Unexpected skill sync failure (ID ${skillId}) - ${fallbackMessage}`);
         throw error;
     }
 }
@@ -161,11 +199,16 @@ async function syncLanguagesWithCMS(languages: Language[]) {
             const status = isSkillSyncError ? error.status : undefined;
             const payload = isSkillSyncError ? error.payload : undefined;
 
-            console.warn(`[WAKATIME] Failed to sync "${normalizedName}" (ID ${skillId})`, {
-                status,
-                payload,
-                error
-            });
+            const concisePayload =
+                payload ??
+                (error instanceof Error ? error.message : "Unknown sync error");
+            const prefix = status === 404 ? "[WAKATIME] Skill missing" : "[WAKATIME] Failed to sync";
+            const logMessage = `${prefix} "${normalizedName}" (ID ${skillId}) - ${concisePayload}`;
+            if (status === 404) {
+                console.info(logMessage);
+            } else {
+                console.warn(logMessage);
+            }
 
             if (status === 404) {
                 skillIdCache.delete(normalizedName.toLowerCase());
