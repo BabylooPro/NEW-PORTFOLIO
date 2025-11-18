@@ -67,3 +67,6 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
+
+# ESLint
+.eslintcache

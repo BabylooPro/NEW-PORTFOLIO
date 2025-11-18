@@ -6,6 +6,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { delayOptionSchema, type DelayOptionValues } from "@/features/show-calendar/utils/schema";
+import { z } from "zod";
+
+type DelayOptionFormValues = z.input<typeof delayOptionSchema>;
 
 interface DelayOptionProps {
 	value: DelayOptionValues;
@@ -14,7 +17,7 @@ interface DelayOptionProps {
 
 export function DelayOption({ value, onDelayOptionChange }: DelayOptionProps) {
 	// INITIALIZE FORM WITH ZOD SCHEMA
-	const form = useForm<DelayOptionValues>({
+	const form = useForm<DelayOptionFormValues>({
 		resolver: zodResolver(delayOptionSchema),
 		defaultValues: value,
 	});
@@ -26,11 +29,16 @@ export function DelayOption({ value, onDelayOptionChange }: DelayOptionProps) {
 
 	// WATCH FOR CHANGES AND NOTIFY PARENT
 	React.useEffect(() => {
-		const subscription = form.watch((value) => {
-			onDelayOptionChange?.(value as DelayOptionValues);
+		const subscription = form.watch((formValues) => {
+			const normalizedValues: DelayOptionValues = {
+				hasDelay: formValues.hasDelay ?? false,
+				delayDuration: formValues.delayDuration ?? 10,
+			};
+
+			onDelayOptionChange?.(normalizedValues);
 		});
 		return () => subscription.unsubscribe();
-	}, [form, form.watch, onDelayOptionChange]);
+	}, [form, onDelayOptionChange]);
 
 	return (
 		<Form {...form}>
@@ -48,14 +56,14 @@ export function DelayOption({ value, onDelayOptionChange }: DelayOptionProps) {
 								</FormLabel>
 							</div>
 							<FormControl>
-								<Switch checked={field.value} onCheckedChange={field.onChange} />
+								<Switch checked={field.value ?? false} onCheckedChange={field.onChange} />
 							</FormControl>
 						</FormItem>
 					)}
 				/>
 
 				{/* DELAY DURATION */}
-				{form.watch("hasDelay") && (
+				{(form.watch("hasDelay") ?? false) && (
 					<FormField
 						control={form.control}
 						name="delayDuration"
@@ -69,6 +77,7 @@ export function DelayOption({ value, onDelayOptionChange }: DelayOptionProps) {
 										<Input
 											type="number"
 											{...field}
+											value={field.value ?? 10}
 											onChange={(e) => field.onChange(Number(e.target.value))}
 											max={30}
 											min={5}

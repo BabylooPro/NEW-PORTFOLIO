@@ -96,13 +96,13 @@ const HalfStarRating = ({
                 transition: {
                     duration: 0.4,
                     times: [0, 0.5, 1],
-                    ease: "easeInOut"
+					ease: "easeInOut" as const
                 }
             } : {
                 scale: getScale(),
                 transition: {
                     duration: 0.15,
-                    ease: "easeOut"
+					ease: "easeOut" as const
                 }
             }}
         >

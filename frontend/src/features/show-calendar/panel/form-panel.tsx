@@ -6,12 +6,15 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import * as React from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormValues, formSchema, CombinedFormValues } from "@/features/show-calendar/utils/schema";
+import { formSchema, CombinedFormValues } from "@/features/show-calendar/utils/schema";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+type ContactFormInput = z.input<typeof formSchema>;
 
 interface FormPanelProps {
 	readonly onBack: () => void;
@@ -40,7 +43,7 @@ export function FormPanel({ onBack }: FormPanelProps) {
 	);
 
 	// INITIALIZE FORM WITH PHONE FROM URL PARAMS
-	const form = useForm<FormValues>({
+	const form = useForm<ContactFormInput>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			name: "",
@@ -86,7 +89,8 @@ export function FormPanel({ onBack }: FormPanelProps) {
 	}, [toast]);
 
 	// HANDLE FORM SUBMISSION
-	const onSubmit = async (formData: FormValues) => {
+	const onSubmit = async (formData: ContactFormInput) => {
+		const parsedFormData = formSchema.parse(formData);
 		setIsLoading(true);
 		try {
 			const storedData = sessionStorage.getItem("preFilledFormData");
@@ -95,7 +99,7 @@ export function FormPanel({ onBack }: FormPanelProps) {
 				: {};
 
 			const finalData = {
-				formData,
+				formData: parsedFormData,
 				combinedData,
 			};
 

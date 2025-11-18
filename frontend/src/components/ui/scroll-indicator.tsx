@@ -68,7 +68,7 @@ const ScrollIndicator: React.FC<ScrollIndicatorProps> = ({
 					initial={{ opacity: 0 }}
 					animate={{ opacity: isAtTop ? 0 : 1 }}
 					transition={{
-						opacity: { duration: 0.5, ease: "easeInOut" },
+						opacity: { duration: 0.5, ease: "easeInOut" as const },
 					}}
 					style={{ pointerEvents: isAtTop ? "none" : "auto" }} // DISABLE POINTER EVENTS WHEN HIDDEN
 					onClick={handleScrollToTop}
@@ -78,7 +78,7 @@ const ScrollIndicator: React.FC<ScrollIndicatorProps> = ({
 						transition={{
 							duration: 1.5,
 							repeat: Infinity,
-							ease: "easeInOut",
+							ease: "easeInOut" as const,
 						}}
 					>
 						{topIcon}
@@ -93,7 +93,7 @@ const ScrollIndicator: React.FC<ScrollIndicatorProps> = ({
 					initial={{ opacity: 0 }}
 					animate={{ opacity: isAtBottom ? 0 : 1 }}
 					transition={{
-						opacity: { duration: 0.5, ease: "easeInOut" },
+						opacity: { duration: 0.5, ease: "easeInOut" as const },
 					}}
 					style={{ pointerEvents: isAtBottom ? "none" : "auto" }} // DISABLE POINTER EVENTS WHEN HIDDEN
 					onClick={handleScrollToBottom}
@@ -103,7 +103,7 @@ const ScrollIndicator: React.FC<ScrollIndicatorProps> = ({
 						transition={{
 							duration: 1.5,
 							repeat: Infinity,
-							ease: "easeInOut",
+							ease: "easeInOut" as const,
 						}}
 					>
 						{bottomIcon}

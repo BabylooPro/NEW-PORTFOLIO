@@ -81,7 +81,7 @@ export const Section = (props: SectionProps) => {
             variants={variants}
             transition={{
                 duration: 1,
-                ease: "easeInOut",
+				ease: "easeInOut" as const,
                 delay: 0.25,
             }}
         >

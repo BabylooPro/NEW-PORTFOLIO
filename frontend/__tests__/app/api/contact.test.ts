@@ -1,5 +1,4 @@
 import { POST } from "../../../app/api/contact/route";
-import { generateEmailHtml } from "../../../app/api/contact/utils";
 
 // MOCK FETCH
 global.fetch = jest.fn();

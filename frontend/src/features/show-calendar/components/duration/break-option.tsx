@@ -6,6 +6,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { breakOptionSchema, type BreakOptionValues } from "@/features/show-calendar/utils/schema";
+import { z } from "zod";
+
+type BreakOptionFormValues = z.input<typeof breakOptionSchema>;
 
 interface BreakOptionProps {
 	value: BreakOptionValues;
@@ -14,7 +17,7 @@ interface BreakOptionProps {
 
 export function BreakOption({ value, onBreakOptionChange }: BreakOptionProps) {
 	// INITIALIZE FORM WITH ZOD SCHEMA AND DEFAULT VALUES
-	const form = useForm<BreakOptionValues>({
+	const form = useForm<BreakOptionFormValues>({
 		resolver: zodResolver(breakOptionSchema),
 		defaultValues: {
 			hasBreak: value.hasBreak ?? false,
@@ -37,12 +40,17 @@ export function BreakOption({ value, onBreakOptionChange }: BreakOptionProps) {
 	// WATCH FOR CHANGES AND NOTIFY PARENT
 	React.useEffect(() => {
 		const subscription = form.watch((values) => {
+			const normalizedValues: BreakOptionValues = {
+				hasBreak: values.hasBreak ?? false,
+				breakDuration: values.breakDuration ?? 5,
+			};
+
 			// IF HASBREAK IS TRUE AND BREAKDURATION IS 0, SET TO 5
-			if (values.hasBreak && (!values.breakDuration || values.breakDuration === 0)) {
+			if (normalizedValues.hasBreak && normalizedValues.breakDuration <= 0) {
 				form.setValue("breakDuration", 5);
-				onBreakOptionChange?.({ ...values, breakDuration: 5 } as BreakOptionValues);
+				onBreakOptionChange?.({ ...normalizedValues, breakDuration: 5 });
 			} else {
-				onBreakOptionChange?.(values as BreakOptionValues);
+				onBreakOptionChange?.(normalizedValues);
 			}
 		});
 		return () => subscription.unsubscribe();
@@ -77,7 +85,7 @@ export function BreakOption({ value, onBreakOptionChange }: BreakOptionProps) {
 							</div>
 							<FormControl>
 								<Switch
-									checked={field.value}
+									checked={field.value ?? false}
 									onCheckedChange={handleSwitchChange}
 								/>
 							</FormControl>
@@ -86,7 +94,7 @@ export function BreakOption({ value, onBreakOptionChange }: BreakOptionProps) {
 				/>
 
 				{/* BREAK DURATION */}
-				{form.watch("hasBreak") && (
+				{(form.watch("hasBreak") ?? false) && (
 					<FormField
 						control={form.control}
 						name="breakDuration"

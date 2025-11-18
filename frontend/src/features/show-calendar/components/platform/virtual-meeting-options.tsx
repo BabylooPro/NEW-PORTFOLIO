@@ -12,6 +12,9 @@ import {
 	type VirtualMeetingValues,
 } from "@/features/show-calendar/utils/schema";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { z } from "zod";
+
+type VirtualMeetingFormValues = z.input<typeof virtualMeetingSchema>;
 
 interface VirtualMeetingOptionsProps {
 	isCustomLinkChecked: boolean;
@@ -36,7 +39,7 @@ export function VirtualMeetingOptions({
 	const pathname = usePathname();
 
 	// INITIALIZE FORM WITH URL PARAMS AND PROPS
-	const form = useForm<VirtualMeetingValues>({
+	const form = useForm<VirtualMeetingFormValues>({
 		resolver: zodResolver(virtualMeetingSchema),
 		defaultValues: {
 			customLink: isCustomLinkChecked,
@@ -80,17 +83,18 @@ export function VirtualMeetingOptions({
 	React.useEffect(() => {
 		const subscription = form.watch((value) => {
 			if (value) {
-				const values = value as VirtualMeetingValues;
-				updateUrlParams(values);
-				onVirtualMeetingChange?.(values);
+				const normalizedValues: VirtualMeetingValues = {
+					customLink: value.customLink ?? false,
+					meetingUrl: value.meetingUrl,
+					webcam: value.webcam ?? false,
+				};
+
+				updateUrlParams(normalizedValues);
+				onVirtualMeetingChange?.(normalizedValues);
 
 				// UPDATE PARENT STATE
-				if (values.customLink !== undefined) {
-					setIsCustomLinkChecked(values.customLink);
-				}
-				if (values.webcam !== undefined) {
-					setIsWebcamEnabled(values.webcam);
-				}
+				setIsCustomLinkChecked(normalizedValues.customLink);
+				setIsWebcamEnabled(normalizedValues.webcam);
 			}
 		});
 		return () => subscription.unsubscribe();
@@ -162,7 +166,7 @@ export function VirtualMeetingOptions({
 									<FormControl>
 										<Switch
 											id="custom-link"
-											checked={field.value}
+											checked={field.value ?? false}
 											onCheckedChange={field.onChange}
 										/>
 									</FormControl>
@@ -171,7 +175,7 @@ export function VirtualMeetingOptions({
 						/>
 
 						{/* CUSTOM LINK INPUT */}
-						{form.watch("customLink") && (
+						{(form.watch("customLink") ?? false) && (
 							<FormField
 								control={form.control}
 								name="meetingUrl"
@@ -213,7 +217,7 @@ export function VirtualMeetingOptions({
 							<FormControl>
 								<Checkbox
 									id="webcam"
-									checked={field.value}
+									checked={field.value ?? false}
 									onCheckedChange={field.onChange}
 								/>
 							</FormControl>

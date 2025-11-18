@@ -5,7 +5,7 @@ export const MULTIDIRECTION_SLIDE_VARIANTS = {
 		scale: 0.5,
 		transition: {
 			duration: 0.5,
-			ease: "easeInOut",
+			ease: "easeInOut" as const,
 		},
 	}),
 	animate: {
@@ -14,7 +14,7 @@ export const MULTIDIRECTION_SLIDE_VARIANTS = {
 		scale: 1,
 		transition: {
 			duration: 1,
-			ease: "easeInOut",
+			ease: "easeInOut" as const,
 		},
 	},
 	exit: (direction: number) => ({
@@ -23,7 +23,7 @@ export const MULTIDIRECTION_SLIDE_VARIANTS = {
 		scale: 0.5,
 		transition: {
 			duration: 0.5,
-			ease: "easeInOut",
+			ease: "easeInOut" as const,
 		},
 	}),
 };
@@ -36,7 +36,7 @@ export const HEADER_ANIMATION = {
 	},
 	transition: {
 		duration: 2.5,
-		ease: [0.34, 1.56, 0.64, 1],
+		ease: [0.34, 1.56, 0.64, 1] as const,
 		opacity: { duration: 0.5 },
 		scale: {
 			type: "spring",

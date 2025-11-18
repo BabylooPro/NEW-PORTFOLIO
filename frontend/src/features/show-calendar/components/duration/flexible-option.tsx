@@ -8,6 +8,9 @@ import {
 	flexibleOptionSchema,
 	type FlexibleOptionValues,
 } from "@/features/show-calendar/utils/schema";
+import { z } from "zod";
+
+type FlexibleOptionFormValues = z.input<typeof flexibleOptionSchema>;
 
 interface FlexibleOptionProps {
 	value: FlexibleOptionValues;
@@ -16,7 +19,7 @@ interface FlexibleOptionProps {
 
 export function FlexibleOption({ value, onFlexibleOptionChange }: FlexibleOptionProps) {
 	// INITIALIZE FORM WITH ZOD SCHEMA
-	const form = useForm<FlexibleOptionValues>({
+	const form = useForm<FlexibleOptionFormValues>({
 		resolver: zodResolver(flexibleOptionSchema),
 		defaultValues: value,
 	});
@@ -28,11 +31,14 @@ export function FlexibleOption({ value, onFlexibleOptionChange }: FlexibleOption
 
 	// WATCH FOR CHANGES AND NOTIFY PARENT
 	React.useEffect(() => {
-		const subscription = form.watch((value) => {
-			onFlexibleOptionChange?.(value as FlexibleOptionValues);
+		const subscription = form.watch((formValues) => {
+			const normalizedValues: FlexibleOptionValues = {
+				isFlexible: formValues.isFlexible ?? false,
+			};
+			onFlexibleOptionChange?.(normalizedValues);
 		});
 		return () => subscription.unsubscribe();
-	}, [form, form.watch, onFlexibleOptionChange]);
+	}, [form, onFlexibleOptionChange]);
 
 	return (
 		<Form {...form}>
@@ -50,7 +56,7 @@ export function FlexibleOption({ value, onFlexibleOptionChange }: FlexibleOption
 								</FormLabel>
 							</div>
 							<FormControl>
-								<Switch checked={field.value} onCheckedChange={field.onChange} />
+								<Switch checked={field.value ?? false} onCheckedChange={field.onChange} />
 							</FormControl>
 						</FormItem>
 					)}

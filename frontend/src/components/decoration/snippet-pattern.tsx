@@ -288,7 +288,7 @@ export const SnippetPatternBackground = ({
 							duration: 60,
 							repeat: Infinity,
 							repeatType: "loop",
-							ease: "linear",
+							ease: "linear" as const,
 						},
 					}}
 					drag="y"

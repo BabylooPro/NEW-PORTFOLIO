@@ -39,7 +39,7 @@ const circleVariants = {
 		scale: 1,
 		transition: {
 			duration: 0.8,
-			ease: "easeInOut",
+			ease: "easeInOut" as const,
 			scale: {
 				type: "spring",
 				stiffness: 200,
@@ -62,7 +62,7 @@ const checkVariants = {
 		transition: {
 			delay: 0.8,
 			duration: 0.4,
-			ease: "easeInOut",
+			ease: "easeInOut" as const,
 			scale: {
 				type: "spring",
 				stiffness: 200,

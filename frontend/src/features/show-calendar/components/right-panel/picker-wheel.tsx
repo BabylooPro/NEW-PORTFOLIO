@@ -275,7 +275,7 @@ const PickerWheel = React.forwardRef<HTMLDivElement, PickerWheelProps>(
 										>
 											<motion.div
 												animate={{
-													skew: [0, -10, 0, 10, 0],
+													skewX: ["0deg", "-10deg", "0deg", "10deg", "0deg"],
 												}}
 												transition={{
 													duration: 1.5,

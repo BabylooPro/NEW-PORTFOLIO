@@ -140,10 +140,10 @@ export default function Header() {
                             }}
                             transition={{
                                 duration: 0.5,
-                                ease: "easeOut",
+								ease: "easeOut" as const,
                                 layout: {
                                     duration: 0.5,
-                                    ease: "easeOut",
+									ease: "easeOut" as const,
                                 },
                             }}
                             layout="position"
@@ -184,7 +184,7 @@ export default function Header() {
                                         }}
                                         transition={{
                                             duration: 2.5,
-                                            ease: [0.34, 1.56, 0.64, 1],
+											ease: [0.34, 1.56, 0.64, 1] as const,
                                             scale: {
                                                 type: "spring",
                                                 damping: 15,
@@ -203,7 +203,7 @@ export default function Header() {
                                             }}
                                             transition={{
                                                 duration: 2.5,
-                                                ease: [0.34, 1.56, 0.64, 1],
+												ease: [0.34, 1.56, 0.64, 1] as const,
                                                 delay: 0.6,
                                             }}
                                         >
@@ -230,7 +230,7 @@ export default function Header() {
                                     exit={{ width: 0, opacity: 0 }}
                                     transition={{
                                         duration: 1,
-                                        ease: "easeInOut",
+										ease: "easeInOut" as const,
                                     }}
                                     className="mt-2"
                                 >
@@ -265,11 +265,11 @@ export default function Header() {
                                     }}
                                     transition={{
                                         duration: 0.5,
-                                        ease: "easeOut",
+										ease: "easeOut" as const,
                                         opacity: { duration: 0.5 },
                                         y: {
                                             duration: 0.5,
-                                            ease: "easeOut",
+											ease: "easeOut" as const,
                                         },
                                     }}
                                     layout
@@ -280,7 +280,7 @@ export default function Header() {
                                         }}
                                         transition={{
                                             duration: 0.5,
-                                            ease: "easeOut",
+											ease: "easeOut" as const,
                                         }}
                                     >
                                         {mounted ? (

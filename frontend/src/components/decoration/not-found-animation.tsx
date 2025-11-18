@@ -14,7 +14,7 @@ const containerVariants = {
 		width: "auto",
 		transition: {
 			duration: 0.8,
-			ease: "easeInOut",
+			ease: "easeInOut" as const,
 		},
 	},
 };
@@ -30,7 +30,7 @@ const bracketVariants = {
 		scale: 1,
 		transition: {
 			duration: 0.4,
-			ease: "easeOut",
+			ease: "easeOut" as const,
 		},
 	},
 };
@@ -48,7 +48,7 @@ const contentVariants = {
 			width: {
 				duration: 0.4,
 				delay: 0.4,
-				ease: "easeInOut",
+				ease: "easeInOut" as const,
 			},
 			opacity: {
 				duration: 0.3,

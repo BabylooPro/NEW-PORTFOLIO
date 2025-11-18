@@ -10,11 +10,11 @@ const nextConfig = {
     NEXT_PUBLIC_STRAPI_API_URL: process.env.NEXT_PUBLIC_STRAPI_API_URL,
   },
   images: {
-    domains: [
-      "avatars.githubusercontent.com",
-      "cdnjs.cloudflare.com",
-      "localhost",
-      "cms.maxremy.dev",
+    remotePatterns: [
+      { hostname: "avatars.githubusercontent.com" },
+      { hostname: "cdnjs.cloudflare.com" },
+      { hostname: "localhost" },
+      { hostname: "cms.maxremy.dev" },
     ],
   },
   compiler: {

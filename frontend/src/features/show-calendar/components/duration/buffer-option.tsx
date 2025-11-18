@@ -6,6 +6,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { bufferOptionSchema, type BufferOptionValues } from "@/features/show-calendar/utils/schema";
+import { z } from "zod";
+
+type BufferOptionFormValues = z.input<typeof bufferOptionSchema>;
 
 interface BufferOptionProps {
 	value: BufferOptionValues;
@@ -14,7 +17,7 @@ interface BufferOptionProps {
 
 export function BufferOption({ value, onBufferOptionChange }: BufferOptionProps) {
 	// INITIALIZE FORM WITH ZOD SCHEMA
-	const form = useForm<BufferOptionValues>({
+	const form = useForm<BufferOptionFormValues>({
 		resolver: zodResolver(bufferOptionSchema),
 		defaultValues: value,
 	});
@@ -26,11 +29,16 @@ export function BufferOption({ value, onBufferOptionChange }: BufferOptionProps)
 
 	// WATCH FOR CHANGES AND NOTIFY PARENT
 	React.useEffect(() => {
-		const subscription = form.watch((value) => {
-			onBufferOptionChange?.(value as BufferOptionValues);
+		const subscription = form.watch((formValues) => {
+			const normalizedValues: BufferOptionValues = {
+				hasBuffer: formValues.hasBuffer ?? false,
+				bufferDuration: formValues.bufferDuration ?? 15,
+			};
+
+			onBufferOptionChange?.(normalizedValues);
 		});
 		return () => subscription.unsubscribe();
-	}, [form, form.watch, onBufferOptionChange]);
+	}, [form, onBufferOptionChange]);
 
 	return (
 		<Form {...form}>
@@ -48,14 +56,14 @@ export function BufferOption({ value, onBufferOptionChange }: BufferOptionProps)
 								</FormLabel>
 							</div>
 							<FormControl>
-								<Switch checked={field.value} onCheckedChange={field.onChange} />
+								<Switch checked={field.value ?? false} onCheckedChange={field.onChange} />
 							</FormControl>
 						</FormItem>
 					)}
 				/>
 
 				{/* BUFFER DURATION */}
-				{form.watch("hasBuffer") && (
+				{(form.watch("hasBuffer") ?? false) && (
 					<FormField
 						control={form.control}
 						name="bufferDuration"
@@ -69,6 +77,7 @@ export function BufferOption({ value, onBufferOptionChange }: BufferOptionProps)
 										<Input
 											type="number"
 											{...field}
+											value={field.value ?? 15}
 											onChange={(e) => field.onChange(Number(e.target.value))}
 											max={30}
 											min={5}

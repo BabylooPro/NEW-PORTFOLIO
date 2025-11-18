@@ -17,6 +17,9 @@ import {
 	type DurationValues,
 } from "@/features/show-calendar/utils/schema";
 import { useSearchParams } from "next/navigation";
+import { z } from "zod";
+
+type DurationFormValues = z.input<typeof durationSchema>;
 
 export function Duration() {
 	const searchParams = useSearchParams();
@@ -50,7 +53,7 @@ export function Duration() {
 		[searchParams]
 	);
 
-	const form = useForm<DurationValues>({
+	const form = useForm<DurationFormValues>({
 		resolver: zodResolver(durationSchema),
 		defaultValues,
 	});
@@ -63,13 +66,39 @@ export function Duration() {
 	// DISPATCH EVENT WHEN FORM VALUES CHANGE
 	React.useEffect(() => {
 		const subscription = form.watch((values) => {
+			const normalizedValues: DurationValues = {
+				duration: values.duration ?? defaultDurationValues.duration,
+				break: {
+					hasBreak: values.break?.hasBreak ?? defaultDurationValues.break.hasBreak,
+					breakDuration:
+						values.break?.breakDuration ?? defaultDurationValues.break.breakDuration,
+				},
+				buffer: {
+					hasBuffer:
+						values.buffer?.hasBuffer ?? defaultDurationValues.buffer.hasBuffer,
+					bufferDuration:
+						values.buffer?.bufferDuration ??
+						defaultDurationValues.buffer.bufferDuration,
+				},
+				delay: {
+					hasDelay: values.delay?.hasDelay ?? defaultDurationValues.delay.hasDelay,
+					delayDuration:
+						values.delay?.delayDuration ?? defaultDurationValues.delay.delayDuration,
+				},
+				flexible: {
+					isFlexible:
+						values.flexible?.isFlexible ??
+						defaultDurationValues.flexible.isFlexible,
+				},
+			};
+
 			const event = new CustomEvent("durationChanged", {
-				detail: values,
+				detail: normalizedValues,
 			});
 			window.dispatchEvent(event);
 		});
 		return () => subscription.unsubscribe();
-	}, [form, form.watch]);
+	}, [form]);
 
 	return (
 		<Card className="w-[420px] bg-transparent border-none shadow-none">
@@ -86,23 +115,48 @@ export function Duration() {
 				<form className="space-y-6">
 					<CardContent className="space-y-6">
 						<DurationSelect
-							value={form.watch("duration")}
+							value={form.watch("duration") ?? defaultDurationValues.duration}
 							setValue={(value) => form.setValue("duration", value)}
 						/>
 						<BreakOption
-							value={form.watch("break")}
+							value={{
+								hasBreak:
+									form.watch("break")?.hasBreak ??
+									defaultDurationValues.break.hasBreak,
+								breakDuration:
+									form.watch("break")?.breakDuration ??
+									defaultDurationValues.break.breakDuration,
+							}}
 							onBreakOptionChange={(values) => form.setValue("break", values)}
 						/>
 						<DelayOption
-							value={form.watch("delay")}
+							value={{
+								hasDelay:
+									form.watch("delay")?.hasDelay ??
+									defaultDurationValues.delay.hasDelay,
+								delayDuration:
+									form.watch("delay")?.delayDuration ??
+									defaultDurationValues.delay.delayDuration,
+							}}
 							onDelayOptionChange={(values) => form.setValue("delay", values)}
 						/>
 						<BufferOption
-							value={form.watch("buffer")}
+							value={{
+								hasBuffer:
+									form.watch("buffer")?.hasBuffer ??
+									defaultDurationValues.buffer.hasBuffer,
+								bufferDuration:
+									form.watch("buffer")?.bufferDuration ??
+									defaultDurationValues.buffer.bufferDuration,
+							}}
 							onBufferOptionChange={(values) => form.setValue("buffer", values)}
 						/>
 						<FlexibleOption
-							value={form.watch("flexible")}
+							value={{
+								isFlexible:
+									form.watch("flexible")?.isFlexible ??
+									defaultDurationValues.flexible.isFlexible,
+							}}
 							onFlexibleOptionChange={(values) => form.setValue("flexible", values)}
 						/>
 					</CardContent>

@@ -16,6 +16,9 @@ import {
     defaultPlatformValues,
 } from "@/features/show-calendar/utils/schema";
 import { useSearchParams } from "next/navigation";
+import { z } from "zod";
+
+type CombinedFormInputValues = z.input<typeof combinedFormSchema>;
 
 interface RightPanelProps {
     readonly timeZone: string;
@@ -132,7 +135,7 @@ export function RightPanel({
     );
 
     // INITIALIZE FORM WITH COMBINED FORM SCHEMA AND DEFAULT VALUES
-    const form = useForm<CombinedFormValues>({
+    const form = useForm<CombinedFormInputValues>({
         resolver: zodResolver(combinedFormSchema),
         defaultValues,
     });
@@ -145,12 +148,13 @@ export function RightPanel({
     }, [defaultValues, form]);
 
     // HANDLE FORM SUBMISSION
-    const onSubmit = (data: CombinedFormValues) => {
-        const [hours, minutes] = data.selectedTime.split(":").map(Number);
+    const onSubmit = (data: CombinedFormInputValues) => {
+        const parsedData = combinedFormSchema.parse(data);
+        const [hours, minutes] = parsedData.selectedTime.split(":").map(Number);
         const newDate = new Date(date.toDate(timeZone));
         newDate.setHours(hours, minutes);
         onDateTimeChange(newDate);
-        onTimeSelect(data);
+        onTimeSelect(parsedData);
     };
 
     // HANDLE TIME SELECTION - FOR SCROLL
@@ -174,15 +178,17 @@ export function RightPanel({
     const handleTimeClick = (newSelectedTime: string) => {
         if (selectedTime === newSelectedTime) {
             const currentValues = form.getValues();
-            const formData: CombinedFormValues = {
+            const formData = combinedFormSchema.parse({
                 ...currentValues,
                 selectedTime: newSelectedTime,
-            };
+            });
             onTimeSelect(formData);
         } else {
             handleTimeChange(newSelectedTime);
         }
     };
+
+    const timeFormat = form.watch("timeFormat") ?? "24";
 
     return (
         <Form {...form}>
@@ -219,7 +225,7 @@ export function RightPanel({
 
                     {/* PICKER WHEEL */}
                     <TabsContent
-                        value={form.watch("timeFormat")}
+                        value={timeFormat}
                         className="flex-grow flex flex-col mt-10"
                     >
                         {isLoading ? (
@@ -239,7 +245,7 @@ export function RightPanel({
                                         <PickerWheel
                                             key={resetKey}
                                             items={filteredAvailableTimes.map((time) => ({
-                                                value: time[form.watch("timeFormat")],
+                                                value: time[timeFormat],
                                                 isFavorite: time.preferedTime,
                                             }))}
                                             onChange={(value) => handleTimeChange(value)}

@@ -14,10 +14,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import {
-	durationSelectSchema,
-	type DurationSelectValues,
-} from "@/features/show-calendar/utils/schema";
+import { durationSelectSchema } from "@/features/show-calendar/utils/schema";
+import { z } from "zod";
 
 // GENERATE DURATIONS ARRAY
 const durations = Array.from({ length: 32 }, (_, i) => {
@@ -33,6 +31,8 @@ const durations = Array.from({ length: 32 }, (_, i) => {
 	};
 });
 
+type DurationSelectFormValues = z.input<typeof durationSelectSchema>;
+
 interface DurationSelectProps {
 	value: string;
 	setValue: (value: string) => void;
@@ -42,7 +42,7 @@ export function DurationSelect({ value, setValue }: DurationSelectProps) {
 	const [open, setOpen] = React.useState(false);
 
 	// INITIALIZE FORM WITH ZOD SCHEMA
-	const form = useForm<DurationSelectValues>({
+	const form = useForm<DurationSelectFormValues>({
 		resolver: zodResolver(durationSelectSchema),
 		defaultValues: {
 			duration: value,
@@ -57,7 +57,7 @@ export function DurationSelect({ value, setValue }: DurationSelectProps) {
 			}
 		});
 		return () => subscription.unsubscribe();
-	}, [form, form.watch, setValue]);
+	}, [form, setValue]);
 
 	return (
 		<Form {...form}>
