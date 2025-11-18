@@ -31,16 +31,21 @@ function determineStatus(lastActivityTime: number): "available" | "away" | "busy
 // FETCH SKILL ID BY NAME
 async function getSkillIdByName(name: string): Promise<number | null> {
     try {
+        const normalizedName = name.trim();
+        if (!normalizedName) {
+            return null;
+        }
+
         const path = `skills`;
         const params = new URLSearchParams({
-            'filters[name][$eqi]': name,
+            'filters[name][$eqi]': normalizedName,
             'populate': '*'
         });
         const url = `${BASE_URL}/api/strapi?path=${path}&${params.toString()}`;
         const response = await fetch(url);
 
         if (!response.ok) {
-            console.error(`Failed to fetch skill ID for ${name}: ${response.statusText}`);
+            console.error(`Failed to fetch skill ID for ${normalizedName}: ${response.statusText}`);
             return null;
         }
 
@@ -48,39 +53,16 @@ async function getSkillIdByName(name: string): Promise<number | null> {
 
         // FIND FIRST SKILL WITH MATCHING NAME (PUBLISHED OR NOT)
         const skill = data.data?.find((s: { attributes: { name: string } }) =>
-            s.attributes.name.toLowerCase() === name.toLowerCase()
+            s.attributes.name.toLowerCase() === normalizedName.toLowerCase()
         );
 
-
-        // TODO FIX: MAYBE DETETE OR WATCH THIS BECAUSE CAUSE EXTA CALL OR EXTA USE DATA FOR NOTHING
-        if (skill) {
-            return skill.id;
-        } else {
-            // IF NO SKILL FOUND, CREATE ONE
-            console.warn(`No skill found for ${name}, creating new one`);
-        }
-
-        const createResponse = await fetch(`${BASE_URL}/api/strapi?path=${path}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${STRAPI_TOKEN}`
-            },
-            body: JSON.stringify({
-                data: {
-                    name: name,
-                    documentId: Math.random().toString(36).substring(2) + Date.now().toString(36)
-                }
-            })
-        });
-
-        if (!createResponse.ok) {
-            console.error(`Failed to create skill for ${name}: ${createResponse.statusText}`);
+        // THROW ERROR IF SKILL DOES NOT EXIST
+        if (!skill) {
+            console.warn(`[WAKATIME] Missing skill "${normalizedName}" in CMS. Please add it manually before syncing stats.`);
             return null;
         }
 
-        const createData = await createResponse.json();
-        return createData.data.id;
+        return skill.id;
     } catch (error) {
         console.error(`Error fetching skill ID for ${name}:`, error);
         return null;

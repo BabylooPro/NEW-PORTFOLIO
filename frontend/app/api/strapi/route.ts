@@ -22,6 +22,11 @@ export async function GET(request: Request) {
         // CLEAN THE PATH
         const cleanPath = path.startsWith('/') ? path.slice(1) : path;
 
+        // FORWARDED PARAMS
+        const forwardedParams = new URLSearchParams(searchParams);
+        forwardedParams.delete('path');
+        forwardedParams.delete('no-cache');
+
         // PROPER POPULATION BASED ON PATH
         let populatedPath = cleanPath;
         if (['about-section', 'header-section'].includes(cleanPath)) {
@@ -46,6 +51,12 @@ export async function GET(request: Request) {
             populatedPath = `${cleanPath}?populate=src`;
         } else if (cleanPath.includes('showcase-video')) {
             populatedPath = `${cleanPath}?populate=src`;
+        }
+
+        // ADD FORWARDED PARAMS TO THE POPULATED PATH
+        const extraQuery = forwardedParams.toString();
+        if (extraQuery) {
+            populatedPath = populatedPath.includes('?') ? `${populatedPath}&${extraQuery}` : `${populatedPath}?${extraQuery}`;
         }
 
         const url = `${STRAPI_URL}/api/${populatedPath}`;

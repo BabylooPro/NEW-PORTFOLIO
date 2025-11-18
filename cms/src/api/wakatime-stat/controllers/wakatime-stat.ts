@@ -47,33 +47,13 @@ export default {
 
         try {
             // VERIFY SKILL EXISTS AND GET FULL SKILL DATA
-            let skill = await strapi.entityService.findOne('api::skill.skill', skillId, {
+            const skill = await strapi.entityService.findOne('api::skill.skill', skillId, {
                 populate: ['skillYear', 'wakatimeStats']
             }) as unknown as Skill;
 
-            // IF SKILL NOT FOUND, TRY TO GET IT BY ID FIRST
+            // THROW ERROR IF SKILL DOES NOT EXIST
             if (!skill) {
-                console.log(`Skill ${skillId} not found, trying to get it by ID...`);
-                const skills = await strapi.entityService.findMany('api::skill.skill', {
-                    filters: {
-                        id: skillId
-                    },
-                    populate: ['skillYear', 'wakatimeStats']
-                });
-
-                if (skills && skills.length > 0) {
-                    skill = skills[0] as unknown as Skill;
-                } else {
-                    console.log(`Skill ${skillId} not found in database, creating it...`);
-                    // CREATE THE SKILL IF IT DOESN'T EXIST
-                    skill = await strapi.entityService.create('api::skill.skill', {
-                        data: {
-                            documentId: Math.random().toString(36).substring(2) + Date.now().toString(36),
-                            name: `Skill ${skillId}`,
-                            publishedAt: new Date()
-                        }
-                    }) as unknown as Skill;
-                }
+                ctx.throw(404, `Skill ${skillId} does not exist. Create it manually before pushing WakaTime stats.`);
             }
 
             // FORCE PUBLISH THE SKILL
