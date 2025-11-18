@@ -45,7 +45,7 @@ export const useSkillSection = () => {
                 setData({
                     title: result.data.title || "My Skills",
                     titleDescription: result.data.titleDescription || "Here are my skills and expertise",
-                    paragraphDescription: result.data.paragraphDescription || "I have experience with various technologies and frameworks"
+                    paragraphDescription: result.data.paragraphDescription || ""
                 });
                 setError(null);
             } catch (err) {
