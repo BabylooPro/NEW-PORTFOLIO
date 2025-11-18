@@ -203,14 +203,26 @@ jobs:
               exit 1
             fi
 
+            # VERIFY STRAPI BINARY EXISTS
+            if [ ! -f "./node_modules/.bin/strapi" ]; then
+              echo "Strapi binary not found. Reinstalling dependencies..."
+              npm install --legacy-peer-deps --force
+            fi
+
+            if [ ! -f "./node_modules/.bin/strapi" ]; then
+              echo "Strapi binary still not found after reinstall"
+              exit 1
+            fi
+
             # CREATE PM2 ECOSYSTEM FILE WITH EXPLICIT AWS CREDENTIALS
             cat > ecosystem.config.js << EOL
             module.exports = {
               apps: [
                 {
                   name: 'cms',
-                  script: 'npm',
-                  args: 'run start',
+                  script: './node_modules/.bin/strapi',
+                  args: 'start',
+                  cwd: '/home/ubuntu/NEW-PORTFOLIO/cms',
                   env: {
                     NODE_ENV: 'production',
                     NODE_OPTIONS: '--max-old-space-size=3072',
