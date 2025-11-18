@@ -8,7 +8,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Section } from "@/components/ui/section";
 
 const SkillSection: React.FC = () => {
-    const { skills, loading: skillsLoading, error: skillsError } = useSkills();
+    const {
+        skills,
+        loading: skillsLoading,
+        error: skillsError,
+        codingTimeSummary
+    } = useSkills();
     const {
         title,
         titleDescription,
@@ -58,6 +63,7 @@ const SkillSection: React.FC = () => {
                 loading={isLoading}
                 error={error?.toString()}
                 statusContent={getStatusContent()}
+                codingTimeSummary={codingTimeSummary}
             />
         </Section>
     );

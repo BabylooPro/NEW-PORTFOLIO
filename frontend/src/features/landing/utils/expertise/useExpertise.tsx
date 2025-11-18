@@ -30,6 +30,12 @@ interface UseExpertiseProps {
     loading?: boolean;
     error?: string;
     statusContent?: React.ReactNode;
+    codingTimeSummary?: {
+        year: number;
+        hours: number;
+        minutes: number;
+        totalMinutes: number;
+    } | null;
 }
 
 // TYPE GUARD WITH PROPER RETURN TYPE ANNOTATION
@@ -55,9 +61,32 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
     loading = false,
     error,
     statusContent,
+    codingTimeSummary,
 }) => {
     const scrollAreaRef = React.useRef<ScrollAreaRef>(null);
     const isSkillSection = title.toLowerCase().includes("skill");
+    const showCodingHoursSummary = Boolean(
+        isSkillSection &&
+        codingTimeSummary &&
+        (codingTimeSummary.hours > 0 || codingTimeSummary.minutes > 0)
+    );
+
+    const formatCodingTimeSummary = () => {
+        if (!codingTimeSummary) {
+            return "";
+        }
+        const segments: string[] = [];
+        if (codingTimeSummary.hours > 0) {
+            segments.push(`${codingTimeSummary.hours}h`);
+        }
+        if (codingTimeSummary.minutes > 0) {
+            segments.push(`${codingTimeSummary.minutes}m`);
+        }
+        if (!segments.length) {
+            segments.push("0m");
+        }
+        return segments.join("");
+    };
 
     if (error) {
         return (
@@ -93,6 +122,11 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
                                         <span className="text-xs text-neutral-500">
                                             {paragraphDescription}
                                         </span>
+                                        {showCodingHoursSummary && (
+                                            <span className="text-xs text-neutral-500">
+                                                ~{formatCodingTimeSummary()} coded in {codingTimeSummary?.year}
+                                            </span>
+                                        )}
                                     </>
                                 }
                             />
