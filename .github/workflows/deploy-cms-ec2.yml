@@ -1,270 +1,275 @@
 name: Deploy CMS to AWS EC2
 
 on:
-    workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
-    deploy:
-        runs-on: ubuntu-latest
-        timeout-minutes: 60
-        defaults:
-            run:
-                working-directory: cms
-        env:
-            APP_KEYS: ${{ secrets.APP_KEYS }}
-            API_TOKEN_SALT: ${{ secrets.API_TOKEN_SALT }}
-            ADMIN_JWT_SECRET: ${{ secrets.ADMIN_JWT_SECRET }}
-            TRANSFER_TOKEN_SALT: ${{ secrets.TRANSFER_TOKEN_SALT }}
-            DATABASE_CLIENT: ${{ secrets.DATABASE_CLIENT }}
-            DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
-            DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
-            DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
-            DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
-            DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
-            DATABASE_SSL: ${{ secrets.DATABASE_SSL }}
-            JWT_SECRET: ${{ secrets.JWT_SECRET }}
-            STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
-            AWS_REGION: ${{ secrets.AWS_REGION }}
-            AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_ACCESS_SECRET: ${{ secrets.AWS_ACCESS_SECRET }}
-            AWS_ACL: ${{ secrets.AWS_ACL }}
-            AWS_SIGNED_URL_EXPIRES: ${{ secrets.AWS_SIGNED_URL_EXPIRES }}
-            CLOUDFRONT_URL: ${{ secrets.CLOUDFRONT_URL }}
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: cms
+    env:
+      APP_KEYS: ${{ secrets.APP_KEYS }}
+      API_TOKEN_SALT: ${{ secrets.API_TOKEN_SALT }}
+      ADMIN_JWT_SECRET: ${{ secrets.ADMIN_JWT_SECRET }}
+      TRANSFER_TOKEN_SALT: ${{ secrets.TRANSFER_TOKEN_SALT }}
+      DATABASE_CLIENT: ${{ secrets.DATABASE_CLIENT }}
+      DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
+      DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+      DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+      DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
+      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+      DATABASE_SSL: ${{ secrets.DATABASE_SSL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_ACCESS_SECRET: ${{ secrets.AWS_ACCESS_SECRET }}
+      AWS_ACL: ${{ secrets.AWS_ACL }}
+      AWS_SIGNED_URL_EXPIRES: ${{ secrets.AWS_SIGNED_URL_EXPIRES }}
+      CLOUDFRONT_URL: ${{ secrets.CLOUDFRONT_URL }}
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-            - name: Cache dependencies
-              uses: actions/cache@v3
-              with:
-                  path: cms/node_modules
-                  key: ${{ runner.os }}-node_modules-${{ hashFiles('cms/package-lock.json') }}
-                  restore-keys: |
-                      ${{ runner.os }}-node_modules-
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: cms/node_modules
+          key: ${{ runner.os }}-node_modules-${{ hashFiles('cms/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node_modules-
 
-            - name: Install dependencies
-              run: npm install --legacy-peer-deps --force
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps --force
 
-            - name: Build project
-              run: npm run build
+      - name: Build project
+        run: npm run build
 
-            - name: Deploy to EC2
-              uses: appleboy/ssh-action@v0.1.5
-              with:
-                  host: ${{ secrets.CMS_EC2_HOST }}
-                  username: ${{ secrets.CMS_EC2_USER }}
-                  key: ${{ secrets.CMS_EC2_KEY }}
-                  port: 22
-                  command_timeout: 40m
-                  script: |
-                      cd /home/ubuntu
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.CMS_EC2_HOST }}
+          username: ${{ secrets.CMS_EC2_USER }}
+          key: ${{ secrets.CMS_EC2_KEY }}
+          port: 22
+          command_timeout: 40m
+          script: |
+            cd /home/ubuntu
+            set -euo pipefail
 
-                      if [ ! -d "NEW-PORTFOLIO" ]; then
-                        mkdir -p NEW-PORTFOLIO
-                        cd NEW-PORTFOLIO
-                        git init
-                        git remote add origin https://github.com/BabylooPro/NEW-PORTFOLIO.git
-                        git config core.sparseCheckout true
-                        echo "cms/" > .git/info/sparse-checkout
-                        echo ".github/" >> .git/info/sparse-checkout
-                        git pull origin main
-                        cd ..
-                      fi
+            REPO_DIR="NEW-PORTFOLIO"
+            REPO_URL="https://github.com/BabylooPro/NEW-PORTFOLIO.git"
 
-                      cd NEW-PORTFOLIO/cms
+            if [ ! -d "$REPO_DIR/.git" ]; then
+              echo "Fresh sparse clone..."
+              rm -rf "$REPO_DIR"
+              git clone --filter=blob:none --sparse "$REPO_URL" "$REPO_DIR"
+            fi
 
-                      # HANDLE LOCAL CHANGES BEFORE PULLING
-                      git reset --hard HEAD
-                      git clean -fd
-                      git pull origin main
+            cd "$REPO_DIR"
+            git remote set-url origin "$REPO_URL"
+            git sparse-checkout set --cone cms .github
+            git fetch --prune origin main
+            git checkout main || git checkout -b main
+            git reset --hard origin/main
 
-                      # CLEAN UP AND PREPARE
-                      rm -rf node_modules
-                      rm -rf .cache
-                      rm -rf build
-                      rm -rf dist
+            cd cms
 
-                      # SETUP AWS CREDENTIALS IN STANDARD LOCATION
-                      mkdir -p ~/.aws
-                      cat > ~/.aws/credentials << EOL
-                      [default]
-                      aws_access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID }}
-                      aws_secret_access_key = ${{ secrets.AWS_ACCESS_SECRET }}
-                      region = ${{ secrets.AWS_REGION }}
-                      EOL
+            # HANDLE LOCAL CHANGES BEFORE PULLING
+            git reset --hard HEAD
+            git clean -fd
+            git pull origin main
 
-                      cat > ~/.aws/config << EOL
-                      [default]
-                      region = ${{ secrets.AWS_REGION }}
-                      output = json
-                      EOL
+            # CLEAN UP AND PREPARE
+            rm -rf node_modules
+            rm -rf .cache
+            rm -rf build
+            rm -rf dist
 
-                      # ENSURE CORRECT PERMISSIONS
-                      chmod 600 ~/.aws/credentials
-                      chmod 600 ~/.aws/config
+            # SETUP AWS CREDENTIALS IN STANDARD LOCATION
+            mkdir -p ~/.aws
+            cat > ~/.aws/credentials << EOL
+            [default]
+            aws_access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws_secret_access_key = ${{ secrets.AWS_ACCESS_SECRET }}
+            region = ${{ secrets.AWS_REGION }}
+            EOL
 
-                      # TEST AWS CREDENTIALS AND S3 CONNECTIVITY
-                      echo "Testing AWS credentials and S3 connectivity..."
-                      cat > test-aws-connection.js << EOL
-                      const AWS = require('aws-sdk');
+            cat > ~/.aws/config << EOL
+            [default]
+            region = ${{ secrets.AWS_REGION }}
+            output = json
+            EOL
 
-                      // Configure AWS explicitly with credentials
-                      AWS.config.update({
-                        region: '${{ secrets.AWS_REGION }}',
-                        credentials: new AWS.Credentials({
-                          accessKeyId: '${{ secrets.AWS_ACCESS_KEY_ID }}',
-                          secretAccessKey: '${{ secrets.AWS_ACCESS_SECRET }}'
-                        })
-                      });
+            # ENSURE CORRECT PERMISSIONS
+            chmod 600 ~/.aws/credentials
+            chmod 600 ~/.aws/config
 
-                      // Create S3 service object
-                      const s3 = new AWS.S3({apiVersion: '2006-03-01'});
+            # TEST AWS CREDENTIALS AND S3 CONNECTIVITY
+            echo "Testing AWS credentials and S3 connectivity..."
+            cat > test-aws-connection.js << EOL
+            const AWS = require('aws-sdk');
 
-                      // List buckets and attempt a test upload
-                      async function testConnection() {
-                        try {
-                          console.log('Testing ListBuckets...');
-                          const buckets = await s3.listBuckets().promise();
-                          console.log('Buckets available:', buckets.Buckets.map(b => b.Name).join(', '));
-                          
-                          console.log('Testing PutObject...');
-                          const uploadResult = await s3.putObject({
-                            Bucket: '${{ secrets.AWS_BUCKET }}',
-                            Key: 'test-file-' + Date.now() + '.txt',
-                            Body: Buffer.from('Test file to verify S3 connectivity and permissions'),
-                            ACL: 'public-read'
-                          }).promise();
-                          
-                          console.log('Upload successful!', uploadResult);
-                          console.log('AWS CREDENTIALS AND CONNECTIVITY WORKING CORRECTLY');
-                        } catch (error) {
-                          console.error('ERROR TESTING AWS CONNECTION:', error);
-                          process.exit(1);
-                        }
-                      }
+            // Configure AWS explicitly with credentials
+            AWS.config.update({
+              region: '${{ secrets.AWS_REGION }}',
+              credentials: new AWS.Credentials({
+                accessKeyId: '${{ secrets.AWS_ACCESS_KEY_ID }}',
+                secretAccessKey: '${{ secrets.AWS_ACCESS_SECRET }}'
+              })
+            });
 
-                      testConnection();
-                      EOL
+            // Create S3 service object
+            const s3 = new AWS.S3({apiVersion: '2006-03-01'});
 
-                      # Install AWS SDK if not already present
-                      npm install aws-sdk --no-save
+            // List buckets and attempt a test upload
+            async function testConnection() {
+              try {
+                console.log('Testing ListBuckets...');
+                const buckets = await s3.listBuckets().promise();
+                console.log('Buckets available:', buckets.Buckets.map(b => b.Name).join(', '));
+                
+                console.log('Testing PutObject...');
+                const uploadResult = await s3.putObject({
+                  Bucket: '${{ secrets.AWS_BUCKET }}',
+                  Key: 'test-file-' + Date.now() + '.txt',
+                  Body: Buffer.from('Test file to verify S3 connectivity and permissions'),
+                  ACL: 'public-read'
+                }).promise();
+                
+                console.log('Upload successful!', uploadResult);
+                console.log('AWS CREDENTIALS AND CONNECTIVITY WORKING CORRECTLY');
+              } catch (error) {
+                console.error('ERROR TESTING AWS CONNECTION:', error);
+                process.exit(1);
+              }
+            }
 
-                      # Run the test
-                      node test-aws-connection.js
+            testConnection();
+            EOL
 
-                      # Check if the test succeeded
-                      if [ $? -ne 0 ]; then
-                        echo "AWS connectivity test failed. Please check credentials and network connectivity."
-                        exit 1
-                      fi
+            # Install AWS SDK if not already present
+            npm install aws-sdk --no-save
 
-                      # INSTALL WITH INCREASED MEMORY
-                      export NODE_OPTIONS="--max-old-space-size=3072"
-                      npm install --legacy-peer-deps --force
+            # Run the test
+            node test-aws-connection.js
 
-                      # BUILD WITH ENVIRONMENT VARIABLES
-                      NODE_ENV=production \
-                      NODE_OPTIONS="--max-old-space-size=3072" \
-                      HOST="${{ secrets.HOST }}" \
-                      PORT="${{ secrets.PORT }}" \
-                      APP_KEYS="${{ secrets.APP_KEYS }}" \
-                      API_TOKEN_SALT="${{ secrets.API_TOKEN_SALT }}" \
-                      ADMIN_JWT_SECRET="${{ secrets.ADMIN_JWT_SECRET }}" \
-                      TRANSFER_TOKEN_SALT="${{ secrets.TRANSFER_TOKEN_SALT }}" \
-                      DATABASE_CLIENT="${{ secrets.DATABASE_CLIENT }}" \
-                      DATABASE_HOST="${{ secrets.DATABASE_HOST }}" \
-                      DATABASE_PORT="${{ secrets.DATABASE_PORT }}" \
-                      DATABASE_NAME="${{ secrets.DATABASE_NAME }}" \
-                      DATABASE_USERNAME="${{ secrets.DATABASE_USERNAME }}" \
-                      DATABASE_PASSWORD="${{ secrets.DATABASE_PASSWORD }}" \
-                      DATABASE_SSL="${{ secrets.DATABASE_SSL }}" \
-                      JWT_SECRET="${{ secrets.JWT_SECRET }}" \
-                      STRAPI_API_TOKEN="${{ secrets.STRAPI_API_TOKEN }}" \
-                      STRAPI_API_URL="${{ secrets.STRAPI_API_URL }}" \
-                      AWS_REGION="${{ secrets.AWS_REGION }}" \
-                      AWS_BUCKET="${{ secrets.AWS_BUCKET }}" \
-                      AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-                      AWS_ACCESS_SECRET="${{ secrets.AWS_ACCESS_SECRET }}" \
-                      AWS_ACL="${{ secrets.AWS_ACL }}" \
-                      AWS_SIGNED_URL_EXPIRES="${{ secrets.AWS_SIGNED_URL_EXPIRES }}" \
-                      CLOUDFRONT_URL="${{ secrets.CLOUDFRONT_URL }}" \
-                      npm run build
+            # Check if the test succeeded
+            if [ $? -ne 0 ]; then
+              echo "AWS connectivity test failed. Please check credentials and network connectivity."
+              exit 1
+            fi
 
-                      # VERIFY BUILD
-                      if [ ! -d "dist" ]; then
-                        echo "Build failed - dist directory not created"
-                        exit 1
-                      fi
+            # INSTALL WITH INCREASED MEMORY
+            export NODE_OPTIONS="--max-old-space-size=3072"
+            npm install --legacy-peer-deps --force
 
-                      # CREATE PM2 ECOSYSTEM FILE WITH EXPLICIT AWS CREDENTIALS
-                      cat > ecosystem.config.js << EOL
-                      module.exports = {
-                        apps: [
-                          {
-                            name: 'cms',
-                            script: 'npm',
-                            args: 'run start',
-                            env: {
-                              NODE_ENV: 'production',
-                              NODE_OPTIONS: '--max-old-space-size=3072',
-                              HOST: '${{ secrets.HOST }}',
-                              PORT: '${{ secrets.PORT }}',
-                              APP_KEYS: '${{ secrets.APP_KEYS }}',
-                              API_TOKEN_SALT: '${{ secrets.API_TOKEN_SALT }}',
-                              ADMIN_JWT_SECRET: '${{ secrets.ADMIN_JWT_SECRET }}',
-                              TRANSFER_TOKEN_SALT: '${{ secrets.TRANSFER_TOKEN_SALT }}',
-                              DATABASE_CLIENT: '${{ secrets.DATABASE_CLIENT }}',
-                              DATABASE_HOST: '${{ secrets.DATABASE_HOST }}',
-                              DATABASE_PORT: '${{ secrets.DATABASE_PORT }}',
-                              DATABASE_NAME: '${{ secrets.DATABASE_NAME }}',
-                              DATABASE_USERNAME: '${{ secrets.DATABASE_USERNAME }}',
-                              DATABASE_PASSWORD: '${{ secrets.DATABASE_PASSWORD }}',
-                              DATABASE_SSL: '${{ secrets.DATABASE_SSL }}',
-                              JWT_SECRET: '${{ secrets.JWT_SECRET }}',
-                              STRAPI_API_TOKEN: '${{ secrets.STRAPI_API_TOKEN }}',
-                              STRAPI_API_URL: '${{ secrets.STRAPI_API_URL }}',
-                              AWS_REGION: '${{ secrets.AWS_REGION }}',
-                              AWS_BUCKET: '${{ secrets.AWS_BUCKET }}',
-                              AWS_ACCESS_KEY_ID: '${{ secrets.AWS_ACCESS_KEY_ID }}',
-                              AWS_ACCESS_SECRET: '${{ secrets.AWS_ACCESS_SECRET }}',
-                              AWS_ACL: '${{ secrets.AWS_ACL }}',
-                              AWS_SIGNED_URL_EXPIRES: '${{ secrets.AWS_SIGNED_URL_EXPIRES }}',
-                              CLOUDFRONT_URL: '${{ secrets.CLOUDFRONT_URL }}'
-                            },
-                            max_memory_restart: '1G',
-                            time: true, // Adds timestamps to logs
-                            log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-                            max_restarts: 10,
-                            restart_delay: 3000,
-                            wait_ready: true, // Wait for the process to emit 'ready' event
-                            listen_timeout: 30000, // 30 seconds
-                            kill_timeout: 5000,
-                            watch: false
-                          }
-                        ]
-                      };
-                      EOL
+            # BUILD WITH ENVIRONMENT VARIABLES
+            NODE_ENV=production \
+            NODE_OPTIONS="--max-old-space-size=3072" \
+            HOST="${{ secrets.HOST }}" \
+            PORT="${{ secrets.PORT }}" \
+            APP_KEYS="${{ secrets.APP_KEYS }}" \
+            API_TOKEN_SALT="${{ secrets.API_TOKEN_SALT }}" \
+            ADMIN_JWT_SECRET="${{ secrets.ADMIN_JWT_SECRET }}" \
+            TRANSFER_TOKEN_SALT="${{ secrets.TRANSFER_TOKEN_SALT }}" \
+            DATABASE_CLIENT="${{ secrets.DATABASE_CLIENT }}" \
+            DATABASE_HOST="${{ secrets.DATABASE_HOST }}" \
+            DATABASE_PORT="${{ secrets.DATABASE_PORT }}" \
+            DATABASE_NAME="${{ secrets.DATABASE_NAME }}" \
+            DATABASE_USERNAME="${{ secrets.DATABASE_USERNAME }}" \
+            DATABASE_PASSWORD="${{ secrets.DATABASE_PASSWORD }}" \
+            DATABASE_SSL="${{ secrets.DATABASE_SSL }}" \
+            JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+            STRAPI_API_TOKEN="${{ secrets.STRAPI_API_TOKEN }}" \
+            STRAPI_API_URL="${{ secrets.STRAPI_API_URL }}" \
+            AWS_REGION="${{ secrets.AWS_REGION }}" \
+            AWS_BUCKET="${{ secrets.AWS_BUCKET }}" \
+            AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            AWS_ACCESS_SECRET="${{ secrets.AWS_ACCESS_SECRET }}" \
+            AWS_ACL="${{ secrets.AWS_ACL }}" \
+            AWS_SIGNED_URL_EXPIRES="${{ secrets.AWS_SIGNED_URL_EXPIRES }}" \
+            CLOUDFRONT_URL="${{ secrets.CLOUDFRONT_URL }}" \
+            npm run build
 
-                      # SET AWS CREDENTIALS DIRECTLY IN BASH ENVIRONMENT FOR IMMEDIATE PM2 START
-                      export AWS_REGION="${{ secrets.AWS_REGION }}"
-                      export AWS_BUCKET="${{ secrets.AWS_BUCKET }}"
-                      export AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" 
-                      export AWS_ACCESS_SECRET="${{ secrets.AWS_ACCESS_SECRET }}"
-                      export AWS_ACL="${{ secrets.AWS_ACL }}"
-                      export AWS_SIGNED_URL_EXPIRES="${{ secrets.AWS_SIGNED_URL_EXPIRES }}"
-                      export CLOUDFRONT_URL="${{ secrets.CLOUDFRONT_URL }}"
+            # VERIFY BUILD
+            if [ ! -d "dist" ]; then
+              echo "Build failed - dist directory not created"
+              exit 1
+            fi
 
-                      # RESTART PM2 WITH AWS ENV VARS EXPLICITLY PASSED
-                      pm2 delete cms || true
-                      AWS_REGION="${{ secrets.AWS_REGION }}" \
-                      AWS_BUCKET="${{ secrets.AWS_BUCKET }}" \
-                      AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-                      AWS_ACCESS_SECRET="${{ secrets.AWS_ACCESS_SECRET }}" \
-                      AWS_ACL="${{ secrets.AWS_ACL }}" \
-                      AWS_SIGNED_URL_EXPIRES="${{ secrets.AWS_SIGNED_URL_EXPIRES }}" \
-                      CLOUDFRONT_URL="${{ secrets.CLOUDFRONT_URL }}" \
-                      pm2 start ecosystem.config.js
+            # CREATE PM2 ECOSYSTEM FILE WITH EXPLICIT AWS CREDENTIALS
+            cat > ecosystem.config.js << EOL
+            module.exports = {
+              apps: [
+                {
+                  name: 'cms',
+                  script: 'npm',
+                  args: 'run start',
+                  env: {
+                    NODE_ENV: 'production',
+                    NODE_OPTIONS: '--max-old-space-size=3072',
+                    HOST: '${{ secrets.HOST }}',
+                    PORT: '${{ secrets.PORT }}',
+                    APP_KEYS: '${{ secrets.APP_KEYS }}',
+                    API_TOKEN_SALT: '${{ secrets.API_TOKEN_SALT }}',
+                    ADMIN_JWT_SECRET: '${{ secrets.ADMIN_JWT_SECRET }}',
+                    TRANSFER_TOKEN_SALT: '${{ secrets.TRANSFER_TOKEN_SALT }}',
+                    DATABASE_CLIENT: '${{ secrets.DATABASE_CLIENT }}',
+                    DATABASE_HOST: '${{ secrets.DATABASE_HOST }}',
+                    DATABASE_PORT: '${{ secrets.DATABASE_PORT }}',
+                    DATABASE_NAME: '${{ secrets.DATABASE_NAME }}',
+                    DATABASE_USERNAME: '${{ secrets.DATABASE_USERNAME }}',
+                    DATABASE_PASSWORD: '${{ secrets.DATABASE_PASSWORD }}',
+                    DATABASE_SSL: '${{ secrets.DATABASE_SSL }}',
+                    JWT_SECRET: '${{ secrets.JWT_SECRET }}',
+                    STRAPI_API_TOKEN: '${{ secrets.STRAPI_API_TOKEN }}',
+                    STRAPI_API_URL: '${{ secrets.STRAPI_API_URL }}',
+                    AWS_REGION: '${{ secrets.AWS_REGION }}',
+                    AWS_BUCKET: '${{ secrets.AWS_BUCKET }}',
+                    AWS_ACCESS_KEY_ID: '${{ secrets.AWS_ACCESS_KEY_ID }}',
+                    AWS_ACCESS_SECRET: '${{ secrets.AWS_ACCESS_SECRET }}',
+                    AWS_ACL: '${{ secrets.AWS_ACL }}',
+                    AWS_SIGNED_URL_EXPIRES: '${{ secrets.AWS_SIGNED_URL_EXPIRES }}',
+                    CLOUDFRONT_URL: '${{ secrets.CLOUDFRONT_URL }}'
+                  },
+                  max_memory_restart: '1G',
+                  time: true, // Adds timestamps to logs
+                  log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+                  max_restarts: 10,
+                  restart_delay: 3000,
+                  wait_ready: true, // Wait for the process to emit 'ready' event
+                  listen_timeout: 30000, // 30 seconds
+                  kill_timeout: 5000,
+                  watch: false
+                }
+              ]
+            };
+            EOL
 
-                      pm2 save
+            # SET AWS CREDENTIALS DIRECTLY IN BASH ENVIRONMENT FOR IMMEDIATE PM2 START
+            export AWS_REGION="${{ secrets.AWS_REGION }}"
+            export AWS_BUCKET="${{ secrets.AWS_BUCKET }}"
+            export AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" 
+            export AWS_ACCESS_SECRET="${{ secrets.AWS_ACCESS_SECRET }}"
+            export AWS_ACL="${{ secrets.AWS_ACL }}"
+            export AWS_SIGNED_URL_EXPIRES="${{ secrets.AWS_SIGNED_URL_EXPIRES }}"
+            export CLOUDFRONT_URL="${{ secrets.CLOUDFRONT_URL }}"
+
+            # RESTART PM2 WITH AWS ENV VARS EXPLICITLY PASSED
+            pm2 delete cms || true
+            AWS_REGION="${{ secrets.AWS_REGION }}" \
+            AWS_BUCKET="${{ secrets.AWS_BUCKET }}" \
+            AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            AWS_ACCESS_SECRET="${{ secrets.AWS_ACCESS_SECRET }}" \
+            AWS_ACL="${{ secrets.AWS_ACL }}" \
+            AWS_SIGNED_URL_EXPIRES="${{ secrets.AWS_SIGNED_URL_EXPIRES }}" \
+            CLOUDFRONT_URL="${{ secrets.CLOUDFRONT_URL }}" \
+            pm2 start ecosystem.config.js
+
+            pm2 save
