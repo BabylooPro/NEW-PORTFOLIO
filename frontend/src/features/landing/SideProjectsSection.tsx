@@ -299,7 +299,7 @@ const SideProjectsSection = () => {
                 <h2 className="text-2xl font-bold flex items-center gap-2 -mb-5">
                     {sectionData?.title ?? "Projects"} ({filteredProjects.length})
                     <ShowInfo
-                        title={sectionData?.title ?? "Projects"}
+                        //title={sectionData?.title ?? "Projects"}
                         description={
                             <div className="flex flex-col gap-2">
                                 <p>{sectionData?.titleDescription}</p>

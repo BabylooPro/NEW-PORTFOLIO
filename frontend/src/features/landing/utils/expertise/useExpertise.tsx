@@ -86,7 +86,7 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
                         <div className="flex items-center gap-2">
                             {title || "My Skills"}
                             <ShowInfo
-                                title={title}
+                                //title={title}
                                 description={
                                     <>
                                         {titleDescription} <br />{" "}
