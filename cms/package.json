@@ -37,6 +37,9 @@
     "node": ">=18.0.0 <=22.x.x",
     "npm": ">=6.0.0"
   },
+  "overrides": {
+    "file-type": "16.5.4"
+  },
   "strapi": {
     "uuid": "a75e3dfc-de20-4e28-9857-d7a8cc60d867"
   }
