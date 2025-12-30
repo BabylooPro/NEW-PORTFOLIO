@@ -8,9 +8,8 @@ import {
 	flexibleOptionSchema,
 	type FlexibleOptionValues,
 } from "@/features/show-calendar/utils/schema";
-import { z } from "zod";
 
-type FlexibleOptionFormValues = z.input<typeof flexibleOptionSchema>;
+type FlexibleOptionFormValues = FlexibleOptionValues;
 
 interface FlexibleOptionProps {
 	value: FlexibleOptionValues;

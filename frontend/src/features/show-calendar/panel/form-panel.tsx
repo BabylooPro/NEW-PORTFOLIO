@@ -6,15 +6,14 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import * as React from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { formSchema, CombinedFormValues } from "@/features/show-calendar/utils/schema";
+import { formSchema, type FormValues, CombinedFormValues } from "@/features/show-calendar/utils/schema";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { z } from "zod";
 
-type ContactFormInput = z.input<typeof formSchema>;
+type ContactFormInput = FormValues;
 
 interface FormPanelProps {
 	readonly onBack: () => void;

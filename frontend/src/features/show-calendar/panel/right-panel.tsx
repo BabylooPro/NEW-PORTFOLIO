@@ -16,9 +16,8 @@ import {
     defaultPlatformValues,
 } from "@/features/show-calendar/utils/schema";
 import { useSearchParams } from "next/navigation";
-import { z } from "zod";
 
-type CombinedFormInputValues = z.input<typeof combinedFormSchema>;
+type CombinedFormInputValues = CombinedFormValues;
 
 interface RightPanelProps {
     readonly timeZone: string;

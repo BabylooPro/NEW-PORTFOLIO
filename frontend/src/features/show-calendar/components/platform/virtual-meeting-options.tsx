@@ -12,9 +12,8 @@ import {
 	type VirtualMeetingValues,
 } from "@/features/show-calendar/utils/schema";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { z } from "zod";
 
-type VirtualMeetingFormValues = z.input<typeof virtualMeetingSchema>;
+type VirtualMeetingFormValues = VirtualMeetingValues;
 
 interface VirtualMeetingOptionsProps {
 	isCustomLinkChecked: boolean;
