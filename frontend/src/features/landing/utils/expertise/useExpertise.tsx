@@ -8,7 +8,7 @@ import "devicon";
 import { ShowInfo } from "@/components/ui/show-info";
 import ScrollIndicator from "@/components/ui/scroll-indicator";
 import ExperienceItem, { ExperienceItemProps } from "./experienceItem";
-import { formatExperienceDateRange } from "./experienceDate";
+import { formatExperienceDateRange, getExperienceDateRangeDurationMonths } from "./experienceDate";
 import SkillItem from "./skillsItems";
 import DotTimeline from "@/components/ui/dot-timeline";
 import { Badge } from "@/components/ui/badge";
@@ -65,28 +65,29 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
     codingTimeSummary,
 }) => {
     const scrollAreaRef = React.useRef<ScrollAreaRef>(null);
+    const [clientNow, setClientNow] = React.useState<Date | null>(null);
     const isSkillSection = title.toLowerCase().includes("skill");
-    const showCodingHoursSummary = Boolean(
-        isSkillSection &&
-        codingTimeSummary &&
-        (codingTimeSummary.hours > 0 || codingTimeSummary.minutes > 0)
-    );
+    const showCodingHoursSummary = Boolean(isSkillSection && codingTimeSummary && (codingTimeSummary.hours > 0 || codingTimeSummary.minutes > 0));
+
+    React.useEffect(() => {
+        setClientNow(new Date());
+    }, []);
 
     const formatCodingTimeSummary = () => {
-        if (!codingTimeSummary) {
-            return "";
-        }
+        if (!codingTimeSummary) return "";
         const segments: string[] = [];
-        if (codingTimeSummary.hours > 0) {
-            segments.push(`${codingTimeSummary.hours}h`);
-        }
-        if (codingTimeSummary.minutes > 0) {
-            segments.push(`${codingTimeSummary.minutes}m`);
-        }
-        if (!segments.length) {
-            segments.push("0m");
-        }
+        if (codingTimeSummary.hours > 0) segments.push(`${codingTimeSummary.hours}h`);
+        if (codingTimeSummary.minutes > 0) segments.push(`${codingTimeSummary.minutes}m`);
+        if (!segments.length) segments.push("0m");
         return segments.join("");
+    };
+
+    const formatExperienceDateBadge = (range: ExperienceItemProps["date"]) => {
+        const dateLabel = formatExperienceDateRange(range);
+        const durationMonths = getExperienceDateRangeDurationMonths(range, clientNow ?? undefined);
+        let durationLabel = "";
+        if (durationMonths !== null) durationLabel = ` (${durationMonths} month${durationMonths === 1 ? "" : "s"})`;
+        return `${dateLabel}${durationLabel}`;
     };
 
     if (error) {
@@ -268,7 +269,7 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
                                                 <>
                                                     {item.date && (
                                                         <Badge className="mb-1 bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-neutral-300">
-                                                            {formatExperienceDateRange(item.date)}
+                                                            {formatExperienceDateBadge(item.date)}
                                                         </Badge>
                                                     )}
                                                     <ExperienceItem
