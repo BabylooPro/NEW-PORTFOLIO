@@ -9,7 +9,7 @@ export const experiences: ExperienceItemProps[] = [
             items: [],
         },
         location: "Vaud, Switzerland",
-        skills: ["Swift", "SwiftUI", "Next.js", "TypeScript"],
+        skills: ["Swift", "SwiftUI", "Apple Watch", "Garmin", "Next.js", "TypeScript"],
     },
     {
         title: "Independent Developer",
