@@ -126,7 +126,7 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
                                         </span>
                                         {showCodingHoursSummary && (
                                             <span className="text-xs text-neutral-500">
-                                                ~{formatCodingTimeSummary()} coded in {codingTimeSummary?.year}
+                                                +{formatCodingTimeSummary()} spent coding in {codingTimeSummary?.year}
                                             </span>
                                         )}
                                     </>
