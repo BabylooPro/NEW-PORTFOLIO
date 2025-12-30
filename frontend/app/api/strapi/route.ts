@@ -33,6 +33,8 @@ export async function GET(request: Request) {
             populatedPath = cleanPath.includes('?') ?
                 `${cleanPath}&populate[0]=audioFile` :
                 `${cleanPath}?populate[0]=audioFile`;
+        } else if (cleanPath === 'experience-section') {
+            populatedPath = `${cleanPath}?populate[0]=experiences`;
         } else if (cleanPath === 'expertise-section') {
             populatedPath = `${cleanPath}?populate[0]=expertises`;
         } else if (cleanPath === 'soft-skills-section') {

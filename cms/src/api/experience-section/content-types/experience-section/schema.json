@@ -21,6 +21,12 @@
     "paragraphDescription": {
       "type": "string",
       "required": true
+    },
+    "experiences": {
+      "type": "component",
+      "component": "shared.experience-item",
+      "repeatable": true,
+      "required": false
     }
   }
 } 

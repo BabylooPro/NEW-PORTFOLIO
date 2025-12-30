@@ -1,0 +1,61 @@
+{
+    "collectionName": "components_shared_experience_items",
+    "info": {
+        "displayName": "ExperienceItem",
+        "description": "Individual experience entry"
+    },
+    "options": {},
+    "attributes": {
+        "title": {
+            "type": "string",
+            "required": true
+        },
+        "company": {
+            "type": "string",
+            "required": false
+        },
+        "location": {
+            "type": "string",
+            "required": false
+        },
+        "startYear": {
+            "type": "biginteger",
+            "required": true,
+            "description": "YEAR WHEN THIS EXPERIENCE STARTED"
+        },
+        "startMonth": {
+            "type": "integer",
+            "required": false,
+            "min": 1,
+            "max": 12,
+            "description": "MONTH WHEN THIS EXPERIENCE STARTED (1-12)"
+        },
+        "endYear": {
+            "type": "biginteger",
+            "required": false,
+            "description": "YEAR WHEN THIS EXPERIENCE ENDED (LEAVE EMPTY FOR ONE-OFF EXPERIENCE)"
+        },
+        "endMonth": {
+            "type": "integer",
+            "required": false,
+            "min": 1,
+            "max": 12,
+            "description": "MONTH WHEN THIS EXPERIENCE ENDED (1-12)"
+        },
+        "isCurrent": {
+            "type": "boolean",
+            "default": false,
+            "description": "IF TRUE, END DATE IS CONSIDERED PRESENT"
+        },
+        "descriptionItems": {
+            "type": "json",
+            "description": "BULLET LIST (ARRAY OF STRINGS) SHOWN UNDER THE EXPERIENCE",
+            "default": []
+        },
+        "skills": {
+            "type": "json",
+            "description": "SKILLS/TECH TAGS (ARRAY OF STRINGS)",
+            "default": []
+        }
+    }
+}

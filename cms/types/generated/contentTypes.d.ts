@@ -467,6 +467,7 @@ export interface ApiExperienceSectionExperienceSection extends Struct.SingleType
     attributes: {
         createdAt: Schema.Attribute.DateTime;
         createdBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> & Schema.Attribute.Private;
+        experiences: Schema.Attribute.Component<"shared.experience-item", true>;
         locale: Schema.Attribute.String & Schema.Attribute.Private;
         localizations: Schema.Attribute.Relation<"oneToMany", "api::experience-section.experience-section"> & Schema.Attribute.Private;
         paragraphDescription: Schema.Attribute.String & Schema.Attribute.Required;

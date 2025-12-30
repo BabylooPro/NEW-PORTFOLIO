@@ -25,6 +25,40 @@ export interface SharedEducationSection extends Struct.ComponentSchema {
     };
 }
 
+export interface SharedExperienceItem extends Struct.ComponentSchema {
+    collectionName: "components_shared_experience_items";
+    info: {
+        description: "Individual experience entry";
+        displayName: "ExperienceItem";
+    };
+    attributes: {
+        company: Schema.Attribute.String;
+        descriptionItems: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
+        endMonth: Schema.Attribute.Integer &
+            Schema.Attribute.SetMinMax<
+                {
+                    max: 12;
+                    min: 1;
+                },
+                number
+            >;
+        endYear: Schema.Attribute.BigInteger;
+        isCurrent: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+        location: Schema.Attribute.String;
+        skills: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
+        startMonth: Schema.Attribute.Integer &
+            Schema.Attribute.SetMinMax<
+                {
+                    max: 12;
+                    min: 1;
+                },
+                number
+            >;
+        startYear: Schema.Attribute.BigInteger & Schema.Attribute.Required;
+        title: Schema.Attribute.String & Schema.Attribute.Required;
+    };
+}
+
 export interface SharedExpertise extends Struct.ComponentSchema {
     collectionName: "components_shared_expertises";
     info: {
@@ -173,6 +207,7 @@ declare module "@strapi/strapi" {
         export interface ComponentSchemas {
             "shared.education-platform": SharedEducationPlatform;
             "shared.education-section": SharedEducationSection;
+            "shared.experience-item": SharedExperienceItem;
             "shared.expertise": SharedExpertise;
             "shared.language": SharedLanguage;
             "shared.languages-section": SharedLanguagesSection;
