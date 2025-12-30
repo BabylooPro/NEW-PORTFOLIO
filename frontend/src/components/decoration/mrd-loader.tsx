@@ -1,7 +1,7 @@
 import {
     motion,
     useAnimate,
-    type AnimationPlaybackControlsWithThen,
+    type AnimationPlaybackControls,
     type SequenceOptions,
     type AnimationSequence,
 } from "framer-motion";
@@ -12,7 +12,7 @@ export default function MRDLoader() {
 
     // INITIATE LOADER ANIMATION
     useEffect(() => {
-        let activeAnimation: AnimationPlaybackControlsWithThen | null = null;
+        let activeAnimation: AnimationPlaybackControls | null = null;
         let isCancelled = false;
 
         const loaderSequence = [
@@ -24,7 +24,7 @@ export default function MRDLoader() {
         const animateSequence = animate as (
             sequence: AnimationSequence,
             options?: SequenceOptions
-        ) => AnimationPlaybackControlsWithThen;
+        ) => AnimationPlaybackControls;
 
         const loopAnimation = async () => {
             while (!isCancelled) {
@@ -36,7 +36,7 @@ export default function MRDLoader() {
                 });
 
                 try {
-                    await activeAnimation.finished;
+                    await activeAnimation.stop();
                 } catch {
                     break;
                 }
