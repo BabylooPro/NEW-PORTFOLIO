@@ -1,9 +1,10 @@
 import React from "react";
+import type { ExperienceDateRange } from "./experienceDate";
 
 export interface ExperienceItemProps {
 	title: string;
 	company?: string;
-	date: string;
+	date: ExperienceDateRange;
 	description?: {
 		items: string[];
 	};

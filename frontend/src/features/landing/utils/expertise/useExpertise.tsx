@@ -8,6 +8,7 @@ import "devicon";
 import { ShowInfo } from "@/components/ui/show-info";
 import ScrollIndicator from "@/components/ui/scroll-indicator";
 import ExperienceItem, { ExperienceItemProps } from "./experienceItem";
+import { formatExperienceDateRange } from "./experienceDate";
 import SkillItem from "./skillsItems";
 import DotTimeline from "@/components/ui/dot-timeline";
 import { Badge } from "@/components/ui/badge";
@@ -158,7 +159,7 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
                                     items.map((item) => (
                                         <DotTimeline
                                             key={isExperienceItem(item) ? item.title : item.year}
-                                            year={isExperienceItem(item) ? item.date : item.year}
+                                            year={isExperienceItem(item) ? formatExperienceDateRange(item.date) : item.year}
                                             showBadge={!isExperienceItem(item)}
                                         >
                                             {isSkillYearGroup(item) && (
@@ -219,9 +220,7 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
                                                     key={
                                                         isExperienceItem(item) ? item.title : item.year
                                                     }
-                                                    year={
-                                                        isExperienceItem(item) ? item.date : item.year
-                                                    }
+                                                    year={isExperienceItem(item) ? formatExperienceDateRange(item.date) : item.year}
                                                     showBadge={true}
                                                     isRight={index % 2 !== 0}
                                                     isCentered={true}
@@ -262,14 +261,14 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
                                     {items.map((item) => (
                                         <DotTimeline
                                             key={isExperienceItem(item) ? item.title : item.year}
-                                            year={isExperienceItem(item) ? item.date : item.year}
+                                            year={isExperienceItem(item) ? formatExperienceDateRange(item.date) : item.year}
                                             showBadge={!isExperienceItem(item)}
                                         >
                                             {isExperienceItem(item) && (
                                                 <>
                                                     {item.date && (
                                                         <Badge className="mb-1 bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-neutral-300">
-                                                            {item.date}
+                                                            {formatExperienceDateRange(item.date)}
                                                         </Badge>
                                                     )}
                                                     <ExperienceItem

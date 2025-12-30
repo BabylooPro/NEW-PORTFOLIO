@@ -1,8 +1,10 @@
-export const experiences = [
+import type { ExperienceItemProps } from "../utils/expertise/experienceItem";
+
+export const experiences: ExperienceItemProps[] = [
     {
         title: "Software Engineer",
         company: "MUUM App",
-        date: "May 2025 - Present",
+        date: { start: { year: 2025, month: 5 }, end: null },
         description: {
             items: [],
         },
@@ -12,7 +14,7 @@ export const experiences = [
     {
         title: "Independent Developer",
         company: "Max Remy Dev",
-        date: "Mar 2023 - Present",
+        date: { start: { year: 2023, month: 3 }, end: null },
         description: {
             items: [
                 "Operation of a consulting and company for web, mobile applications and software development",
@@ -33,7 +35,7 @@ export const experiences = [
     {
         title: "Software Developer",
         company: "Confidential",
-        date: "Sep 2024 - Feb 2025",
+        date: { start: { year: 2024, month: 9 }, end: { year: 2025, month: 2 } },
         description: {
             items: [
                 "Develop a complex application from scratch in Microservices architecture",
@@ -44,12 +46,12 @@ export const experiences = [
     {
         title: "Frontend Developer",
         company: "New Tells Studio",
-        date: "Sep 2024 - Dec 2024",
+        date: { start: { year: 2024, month: 9 }, end: { year: 2024, month: 12 } },
         description: {
             items: [
                 "Development of an interactive portfolio website for a motion design company",
                 "Implementation of smooth animations with Rive",
-                "Integration of the design from Figma mockups, ensuring visual fidelity and responsive optimization"
+                "Integration of the design from Figma mockups, ensuring visual fidelity and responsive optimization",
             ],
         },
         location: "Vaud, Switzerland",
@@ -57,7 +59,7 @@ export const experiences = [
     },
     {
         title: "FullStack Developer - Digital Asset Trading Platform",
-        date: "Mar 2024 - Apr 2024",
+        date: { start: { year: 2024, month: 3 }, end: { year: 2024, month: 4 } },
         description: {
             items: [
                 "Starting a social media digital object exchange project and deciding on its technical and design elements",
@@ -71,7 +73,7 @@ export const experiences = [
     {
         title: "Database Problem Resolution",
         company: "Mission from Codeur.com",
-        date: "Sep 2023",
+        date: { start: { year: 2023, month: 9 } },
         description: {
             items: [
                 "Resolution of MySQL technical issues via Python Django Backend",
@@ -83,7 +85,7 @@ export const experiences = [
     {
         title: "Flutter Frontend Developer",
         company: "Young Evio",
-        date: "Aug 2023",
+        date: { start: { year: 2023, month: 8 } },
         description: {
             items: [
                 "Analysis of design mockup & architecture conception",
@@ -96,7 +98,7 @@ export const experiences = [
     },
     {
         title: "Fullstack Developer - Integration of Stripe Connect",
-        date: "Aug 2023",
+        date: { start: { year: 2023, month: 8 } },
         description: {
             items: [
                 "Integration of the Stripe Connect payment solution",
@@ -108,7 +110,7 @@ export const experiences = [
     {
         title: "Database migration from MySQL to MongoDB",
         company: "GameMediatiK",
-        date: "Jul 2023",
+        date: { start: { year: 2023, month: 7 } },
         description: {
             items: [
                 "Evaluation of existing MongoDB structure & design of a relational schema for MySQL",
@@ -122,7 +124,7 @@ export const experiences = [
     {
         title: "Backend Developer & Frontend Integration",
         company: "TetaSofter",
-        date: "Apr 2023 - May 2023",
+        date: { start: { year: 2023, month: 4 }, end: { year: 2023, month: 5 } },
         description: {
             items: [
                 "Backend development using Java with Spring Boot",
@@ -135,7 +137,7 @@ export const experiences = [
     },
     {
         title: "Backend Developer - E-learning Platform",
-        date: "Nov 2022 - Dec 2022",
+        date: { start: { year: 2022, month: 11 }, end: { year: 2022, month: 12 } },
         description: {
             items: [
                 "Debugging of the Backend solution in ASP.NET Web API",
@@ -146,7 +148,7 @@ export const experiences = [
     },
     {
         title: "Unity Developer - Mini-Game Mobile Platform",
-        date: "May 2022 - Jul 2022",
+        date: { start: { year: 2022, month: 5 }, end: { year: 2022, month: 7 } },
         description: {
             items: ["Creation of a mini platform game with Unity and Blender"],
         },
@@ -154,7 +156,7 @@ export const experiences = [
     },
     {
         title: "Backend Developer - Cleaning Services Booking Website",
-        date: "Mar 2022",
+        date: { start: { year: 2022, month: 3 } },
         description: {
             items: [
                 "Backend development in Java with Spring Boot",
@@ -165,7 +167,7 @@ export const experiences = [
     },
     {
         title: "Mobile Developer - Flutter Fitness Application",
-        date: "Oct 2021 - Dec 2021",
+        date: { start: { year: 2021, month: 10 }, end: { year: 2021, month: 12 } },
         description: {
             items: ["Development of a mobile application in Flutter"],
         },
@@ -173,7 +175,7 @@ export const experiences = [
     },
     {
         title: "MERN Developer - Project Management Platform",
-        date: "Apr 2021 - Aug 2021",
+        date: { start: { year: 2021, month: 4 }, end: { year: 2021, month: 8 } },
         description: {
             items: [
                 "Design and development of a project management platform",
@@ -185,7 +187,7 @@ export const experiences = [
     },
     {
         title: "Backend Developer - Mobile Finance Management Application",
-        date: "Jan 2021",
+        date: { start: { year: 2021, month: 1 } },
         description: {
             items: [
                 "Development of APIs in Node.js with Express.js & implementation of a MongoDB database",
@@ -195,7 +197,7 @@ export const experiences = [
     },
     {
         title: "Python Developer - Internal Task Automation",
-        date: "Jun 2020 - Aug 2020",
+        date: { start: { year: 2020, month: 6 }, end: { year: 2020, month: 8 } },
         description: {
             items: [
                 "Development of automation scripts with Selenium WebDriver",
@@ -207,7 +209,7 @@ export const experiences = [
     },
     {
         title: "Small-Scale Services",
-        date: "2017 - 2020",
+        date: { start: { year: 2017 }, end: { year: 2020 } },
         description: {
             items: [
                 "Creation of solutions for video game development",
