@@ -307,9 +307,6 @@ const SideProjectsSection = () => {
                                     <strong>Main technologies : </strong>
                                     {sectionData?.mainTechnologies?.join(", ") ?? "N/A"}
                                 </span>
-                                <span className="text-xs text-muted-foreground">
-                                    <strong>Total projects : </strong> {projects?.length ?? 0}
-                                </span>
                             </div>
                         }
                     />
