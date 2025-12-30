@@ -4,10 +4,10 @@ export const experiences = [
         company: "MUUM App",
         date: "May 2025 - Present",
         description: {
-            items: [""],
+            items: [],
         },
         location: "Vaud, Switzerland",
-        skills: [""],
+        skills: ["Swift", "SwiftUI", "Next.js", "TypeScript"],
     },
     {
         title: "Independent Developer",
