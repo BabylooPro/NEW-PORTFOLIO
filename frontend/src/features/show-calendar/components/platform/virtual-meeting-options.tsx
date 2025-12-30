@@ -12,8 +12,9 @@ import {
 	type VirtualMeetingValues,
 } from "@/features/show-calendar/utils/schema";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { z } from "zod";
 
-type VirtualMeetingFormValues = VirtualMeetingValues;
+type VirtualMeetingFormValues = z.input<typeof virtualMeetingSchema>;
 
 interface VirtualMeetingOptionsProps {
 	isCustomLinkChecked: boolean;
@@ -38,7 +39,7 @@ export function VirtualMeetingOptions({
 	const pathname = usePathname();
 
 	// INITIALIZE FORM WITH URL PARAMS AND PROPS
-	const form = useForm<VirtualMeetingFormValues>({
+	const form = useForm<VirtualMeetingFormValues, undefined, VirtualMeetingValues>({
 		resolver: zodResolver(virtualMeetingSchema),
 		defaultValues: {
 			customLink: isCustomLinkChecked,

@@ -6,8 +6,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { delayOptionSchema, type DelayOptionValues } from "@/features/show-calendar/utils/schema";
+import { z } from "zod";
 
-type DelayOptionFormValues = DelayOptionValues;
+type DelayOptionFormValues = z.input<typeof delayOptionSchema>;
 
 interface DelayOptionProps {
 	value: DelayOptionValues;
@@ -16,7 +17,7 @@ interface DelayOptionProps {
 
 export function DelayOption({ value, onDelayOptionChange }: DelayOptionProps) {
 	// INITIALIZE FORM WITH ZOD SCHEMA
-	const form = useForm<DelayOptionFormValues>({
+	const form = useForm<DelayOptionFormValues, undefined, DelayOptionValues>({
 		resolver: zodResolver(delayOptionSchema),
 		defaultValues: value,
 	});

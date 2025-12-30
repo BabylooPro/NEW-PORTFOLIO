@@ -6,8 +6,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { bufferOptionSchema, type BufferOptionValues } from "@/features/show-calendar/utils/schema";
+import { z } from "zod";
 
-type BufferOptionFormValues = BufferOptionValues;
+type BufferOptionFormValues = z.input<typeof bufferOptionSchema>;
 
 interface BufferOptionProps {
 	value: BufferOptionValues;
@@ -16,7 +17,7 @@ interface BufferOptionProps {
 
 export function BufferOption({ value, onBufferOptionChange }: BufferOptionProps) {
 	// INITIALIZE FORM WITH ZOD SCHEMA
-	const form = useForm<BufferOptionFormValues>({
+	const form = useForm<BufferOptionFormValues, undefined, BufferOptionValues>({
 		resolver: zodResolver(bufferOptionSchema),
 		defaultValues: value,
 	});

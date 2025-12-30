@@ -15,6 +15,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { durationSelectSchema, type DurationSelectValues } from "@/features/show-calendar/utils/schema";
+import { z } from "zod";
 
 // GENERATE DURATIONS ARRAY
 const durations = Array.from({ length: 32 }, (_, i) => {
@@ -30,7 +31,7 @@ const durations = Array.from({ length: 32 }, (_, i) => {
 	};
 });
 
-type DurationSelectFormValues = DurationSelectValues;
+type DurationSelectFormValues = z.input<typeof durationSelectSchema>;
 
 interface DurationSelectProps {
 	value: string;
@@ -41,7 +42,7 @@ export function DurationSelect({ value, setValue }: DurationSelectProps) {
 	const [open, setOpen] = React.useState(false);
 
 	// INITIALIZE FORM WITH ZOD SCHEMA
-	const form = useForm<DurationSelectFormValues>({
+	const form = useForm<DurationSelectFormValues, undefined, DurationSelectValues>({
 		resolver: zodResolver(durationSelectSchema),
 		defaultValues: {
 			duration: value,

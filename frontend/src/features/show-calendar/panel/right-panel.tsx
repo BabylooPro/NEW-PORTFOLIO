@@ -16,8 +16,9 @@ import {
     defaultPlatformValues,
 } from "@/features/show-calendar/utils/schema";
 import { useSearchParams } from "next/navigation";
+import { z } from "zod";
 
-type CombinedFormInputValues = CombinedFormValues;
+type CombinedFormInputValues = z.input<typeof combinedFormSchema>;
 
 interface RightPanelProps {
     readonly timeZone: string;
@@ -134,7 +135,7 @@ export function RightPanel({
     );
 
     // INITIALIZE FORM WITH COMBINED FORM SCHEMA AND DEFAULT VALUES
-    const form = useForm<CombinedFormInputValues>({
+    const form = useForm<CombinedFormInputValues, undefined, CombinedFormValues>({
         resolver: zodResolver(combinedFormSchema),
         defaultValues,
     });

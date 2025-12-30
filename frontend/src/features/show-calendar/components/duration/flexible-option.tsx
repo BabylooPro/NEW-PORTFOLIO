@@ -8,8 +8,9 @@ import {
 	flexibleOptionSchema,
 	type FlexibleOptionValues,
 } from "@/features/show-calendar/utils/schema";
+import { z } from "zod";
 
-type FlexibleOptionFormValues = FlexibleOptionValues;
+type FlexibleOptionFormValues = z.input<typeof flexibleOptionSchema>;
 
 interface FlexibleOptionProps {
 	value: FlexibleOptionValues;
@@ -18,7 +19,7 @@ interface FlexibleOptionProps {
 
 export function FlexibleOption({ value, onFlexibleOptionChange }: FlexibleOptionProps) {
 	// INITIALIZE FORM WITH ZOD SCHEMA
-	const form = useForm<FlexibleOptionFormValues>({
+	const form = useForm<FlexibleOptionFormValues, undefined, FlexibleOptionValues>({
 		resolver: zodResolver(flexibleOptionSchema),
 		defaultValues: value,
 	});

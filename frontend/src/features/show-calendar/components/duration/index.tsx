@@ -17,8 +17,9 @@ import {
 	type DurationValues,
 } from "@/features/show-calendar/utils/schema";
 import { useSearchParams } from "next/navigation";
+import { z } from "zod";
 
-type DurationFormValues = DurationValues;
+type DurationFormValues = z.input<typeof durationSchema>;
 
 export function Duration() {
 	const searchParams = useSearchParams();
@@ -52,7 +53,7 @@ export function Duration() {
 		[searchParams]
 	);
 
-	const form = useForm<DurationFormValues>({
+	const form = useForm<DurationFormValues, undefined, DurationValues>({
 		resolver: zodResolver(durationSchema),
 		defaultValues,
 	});

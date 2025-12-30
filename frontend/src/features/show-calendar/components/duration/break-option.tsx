@@ -6,8 +6,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { breakOptionSchema, type BreakOptionValues } from "@/features/show-calendar/utils/schema";
+import { z } from "zod";
 
-type BreakOptionFormValues = BreakOptionValues;
+type BreakOptionFormValues = z.input<typeof breakOptionSchema>;
 
 interface BreakOptionProps {
     value: BreakOptionValues;
@@ -16,7 +17,7 @@ interface BreakOptionProps {
 
 export function BreakOption({ value, onBreakOptionChange }: BreakOptionProps) {
     // INITIALIZE FORM WITH ZOD SCHEMA AND DEFAULT VALUES
-    const form = useForm<BreakOptionFormValues>({
+    const form = useForm<BreakOptionFormValues, undefined, BreakOptionValues>({
         resolver: zodResolver(breakOptionSchema),
         defaultValues: {
             hasBreak: value.hasBreak ?? false,

@@ -12,8 +12,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
 
-type ContactFormInput = FormValues;
+type ContactFormInput = z.input<typeof formSchema>;
 
 interface FormPanelProps {
 	readonly onBack: () => void;
@@ -42,7 +43,7 @@ export function FormPanel({ onBack }: FormPanelProps) {
 	);
 
 	// INITIALIZE FORM WITH PHONE FROM URL PARAMS
-	const form = useForm<ContactFormInput>({
+	const form = useForm<ContactFormInput, undefined, FormValues>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			name: "",
