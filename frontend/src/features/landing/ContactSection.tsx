@@ -207,41 +207,43 @@ const ContactSection: React.FC = () => {
             </p>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">
-                    <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                            <FormItem id={formIds.name}>
-                                <Label>Your name</Label>
-                                <FormControl>
-                                    <Input
-                                        placeholder="Name"
-                                        className="bg-card"
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    <div className="flex flex-row max-sm:flex-col gap-6 max-sm:gap-5 w-full">
+                        <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                                <FormItem id={formIds.name} className="w-full">
+                                    <Label>Name</Label>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="Name"
+                                            className="bg-card"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                    <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                            <FormItem id={formIds.email}>
-                                <Label>Email</Label>
-                                <FormControl>
-                                    <Input
-                                        placeholder="Email"
-                                        className="bg-card"
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem id={formIds.email} className="w-full">
+                                    <Label>Email</Label>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="Email"
+                                            className="bg-card"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
 
                     <FormField
                         control={form.control}
