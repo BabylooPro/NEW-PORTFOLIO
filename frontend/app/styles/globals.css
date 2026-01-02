@@ -5,91 +5,91 @@
 @tailwind utilities;
 
 @layer base {
-	:root {
-		--background: #f4f4f4;
-		--foreground: #0a0a0a;
-		--card: #ffffff;
-		--card-foreground: #0a0a0a;
-		--popover: #ffffff;
-		--popover-foreground: #0a0a0a;
-		--primary: #171717;
-		--primary-foreground: #fafafa;
-		--secondary: #e0e0e0;
-		--secondary-foreground: #171717;
-		--muted: #e5e5e5;
-		--muted-foreground: #737373;
-		--accent: #e0e0e0;
-		--accent-foreground: #171717;
-		--destructive: #d33030;
-		--destructive-foreground: #fafafa;
-		--border: #cccccc;
-		--input: #cccccc;
-		--ring: #0a0a0a;
-		--chart-1: #e64a19;
-		--chart-2: #33a999;
-		--chart-3: #2a535d;
-		--chart-4: #f6c610;
-		--chart-5: #ffb433;
-		--radius: 0.5rem;
-		--font-press-start: "Press Start 2P", cursive;
-	}
+    :root {
+        --background: #f4f4f4;
+        --foreground: #0a0a0a;
+        --card: #ffffff;
+        --card-foreground: #0a0a0a;
+        --popover: #ffffff;
+        --popover-foreground: #0a0a0a;
+        --primary: #171717;
+        --primary-foreground: #fafafa;
+        --secondary: #e0e0e0;
+        --secondary-foreground: #171717;
+        --muted: #e5e5e5;
+        --muted-foreground: #737373;
+        --accent: #e0e0e0;
+        --accent-foreground: #171717;
+        --destructive: #ef4444;
+        --destructive-foreground: #fafafa;
+        --border: #cccccc;
+        --input: #cccccc;
+        --ring: #0a0a0a;
+        --chart-1: #e64a19;
+        --chart-2: #33a999;
+        --chart-3: #2a535d;
+        --chart-4: #f6c610;
+        --chart-5: #ffb433;
+        --radius: 0.5rem;
+        --font-press-start: "Press Start 2P", cursive;
+    }
 
-	.dark {
-		--background: #202020;
-		--foreground: #fafafa;
-		--card: #2a2a2a;
-		--card-foreground: #fafafa;
-		--popover: #2a2a2a;
-		--popover-foreground: #fafafa;
-		--primary: #fafafa;
-		--primary-foreground: #171717;
-		--secondary: #404040;
-		--secondary-foreground: #fafafa;
-		--muted: #404040;
-		--muted-foreground: #a2a2a2;
-		--accent: #404040;
-		--accent-foreground: #fafafa;
-		--destructive: #a81e1e;
-		--destructive-foreground: #fafafa;
-		--border: #404040;
-		--input: #404040;
-		--ring: #d4d4d4;
-		--chart-1: #3366ff;
-		--chart-2: #339966;
-		--chart-3: #cc9933;
-		--chart-4: #994c99;
-		--chart-5: #d93663;
-	}
+    .dark {
+        --background: #202020;
+        --foreground: #fafafa;
+        --card: #2a2a2a;
+        --card-foreground: #fafafa;
+        --popover: #2a2a2a;
+        --popover-foreground: #fafafa;
+        --primary: #fafafa;
+        --primary-foreground: #171717;
+        --secondary: #404040;
+        --secondary-foreground: #fafafa;
+        --muted: #404040;
+        --muted-foreground: #a2a2a2;
+        --accent: #404040;
+        --accent-foreground: #fafafa;
+        --destructive: #ef4444;
+        --destructive-foreground: #fafafa;
+        --border: #404040;
+        --input: #404040;
+        --ring: #d4d4d4;
+        --chart-1: #3366ff;
+        --chart-2: #339966;
+        --chart-3: #cc9933;
+        --chart-4: #994c99;
+        --chart-5: #d93663;
+    }
 
-	body {
-		color: var(--foreground);
-		background: var(--background);
-	}
+    body {
+        color: var(--foreground);
+        background: var(--background);
+    }
 }
 
 @layer base {
-	* {
-		@apply border-border;
-		/* border: 0.1px solid red !important; */
-	}
-	body {
-		@apply bg-background text-foreground;
-	}
+    * {
+        @apply border-border;
+        /* border: 0.1px solid red !important; */
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
 }
 
 /* DEBUG CLASS FOR CONDITIONAL RED BORDERS */
 :root.debug-borders * {
-	border: 0.1px solid red !important;
+    border: 0.1px solid red !important;
 }
 
 @layer utilities {
-	/* HIDE SCROLLBAR FOR CHROME, SAFARI AND OPERA */
-	.no-scrollbar::-webkit-scrollbar {
-		display: none;
-	}
-	/* HIDE SCROLLBAR FOR IE, EDGE AND FIREFOX */
-	.no-scrollbar {
-		-ms-overflow-style: none;
-		scrollbar-width: none;
-	}
+    /* HIDE SCROLLBAR FOR CHROME, SAFARI AND OPERA */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    /* HIDE SCROLLBAR FOR IE, EDGE AND FIREFOX */
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
 }
