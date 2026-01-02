@@ -36,6 +36,7 @@ type ProgressButtonBaseProps = {
     progress?: number;
     hasError?: boolean;
     hasTemporaryError?: boolean;
+    className?: string;
 };
 
 type ManualProgressButtonProps = ProgressButtonBaseProps & {
@@ -71,6 +72,7 @@ const ProgressButton = (props: ProgressButtonProps) => {
         progress,
         hasError = false,
         hasTemporaryError = false,
+        className
     } = props;
 
     const [state, send] = useMachine(progressButtonMachine);
@@ -137,7 +139,7 @@ const ProgressButton = (props: ProgressButtonProps) => {
                 size="sm"
                 variant={buttonVariant}
                 className={cn(
-                    "group gap-2", buttonSize,
+                    "group gap-2", buttonSize, className,
                     (
                         (!state.matches("idle") && !state.matches("error") && !hasTemporaryError) ||
                         disabled ||

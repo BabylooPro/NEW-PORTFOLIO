@@ -303,10 +303,11 @@ const ContactSection: React.FC = () => {
                                     icon={Send}
                                     buttonText="Send Message"
                                     successColorClass="green-500"
-                                    buttonVariant={["outline", "ringHover"]}
+                                    buttonVariant={["ghost", "ringHover"]}
                                     disabled={isSubmitting}
                                     hasError={hasError}
                                     hasTemporaryError={hasTemporaryError}
+                                    className="bg-card"
                                 />
                             </div>
                         </form>
