@@ -11,6 +11,19 @@ interface VideoCardProps {
 const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, isSelected }) => {
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isMobile, setIsMobile] = useState(false);
+
+    // DETECT MOBILE DEVICE
+    useEffect(() => {
+        const checkMobile = () => {
+            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                (typeof window !== 'undefined' && window.innerWidth < 768);
+            setIsMobile(isMobileDevice);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     // FORMAT DATE TO A MORE READABLE FORMAT
     const formatDate = (dateString?: string) => {
@@ -28,14 +41,34 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, isSelected }) => 
     // KEEP VIDEO PAUSED AT FIRST FRAME (THUMBNAIL ONLY, NO AUTOPLAY)
     useEffect(() => {
         const el = videoRef.current;
-        if (!el) return;
+        if (!el || !video.src) return;
         setIsLoading(true);
         el.pause();
         if (el.currentTime !== 0) el.currentTime = 0;
+        el.load();
+
+        // CHECK VIDEO READY STATE PERIODICALLY
+        const checkReadyState = () => {
+            if (el.readyState >= 2 || (el.videoWidth > 0 && el.videoHeight > 0)) {
+                setIsLoading(false);
+                return true;
+            }
+            return false;
+        };
+
+        // CHECK IF VIDEO IS READY AND CHECK AGAIN PERIODICALLY
+        if (checkReadyState()) return;
+        const intervalId = setInterval(() => {
+            if (checkReadyState()) clearInterval(intervalId);
+        }, 100);
+
+        return () => clearInterval(intervalId);
     }, [video.src]);
 
     // HANDLE VIDEO LOADING STATE
     const handleLoadStart = () => setIsLoading(true)
+    const handleLoadedMetadata = () => setIsLoading(false)
+    const handleLoadedData = () => setIsLoading(false)
     const handleCanPlay = () => setIsLoading(false)
     const handleWaiting = () => setIsLoading(true)
     const handlePlaying = () => setIsLoading(false)
@@ -65,15 +98,18 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, isSelected }) => 
                             ref={videoRef}
                             className="w-full h-full object-cover"
                             src={video.src}
-                            preload="metadata"
+                            preload={isMobile ? "auto" : "metadata"}
                             controls={false}
                             muted
                             playsInline
                             disablePictureInPicture
                             onLoadStart={handleLoadStart}
+                            onLoadedMetadata={handleLoadedMetadata}
+                            onLoadedData={handleLoadedData}
                             onCanPlay={handleCanPlay}
                             onWaiting={handleWaiting}
                             onPlaying={handlePlaying}
+                            onError={() => setIsLoading(false)}
                         />
 
                         {/* LOADER */}
