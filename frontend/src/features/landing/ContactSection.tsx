@@ -11,17 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Phone, Send } from "lucide-react";
-import {
-    Form,
-    FormItem,
-    FormControl,
-    FormMessage,
-    FormDescription,
-    FormField,
-} from "@/components/ui/form";
 import { ClipboardButton } from "@/components/ui/clipboard-button";
 import { Label } from "@/components/ui/label";
 import { useContactSection } from "./hooks/useContactSection";
+import { motion } from "framer-motion";
+import { SuccessAnimation } from "@/components/decoration/success-animation";
+import { Form, FormItem, FormControl, FormMessage, FormDescription, FormField } from "@/components/ui/form";
 
 // ZOD SCHEMA FOR VALIDATION
 const contactSchema = z.object({
@@ -38,6 +33,7 @@ const ContactSection: React.FC = () => {
     const [progress, setProgress] = useState(0);
     const [hasError, setHasError] = useState(false);
     const [hasTemporaryError, setHasTemporaryError] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
     const developerContact = "Please contact me at 'maxremy.dev@gmail.com'";
 
     const { data: sectionData } = useContactSection();
@@ -101,6 +97,7 @@ const ContactSection: React.FC = () => {
                     }
                 } else if (result.success) {
                     setProgress(100); // COMPLETE PROGRESS
+                    setIsSuccess(true); // SHOW SUCCESS MESSAGE
                     toast({
                         title: "Success",
                         description: "Your message has been sent successfully.",
@@ -202,88 +199,120 @@ const ContactSection: React.FC = () => {
                     </ShowInfo>
                 </div>
             </h2>
-            <p className="flex items-center gap-2 text-neutral-500 mb-8">
-                Please fill in the form below to get in touch.
-            </p>
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">
-                    <div className="flex flex-row max-sm:flex-col gap-6 max-sm:gap-5 w-full">
-                        <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                                <FormItem id={formIds.name} className="w-full">
-                                    <Label>Name</Label>
-                                    <FormControl>
-                                        <Input
-                                            placeholder="Name"
-                                            className="bg-card"
-                                            {...field}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
 
-                        <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                                <FormItem id={formIds.email} className="w-full">
-                                    <Label>Email</Label>
-                                    <FormControl>
-                                        <Input
-                                            placeholder="Email"
-                                            className="bg-card"
-                                            {...field}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+            {/* SUCCESS MESSAGE OR FORM SECTION */}
+            {isSuccess ? (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-col items-center justify-center py-12 text-center"
+                >
+                    <div className="mb-6">
+                        <SuccessAnimation size={80} color="#22c55e" />
                     </div>
+                    <motion.h3
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="text-2xl font-bold mb-4"
+                    >
+                        Message Sent Successfully!
+                    </motion.h3>
+                    <motion.p
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
+                        className="text-neutral-500 dark:text-neutral-400 mb-8 max-w-md"
+                    >
+                        Thank you for reaching out. I&lsquo;ll get back to you as soon as possible.
+                    </motion.p>
+                </motion.div>
+            ) : (
+                <>
+                    <p className="flex items-center gap-2 text-neutral-500 mb-8">
+                        Please fill in the form below to get in touch.
+                    </p>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">
+                            <div className="flex flex-row max-sm:flex-col gap-6 max-sm:gap-5 w-full">
+                                <FormField
+                                    control={form.control}
+                                    name="name"
+                                    render={({ field }) => (
+                                        <FormItem id={formIds.name} className="w-full">
+                                            <Label>Name</Label>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="Name"
+                                                    className="bg-card"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                    <FormField
-                        control={form.control}
-                        name="message"
-                        render={({ field }) => (
-                            <FormItem id={formIds.message}>
-                                <Label>Message</Label>
-                                <FormControl>
-                                    <Textarea
-                                        className="flex min-h-[80px] w-full px-3 py-2"
-                                        placeholder="Your Message"
-                                        rows={10}
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormDescription>
-                                    Describe your project or inquiry in detail.
-                                </FormDescription>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                                <FormField
+                                    control={form.control}
+                                    name="email"
+                                    render={({ field }) => (
+                                        <FormItem id={formIds.email} className="w-full">
+                                            <Label>Email</Label>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="Email"
+                                                    className="bg-card"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
-                    {/* SUBMIT BUTTON */}
-                    <div className="flex justify-end mt-6">
-                        <ProgressButton
-                            progressType="manual"
-                            progress={progress}
-                            onClick={handleButtonClick}
-                            icon={Send}
-                            buttonText="Send Message"
-                            successColorClass="green-500"
-                            buttonVariant={["outline", "ringHover"]}
-                            disabled={isSubmitting}
-                            hasError={hasError}
-                            hasTemporaryError={hasTemporaryError}
-                        />
-                    </div>
-                </form>
-            </Form>
+                            <FormField
+                                control={form.control}
+                                name="message"
+                                render={({ field }) => (
+                                    <FormItem id={formIds.message}>
+                                        <Label>Message</Label>
+                                        <FormControl>
+                                            <Textarea
+                                                className="flex min-h-[80px] w-full px-3 py-2"
+                                                placeholder="Your Message"
+                                                rows={10}
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Describe your project or inquiry in detail.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            {/* SUBMIT BUTTON */}
+                            <div className="flex justify-end mt-6">
+                                <ProgressButton
+                                    progressType="manual"
+                                    progress={progress}
+                                    onClick={handleButtonClick}
+                                    icon={Send}
+                                    buttonText="Send Message"
+                                    successColorClass="green-500"
+                                    buttonVariant={["outline", "ringHover"]}
+                                    disabled={isSubmitting}
+                                    hasError={hasError}
+                                    hasTemporaryError={hasTemporaryError}
+                                />
+                            </div>
+                        </form>
+                    </Form>
+                </>
+            )}
         </Section>
     );
 };
