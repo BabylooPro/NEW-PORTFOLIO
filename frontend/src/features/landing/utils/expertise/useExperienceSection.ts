@@ -65,6 +65,7 @@ const toExperienceItem = (item: StrapiExperienceItem): ExperienceItemProps | nul
     const skills = toStringArray(item.skills);
 
     const experience: ExperienceItemProps = {
+        id: item.id,
         title,
         company: item.company ?? undefined,
         location: item.location ?? undefined,

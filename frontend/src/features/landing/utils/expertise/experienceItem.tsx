@@ -2,6 +2,7 @@ import React from "react";
 import type { ExperienceDateRange } from "./experienceDate";
 
 export interface ExperienceItemProps {
+	id?: number;
 	title: string;
 	company?: string;
 	date: ExperienceDateRange;
@@ -37,9 +38,9 @@ const ExperienceItem: React.FC<{
 
 			{item.description && item.description.items && item.description.items.length > 0 && (
 				<div className="text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
-					{item.description.items.map((line) => (
+					{item.description.items.map((line, index) => (
 						<p
-							key={`${item.title}-${line.substring(0, 20)}`}
+							key={`${item.id ?? item.title}-${index}`}
 							className="flex items-start gap-2"
 						>
 							<span className="mt-2 inline-block w-[6px] h-[6px] rounded-full bg-neutral-400 dark:bg-neutral-600 flex-shrink-0" />

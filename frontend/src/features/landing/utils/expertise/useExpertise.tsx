@@ -49,6 +49,17 @@ const isSkillYearGroup = (item: ExpertiseItem): item is SkillYear => {
     return "year" in item && "skills" in item;
 };
 
+const getExpertiseItemKey = (item: ExpertiseItem): React.Key => {
+    if (isExperienceItem(item)) {
+        if (item.id != null) return item.id;
+        const start = `${item.date.start.year}-${item.date.start.month ?? ""}`;
+        const end = item.date.end ? `${item.date.end.year}-${item.date.end.month ?? ""}` : "current";
+        return `exp-${item.title}-${item.company ?? ""}-${item.location ?? ""}-${start}-${end}`;
+    }
+
+    return `year-${item.year}`;
+};
+
 const UseExpertise: React.FC<UseExpertiseProps> = ({
     id,
     title,
@@ -159,7 +170,7 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
                                     // NORMAL MOBILE CONTENT
                                     items.map((item) => (
                                         <DotTimeline
-                                            key={isExperienceItem(item) ? item.title : item.year}
+                                            key={getExpertiseItemKey(item)}
                                             year={isExperienceItem(item) ? formatExperienceDateRange(item.date) : item.year}
                                             showBadge={!isExperienceItem(item)}
                                         >
@@ -218,9 +229,7 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
                                             // NORMAL DESKTOP CONTENT
                                             items.map((item, index) => (
                                                 <DotTimeline
-                                                    key={
-                                                        isExperienceItem(item) ? item.title : item.year
-                                                    }
+                                                    key={getExpertiseItemKey(item)}
                                                     year={isExperienceItem(item) ? formatExperienceDateRange(item.date) : item.year}
                                                     showBadge={true}
                                                     isRight={index % 2 !== 0}
@@ -261,7 +270,7 @@ const UseExpertise: React.FC<UseExpertiseProps> = ({
                                 <ol className="m-4 relative border-l border-neutral-400 dark:border-neutral-600">
                                     {items.map((item) => (
                                         <DotTimeline
-                                            key={isExperienceItem(item) ? item.title : item.year}
+                                            key={getExpertiseItemKey(item)}
                                             year={isExperienceItem(item) ? formatExperienceDateRange(item.date) : item.year}
                                             showBadge={!isExperienceItem(item)}
                                         >
