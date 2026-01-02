@@ -1,13 +1,12 @@
 import 'isomorphic-fetch';
 
-const fromEmail = "portfolio@maxremy.dev";
-const toEmail = "maxremy.dev@gmail.com";
+// MOCK ENVIRONMENT VARIABLES
+process.env.CONTACTFORM_MINIMALAPI_URL = "https://api.example.com";
+process.env.CONTACTFORM_MINIMALAPI_KEY = "test-api-key";
 
-interface ResendResponse {
-    id: string;
-    from: string;
-    to: string[];
-    created_at: string;
+interface ContactFormResponse {
+    success: boolean;
+    message: string;
 }
 
 // MOCK FETCH FOR TESTS
@@ -20,24 +19,19 @@ describe("Contact API Integration", () => {
         mockFetch.mockReset();
     });
 
-    // TEST - SEND EMAIL VIA RESEND API
-    it("should send an email successfully via Resend API", async () => {
-        // MOCK RESPONSE
-        const mockResponse: ResendResponse = {
-            id: "mock-email-id",
-            from: fromEmail,
-            to: [toEmail],
-            created_at: new Date().toISOString()
-        };
+    // TEST - SEND EMAIL VIA CONTACTFORM API
+    it("should send an email successfully via ContactForm API", async () => {
+        // MOCK RESPONSE FROM CONTACTFORM API
+        const mockApiResponse = "Email sent successfully using SMTP_1 (sender@example.com -> recipient@example.com)";
         mockFetch.mockResolvedValueOnce({
             ok: true,
             status: 200,
-            json: async () => mockResponse
+            text: async () => mockApiResponse
         });
 
         // TEST DATA
         const name = "Integration Test";
-        const email = fromEmail;
+        const email = "test@example.com";
         const message = "This is a test email sent from the integration tests. If you receive this, the email sending functionality is working correctly.";
 
         // SEND REQUEST TO OUR API ROUTE
@@ -54,18 +48,20 @@ describe("Contact API Integration", () => {
         });
 
         // ASSERTIONS
-        const result = (await response.json()) as ResendResponse;
+        const result = (await response.json()) as ContactFormResponse;
         expect(response.status).toBe(200);
-        expect(result.id).toBeTruthy();
+        expect(result.success).toBe(true);
+        expect(result.message).toBe(mockApiResponse);
 
-        // VERIFY MOCK WAS CALLED CORRECTLY
+        // VERIFY MOCK WAS CALLED CORRECTLY WITH CONTACTFORM API
         expect(mockFetch).toHaveBeenCalledTimes(1);
         expect(mockFetch).toHaveBeenCalledWith(
-            "http://localhost:3000/api/contact",
+            "https://api.example.com/api/v1/email/1",
             expect.objectContaining({
                 method: "POST",
                 headers: expect.objectContaining({
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "X-Api-Key": "test-api-key"
                 }),
                 body: JSON.stringify({
                     name,
