@@ -1,3 +1,13 @@
+// MOCK NEXT SERVER BEFORE IMPORT
+jest.mock("next/server", () => ({
+	NextResponse: {
+		json: jest.fn().mockImplementation((body, init) => ({
+			json: () => Promise.resolve(body),
+			status: init?.status || 200,
+		})),
+	},
+}));
+
 import { POST } from "../../../app/api/contact/route";
 
 // MOCK FETCH

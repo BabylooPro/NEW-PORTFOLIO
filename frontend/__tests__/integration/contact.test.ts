@@ -1,4 +1,14 @@
-import 'isomorphic-fetch';
+// MOCK NEXT SERVER BEFORE IMPORT
+jest.mock("next/server", () => ({
+    NextResponse: {
+        json: jest.fn().mockImplementation((body, init) => ({
+            json: () => Promise.resolve(body),
+            status: init?.status || 200,
+        })),
+    },
+}));
+
+import { POST } from "../../app/api/contact/route";
 
 // MOCK ENVIRONMENT VARIABLES
 process.env.CONTACTFORM_MINIMALAPI_URL = "https://api.example.com";
@@ -9,21 +19,18 @@ interface ContactFormResponse {
     message: string;
 }
 
-// MOCK FETCH FOR TESTS
-const mockFetch = jest.fn();
-global.fetch = mockFetch;
-
 // TESTS - CONTACT API
 describe("Contact API Integration", () => {
+    // RESET MOCKS
     beforeEach(() => {
-        mockFetch.mockReset();
+        jest.clearAllMocks();
     });
 
     // TEST - SEND EMAIL VIA CONTACTFORM API
     it("should send an email successfully via ContactForm API", async () => {
         // MOCK RESPONSE FROM CONTACTFORM API
         const mockApiResponse = "Email sent successfully using SMTP_1 (sender@example.com -> recipient@example.com)";
-        mockFetch.mockResolvedValueOnce({
+        global.fetch = jest.fn().mockResolvedValue({
             ok: true,
             status: 200,
             text: async () => mockApiResponse
@@ -34,8 +41,8 @@ describe("Contact API Integration", () => {
         const email = "test@example.com";
         const message = "This is a test email sent from the integration tests. If you receive this, the email sending functionality is working correctly.";
 
-        // SEND REQUEST TO OUR API ROUTE
-        const response = await fetch("http://localhost:3000/api/contact", {
+        // CREATE MOCK REQUEST
+        const mockRequest = new Request("http://localhost:3000/api/contact", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -47,15 +54,18 @@ describe("Contact API Integration", () => {
             }),
         });
 
-        // ASSERTIONS
+        // CALL POST FUNCTION
+        const response = await POST(mockRequest);
         const result = (await response.json()) as ContactFormResponse;
+
+        // ASSERTIONS
         expect(response.status).toBe(200);
         expect(result.success).toBe(true);
         expect(result.message).toBe(mockApiResponse);
 
         // VERIFY MOCK WAS CALLED CORRECTLY WITH CONTACTFORM API
-        expect(mockFetch).toHaveBeenCalledTimes(1);
-        expect(mockFetch).toHaveBeenCalledWith(
+        expect(global.fetch).toHaveBeenCalledTimes(1);
+        expect(global.fetch).toHaveBeenCalledWith(
             "https://api.example.com/api/v1/email/1",
             expect.objectContaining({
                 method: "POST",

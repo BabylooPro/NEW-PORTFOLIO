@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server";
+
 export async function POST(request: Request) {
     const apiUrl = process.env.CONTACTFORM_MINIMALAPI_URL?.replace(/\/$/, '') as string;
     const endpoint = `${apiUrl}/api/v1/email/1`;
@@ -13,8 +15,7 @@ export async function POST(request: Request) {
 
     const result = await response.text();
 
-    return new Response(JSON.stringify({ success: response.ok, message: result }), {
-        headers: { 'Content-Type': 'application/json' },
+    return NextResponse.json({ success: response.ok, message: result }, {
         status: response.status
     });
 }
