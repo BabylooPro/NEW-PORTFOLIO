@@ -366,7 +366,7 @@ const SideProjectsSection = () => {
                             <Card className="flex flex-col h-[270px] relative">
                                 {/* LIVE STATUS INDICATOR */}
                                 {project.isOnline !== undefined && (
-                                    <div className="absolute top-2 right-2 flex items-center gap-1">
+                                    <div className="absolute top-3 right-3 flex items-center gap-1">
                                         <div className="flex items-center gap-1">
                                             {project.isOnline ? (
                                                 <>
@@ -399,11 +399,11 @@ const SideProjectsSection = () => {
                                     </div>
                                 )}
                                 {!project.isOnline && project.pinned && (
-                                    <div className="absolute top-2 right-2">
+                                    <div className="absolute top-3 right-3">
                                         <Pin className="size-4 rotate-45 text-yellow-500" />
                                     </div>
                                 )}
-                                <CardHeader className="pb-2">
+                                <CardHeader className="pb-2 mt-1">
                                     <CardTitle className="text-lg">{project.name}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="flex-grow">
@@ -561,15 +561,15 @@ const SideProjectsSection = () => {
                         </motion.div>
                     ))}
                 </div>
-            </ScrollArea>
+            </ScrollArea >
 
             {/* SCROLL INDICATOR */}
-            <ScrollIndicator
+            < ScrollIndicator
                 scrollAreaRef={scrollAreaRef}
                 className="mt-4 mx-auto"
                 position="bottom"
             />
-        </Section>
+        </Section >
     );
 };
 
