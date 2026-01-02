@@ -38,25 +38,25 @@ export function BlogDemo() {
     };
 
     return (
-        <div className="flex flex-col gap-4 p-4 border rounded-lg w-full max-w-md">
+        <div className="flex flex-col gap-4 p-4 border rounded-xl w-full max-w-md">
             <div className="space-y-3 border-b pb-4">
                 <input
                     type="text"
                     value={newPost.title}
                     onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
                     placeholder="Post title"
-                    className="w-full px-3 py-2 border rounded-md dark:bg-neutral-800 dark:border-neutral-700"
+                    className="w-full px-3 py-2 border rounded-xl dark:bg-neutral-800 dark:border-neutral-700"
                 />
                 <textarea
                     value={newPost.content}
                     onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
                     placeholder="Post content"
-                    className="w-full px-3 py-2 border rounded-md dark:bg-neutral-800 dark:border-neutral-700"
+                    className="w-full px-3 py-2 border rounded-xl dark:bg-neutral-800 dark:border-neutral-700"
                 />
                 <button
                     onClick={handleAddPost}
                     disabled={isLoading || !newPost.title || !newPost.content}
-                    className="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
+                    className="w-full px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:opacity-50"
                 >
                     {isLoading ? "Publishing..." : "Publish Post"}
                 </button>
@@ -64,7 +64,7 @@ export function BlogDemo() {
 
             <div className="space-y-4">
                 {posts.map(post => (
-                    <div key={post.id} className="p-3 border rounded-md dark:border-neutral-700">
+                    <div key={post.id} className="p-3 border rounded-xl dark:border-neutral-700">
                         <h3 className="font-medium">{post.title}</h3>
                         <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
                             {post.content}

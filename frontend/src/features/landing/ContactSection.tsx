@@ -251,7 +251,7 @@ const ContactSection: React.FC = () => {
                                 <Label>Message</Label>
                                 <FormControl>
                                     <Textarea
-                                        className="flex min-h-[80px] w-full rounded-md border border-input bg-card px-3 py-2"
+                                        className="flex min-h-[80px] w-full px-3 py-2"
                                         placeholder="Your Message"
                                         rows={10}
                                         {...field}

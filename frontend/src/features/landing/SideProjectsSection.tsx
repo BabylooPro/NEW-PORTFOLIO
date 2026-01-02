@@ -264,7 +264,7 @@ const SideProjectsSection = () => {
                 <ScrollArea className="h-[555px] w-full">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-4">
                         {[...Array(6)].map((_, index) => (
-                            <Skeleton key={index} className="h-[270px] w-full rounded-xl" />
+                            <Skeleton key={index} className="h-[270px] w-full rounded-2xl" />
                         ))}
                     </div>
                 </ScrollArea>
@@ -284,7 +284,7 @@ const SideProjectsSection = () => {
                 <ScrollArea className="h-[555px] w-full">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-4">
                         {[...Array(6)].map((_, index) => (
-                            <Skeleton key={index} className="h-[270px] w-full rounded-xl" />
+                            <Skeleton key={index} className="h-[270px] w-full rounded-2xl" />
                         ))}
                     </div>
                 </ScrollArea>

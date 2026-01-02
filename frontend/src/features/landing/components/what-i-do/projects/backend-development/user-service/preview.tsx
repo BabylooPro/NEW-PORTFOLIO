@@ -112,10 +112,10 @@ const PostmanDemo = () => {
 
     return (
         <div className="w-full max-w-3xl mx-auto p-8">
-            <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
                 <div className="border-b border-neutral-200 dark:border-neutral-800">
                     <div className="flex items-center gap-4 p-4">
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
                             <span className={`font-mono font-bold ${getMethodColor(currentRequest.method)}`}>
                                 {currentRequest.method}
                             </span>
@@ -133,14 +133,14 @@ const PostmanDemo = () => {
                 <div className="grid grid-cols-2 divide-x divide-neutral-200 dark:divide-neutral-800">
                     <div className="p-4">
                         <div className="text-sm font-medium text-neutral-900 dark:text-white mb-2">Request Body</div>
-                        <div className="font-mono text-xs bg-neutral-50 dark:bg-neutral-800 p-3 rounded-lg text-neutral-800 dark:text-neutral-300 overflow-auto max-h-[200px]">
+                        <div className="font-mono text-xs bg-neutral-50 dark:bg-neutral-800 p-3 rounded-xl text-neutral-800 dark:text-neutral-300 overflow-auto max-h-[200px]">
                             {currentRequest.body || 'No body required'}
                         </div>
                     </div>
 
                     <div className="p-4">
                         <div className="text-sm font-medium text-neutral-900 dark:text-white mb-2">Response</div>
-                        <div className="font-mono text-xs bg-neutral-50 dark:bg-neutral-800 p-3 rounded-lg text-neutral-800 dark:text-neutral-300 overflow-auto max-h-[200px]">
+                        <div className="font-mono text-xs bg-neutral-50 dark:bg-neutral-800 p-3 rounded-xl text-neutral-800 dark:text-neutral-300 overflow-auto max-h-[200px]">
                             {isLoading ? (
                                 <motion.div
                                     className="flex items-center gap-2 text-neutral-400"
@@ -157,7 +157,7 @@ const PostmanDemo = () => {
 
                 <div className="border-t border-neutral-200 dark:border-neutral-800 p-4">
                     <motion.button
-                        className="flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-lg text-sm font-medium hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl text-sm font-medium hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
                         whileTap={{ scale: 0.98 }}
                         onClick={simulateRequest}
                     >

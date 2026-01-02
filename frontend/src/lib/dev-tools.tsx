@@ -94,7 +94,7 @@ const TooltipContent = forwardRef<
         ref={ref}
         sideOffset={sideOffset}
         className={cn(
-            "z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+            "z-50 overflow-hidden rounded-xl border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
             className
         )}
         {...props}
@@ -112,7 +112,7 @@ const DropdownMenuContent = forwardRef<
             ref={ref}
             sideOffset={sideOffset}
             className={cn(
-                "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+                "z-50 min-w-[8rem] overflow-hidden rounded-xl border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
                 className
             )}
             onPointerDownOutside={(e) => {
@@ -489,7 +489,7 @@ const ColorEditor = () => {
                         <h3 className="text-sm font-medium">Color Editor</h3>
                         {selectedElement ? (
                             <button
-                                className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-background border hover:bg-accent h-9 px-3"
+                                className="inline-flex items-center justify-center rounded-xl text-sm font-medium bg-background border hover:bg-accent h-9 px-3"
                                 onClick={() => {
                                     setSelectedElement(null);
                                     setColor('#000000');
@@ -500,7 +500,7 @@ const ColorEditor = () => {
                             </button>
                         ) : (
                             <button
-                                className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-background border hover:bg-accent h-9 px-3"
+                                className="inline-flex items-center justify-center rounded-xl text-sm font-medium bg-background border hover:bg-accent h-9 px-3"
                                 onClick={() => setIsActive(true)}
                             >
                                 Select Element
@@ -519,7 +519,7 @@ const ColorEditor = () => {
                                 className="w-8 h-8 rounded cursor-pointer"
                             />
                             <button
-                                className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-background border hover:bg-accent h-8 px-3"
+                                className="inline-flex items-center justify-center rounded-xl text-sm font-medium bg-background border hover:bg-accent h-8 px-3"
                                 onClick={handleEyeDropper}
                             >
                                 <Pipette className="w-4 h-4 mr-2" />
@@ -1925,7 +1925,7 @@ const AnimationInspector = () => {
                         <h3 className="text-sm font-medium">Animation Inspector</h3>
                         {selectedElement ? (
                             <button
-                                className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-background border hover:bg-accent h-9 px-3"
+                                className="inline-flex items-center justify-center rounded-xl text-sm font-medium bg-background border hover:bg-accent h-9 px-3"
                                 onClick={() => {
                                     setSelectedElement(null);
                                     setAnimations([]);
@@ -1936,7 +1936,7 @@ const AnimationInspector = () => {
                             </button>
                         ) : (
                             <button
-                                className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-background border hover:bg-accent h-9 px-3"
+                                className="inline-flex items-center justify-center rounded-xl text-sm font-medium bg-background border hover:bg-accent h-9 px-3"
                                 onClick={() => setIsActive(true)}
                             >
                                 Select Element
@@ -1956,19 +1956,19 @@ const AnimationInspector = () => {
                                         </span>
                                         <div className="flex items-center gap-2">
                                             <button
-                                                className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-background hover:bg-accent h-6 w-6"
+                                                className="inline-flex items-center justify-center rounded-xl text-sm font-medium bg-background hover:bg-accent h-6 w-6"
                                                 onClick={() => animation.pause()}
                                             >
                                                 <Pause className="h-3 w-3" />
                                             </button>
                                             <button
-                                                className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-background hover:bg-accent h-6 w-6"
+                                                className="inline-flex items-center justify-center rounded-xl text-sm font-medium bg-background hover:bg-accent h-6 w-6"
                                                 onClick={() => animation.play()}
                                             >
                                                 <Play className="h-3 w-3" />
                                             </button>
                                             <button
-                                                className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-background hover:bg-accent h-6 w-6"
+                                                className="inline-flex items-center justify-center rounded-xl text-sm font-medium bg-background hover:bg-accent h-6 w-6"
                                                 onClick={() => animation.reverse()}
                                             >
                                                 <Rewind className="h-3 w-3" />
@@ -2056,7 +2056,7 @@ const AccessibilityInspector = () => {
                         <h3 className="text-sm font-medium">Accessibility Inspector</h3>
                         {selectedElement ? (
                             <button
-                                className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-background border hover:bg-accent h-9 px-3"
+                                className="inline-flex items-center justify-center rounded-xl text-sm font-medium bg-background border hover:bg-accent h-9 px-3"
                                 onClick={() => {
                                     setSelectedElement(null);
                                     setIsActive(true);
@@ -2066,7 +2066,7 @@ const AccessibilityInspector = () => {
                             </button>
                         ) : (
                             <button
-                                className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-background border hover:bg-accent h-9 px-3"
+                                className="inline-flex items-center justify-center rounded-xl text-sm font-medium bg-background border hover:bg-accent h-9 px-3"
                                 onClick={() => setIsActive(true)}
                             >
                                 Select Element
@@ -2187,7 +2187,7 @@ const ComponentPropsInspector = () => {
                         <h3 className="text-sm font-medium">Component Props</h3>
                         {selectedElement ? (
                             <button
-                                className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-background border hover:bg-accent h-9 px-3"
+                                className="inline-flex items-center justify-center rounded-xl text-sm font-medium bg-background border hover:bg-accent h-9 px-3"
                                 onClick={() => {
                                     setSelectedElement(null);
                                     setComponentInfo(null);
@@ -2198,7 +2198,7 @@ const ComponentPropsInspector = () => {
                             </button>
                         ) : (
                             <button
-                                className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-background border hover:bg-accent h-9 px-3"
+                                className="inline-flex items-center justify-center rounded-xl text-sm font-medium bg-background border hover:bg-accent h-9 px-3"
                                 onClick={() => setIsActive(true)}
                             >
                                 Select Element
@@ -2351,7 +2351,7 @@ export const DevTools = () => {
                         </div>
                     </div>
                     {isOpen && (
-                        <CollapsibleContent className="mt-2 flex flex-col gap-2 p-2 bg-background rounded-lg border w-[200px]">
+                        <CollapsibleContent className="mt-2 flex flex-col gap-2 p-2 bg-background rounded-xl border w-[200px]">
                             <CategorySection title="Performance Essentials" defaultOpen={true}>
                                 <div className="flex flex-col gap-1">
                                     <PerformanceMonitor />

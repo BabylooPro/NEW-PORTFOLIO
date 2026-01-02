@@ -200,7 +200,7 @@ export const IDEWindow = forwardRef<IDEWindowHandle, IDEWindowProps>(({
                         <ScrollArea ref={scrollAreaRef} className="w-[calc(100%-5px)]">
                             <div className="flex items-center px-4 min-w-0">
                                 <div
-                                    className="flex space-x-2 bg-transparent py-2 rounded-lg"
+                                    className="flex space-x-2 bg-transparent py-2 rounded-xl"
                                     onMouseEnter={() => setHoverToClose(true)}
                                     onMouseLeave={() => setHoverToClose(false)}
                                 >
@@ -293,7 +293,7 @@ export const IDEWindow = forwardRef<IDEWindowHandle, IDEWindowProps>(({
             <Dialog open={showTerminal} onOpenChange={setShowTerminal}>
                 <DialogContent className="sm:max-w-[800px] p-0 gap-0" hideCloseButton>
                     <DialogTitle className="sr-only">Terminal Window</DialogTitle>
-                    <div className="w-full min-h-[400px] bg-black rounded-lg">
+                    <div className="w-full min-h-[400px] bg-black rounded-xl">
                         <div className={`p-0 flex items-center h-8 relative rounded-t-lg ${resolvedTheme === "dark" ? "bg-neutral-800" : "bg-neutral-200"}`}>
                             <div className="flex space-x-2 mt-[5px] ml-4 items-center absolute left-0">
                                 <DialogClose className="hover:opacity-80 cursor-pointer">

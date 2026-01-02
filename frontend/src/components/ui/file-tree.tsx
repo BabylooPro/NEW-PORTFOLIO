@@ -191,7 +191,7 @@ const TreeIndicator = forwardRef<
             dir={direction}
             ref={ref}
             className={cn(
-                "h-full w-px bg-muted absolute left-1.5 rtl:right-1.5 py-3 rounded-md hover:bg-slate-300 duration-300 ease-in-out",
+                "h-full w-px bg-muted absolute left-1.5 rtl:right-1.5 py-3 rounded-xl hover:bg-slate-300 duration-300 ease-in-out",
                 className,
             )}
             {...props}
@@ -245,10 +245,10 @@ const Folder = forwardRef<
             >
                 <AccordionPrimitive.Trigger
                     className={cn(
-                        `flex items-center gap-1 text-sm rounded-md`,
+                        `flex items-center gap-1 text-sm rounded-xl`,
                         className,
                         {
-                            "bg-muted rounded-md": isSelect && isSelectable,
+                            "bg-muted rounded-xl": isSelect && isSelectable,
                             "cursor-pointer": isSelectable,
                             "cursor-not-allowed opacity-50": !isSelectable,
                         },
@@ -338,7 +338,7 @@ const File = forwardRef<HTMLButtonElement, FileProps>(function FileComponent(pro
                 ref={ref}
                 variant="ghost"
                 className={cn(
-                    "flex h-8 items-center text-xs overflow-hidden relative gap-1.5 font-normal w-full justify-start px-2 py-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-900",
+                    "flex h-8 items-center text-xs overflow-hidden relative gap-1.5 font-normal w-full justify-start px-2 py-1 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-900",
                     {
                         "bg-primary/5 text-primary": selectedId === value || isSelect,
                     },
@@ -461,7 +461,7 @@ const FileTreeStatic = ({
                 type="button"
                 variant="ghost"
                 className={cn(
-                    "flex h-8 items-center text-xs overflow-hidden relative gap-1.5 font-normal w-full justify-start px-2 py-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-900",
+                    "flex h-8 items-center text-xs overflow-hidden relative gap-1.5 font-normal w-full justify-start px-2 py-1 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-900",
                     {
                         "bg-primary/5 text-primary": selectedId === value || isSelect,
                     },
@@ -539,7 +539,7 @@ const DirectFileTree = (props: DirectFileTreeProps) => {
             type="button"
             variant="ghost"
             className={cn(
-                "flex h-8 items-center text-xs overflow-hidden relative gap-1.5 font-normal w-full justify-start px-2 py-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-900",
+                "flex h-8 items-center text-xs overflow-hidden relative gap-1.5 font-normal w-full justify-start px-2 py-1 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-900",
                 {
                     "bg-primary/5 text-primary": selectedId === value || isSelect,
                 },

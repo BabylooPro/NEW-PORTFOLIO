@@ -189,10 +189,10 @@ const WhatIDoV2Section: React.FC = () => {
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
                             {[1, 2, 3, 4].map((i) => (
-                                <Skeleton key={i} className="h-40 w-full rounded-xl" />
+                                <Skeleton key={i} className="h-40 w-full rounded-2xl" />
                             ))}
                         </div>
-                        <Skeleton className="h-[600px] w-full rounded-xl" />
+                        <Skeleton className="h-[600px] w-full rounded-2xl" />
                     </div>
                 </div>
             </Section>
@@ -269,7 +269,7 @@ const WhatIDoV2Section: React.FC = () => {
                     {/* VIDEO PLAYER */}
                     {currentVideo && currentVideo.src && (
                         <Card
-                            className={`rounded-xl overflow-hidden border-none ${resolvedTheme === "dark" ? "bg-neutral-900 text-white" : "bg-white text-black"
+                            className={`rounded-2xl overflow-hidden border-none ${resolvedTheme === "dark" ? "bg-neutral-900 text-white" : "bg-white text-black"
                                 }`}
                         >
                             <ClientOnly id="video-container">

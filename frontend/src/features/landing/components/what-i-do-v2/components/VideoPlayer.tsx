@@ -213,7 +213,7 @@ const VideoPlayer = React.forwardRef<HTMLVideoElement, VideoPlayerProps>(({ src,
             {/* VIDEO */}
             <video
                 ref={videoRef}
-                className="w-full h-full object-cover rounded-lg"
+                className="w-full h-full object-cover rounded-xl"
                 src={src}
                 controls={false}
                 playsInline
@@ -224,14 +224,14 @@ const VideoPlayer = React.forwardRef<HTMLVideoElement, VideoPlayerProps>(({ src,
                 onEnded={handleVideoEnded}
             />
             {recap && (
-                <div className="absolute top-4 left-4 z-20 bg-black/60 text-white p-2 rounded-md max-w-[80%]">
+                <div className="absolute top-4 left-4 z-20 bg-black/60 text-white p-2 rounded-xl max-w-[80%]">
                     <p className="text-sm font-mono">{recap}</p>
                 </div>
             )}
 
             {/* TIME AND MUTE */}
             <div className="absolute bottom-4 right-4 max-sm:left-4 max-sm:mb-20 z-20 flex items-center gap-2">
-                <div className="bg-black/60 text-white text-sm py-1 px-2 rounded-md">
+                <div className="bg-black/60 text-white text-sm py-1 px-2 rounded-xl">
                     {formatTime(currentTime)} / {formatTime(duration)}
                 </div>
                 <button
@@ -245,14 +245,14 @@ const VideoPlayer = React.forwardRef<HTMLVideoElement, VideoPlayerProps>(({ src,
 
             {/* FPS DEBUG */}
             {debug && (
-                <div className="absolute top-4 right-4 z-20 bg-red-600/80 text-white p-1 rounded-md">
+                <div className="absolute top-4 right-4 z-20 bg-red-600/80 text-white p-1 rounded-xl">
                     <p className="text-sm font-mono">{fps} FPS</p>
                 </div>
             )}
 
             {/* ADVANCED DEBUG STATS */}
             {advancedDebug && (
-                <div className="absolute top-4 left-4 right-4 z-30 bg-black/80 text-white p-2 rounded-md font-mono text-xs">
+                <div className="absolute top-4 left-4 right-4 z-30 bg-black/80 text-white p-2 rounded-xl font-mono text-xs">
                     <table className="w-full">
                         <tbody>
                             {/* VIDEO ID */}

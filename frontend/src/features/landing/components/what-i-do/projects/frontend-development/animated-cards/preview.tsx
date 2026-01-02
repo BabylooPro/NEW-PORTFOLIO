@@ -2,12 +2,12 @@ import { motion } from "framer-motion";
 
 export function AnimatedCardsGrid() {
     return (
-        <div className="flex items-center justify-center w-full h-[400px] bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg p-8">
+        <div className="flex items-center justify-center w-full h-[400px] bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl p-8">
             <div className="grid grid-cols-2 gap-6">
                 {[...Array(4)].map((_, i) => (
                     <motion.div
                         key={i}
-                        className="bg-white dark:bg-neutral-800 rounded-lg p-4 w-[140px] h-[140px]"
+                        className="bg-white dark:bg-neutral-800 rounded-xl p-4 w-[140px] h-[140px]"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         initial={{ opacity: 0, y: 20 }}

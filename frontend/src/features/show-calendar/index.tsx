@@ -143,7 +143,7 @@ export function ShowCalendarIndex() {
             {/* TABS */}
             <Tabs
                 value={currentView}
-                className="pointer-events-none w-full bg-neutral-50 dark:bg-neutral-900 px-8 py-6 rounded-xl max-w-max mx-auto"
+                className="pointer-events-none w-full bg-neutral-50 dark:bg-neutral-900 px-8 py-6 rounded-2xl max-w-max mx-auto"
             >
                 {/* TABS CONTENT */}
                 <div className="flex gap-6">

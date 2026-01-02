@@ -25,13 +25,13 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, isSelected }) => 
     return (
         <div
             onClick={onClick}
-            className={`relative cursor-pointer rounded-lg overflow-hidden transition-all ${isSelected ? 'ring-2 ring-blue-500 dark:ring-white scale-[1.02] max-sm:scale-[1]' : 'hover:scale-[1.01] hover:shadow-md'
+            className={`relative cursor-pointer rounded-xl overflow-hidden transition-all ${isSelected ? 'ring-2 ring-blue-500 dark:ring-white scale-[1.02] max-sm:scale-[1]' : 'hover:scale-[1.01] hover:shadow-md'
                 }`}
             style={{ height: '120px' }}
         >
             {/* DATE */}
             {formattedDate && (
-                <div className="absolute top-2 left-2 z-30 bg-black/70 text-white text-xs py-1 px-2 rounded-sm">
+                <div className="absolute top-2 left-2 z-30 bg-black/70 text-white text-xs py-1 px-2 rounded-xl">
                     {formattedDate}
                 </div>
             )}

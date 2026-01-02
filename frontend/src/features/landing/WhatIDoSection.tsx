@@ -214,7 +214,7 @@ const WhatIDoSection: React.FC = () => {
                 </h2>
 
                 <Card
-                    className={`rounded-xl overflow-hidden border-none ${resolvedTheme === "dark" ? "bg-neutral-900 text-white" : "bg-white text-black"
+                    className={`rounded-2xl overflow-hidden border-none ${resolvedTheme === "dark" ? "bg-neutral-900 text-white" : "bg-white text-black"
                         }`}
                 >
                     {shouldShowIDE ? (

@@ -42,7 +42,7 @@ export const Preview: React.FC<PreviewProps> = ({ preview }) => {
         // JSON PREVIEW
         case "json":
             return (
-                <div className="p-4 rounded-lg bg-neutral-100 dark:bg-neutral-800">
+                <div className="p-4 rounded-xl bg-neutral-100 dark:bg-neutral-800">
                     <pre className="text-sm">
                         {JSON.stringify(preview.content, null, 2)}
                     </pre>
@@ -80,7 +80,7 @@ export const Preview: React.FC<PreviewProps> = ({ preview }) => {
                             {features.map((feature: string, index: number) => (
                                 <div
                                     key={index}
-                                    className="p-3 bg-neutral-100 dark:bg-neutral-800 rounded-lg text-sm"
+                                    className="p-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-sm"
                                 >
                                     {feature}
                                 </div>
@@ -93,7 +93,7 @@ export const Preview: React.FC<PreviewProps> = ({ preview }) => {
         // TERMINAL PREVIEW (TERMINAL COMMANDS)
         case "terminal":
             return (
-                <div className="w-full min-h-[300px] bg-black rounded-lg">
+                <div className="w-full min-h-[300px] bg-black rounded-xl">
                     <TerminalPreview commands={preview.content} />
                 </div>
             );

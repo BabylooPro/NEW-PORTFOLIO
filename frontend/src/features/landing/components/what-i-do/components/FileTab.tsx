@@ -30,7 +30,7 @@ export const FileTab: React.FC<FileTabProps> = ({
         <button
             onClick={onSelect}
             className={`
-                group relative pl-3 pr-7 py-1.5 rounded-md text-sm transition-colors
+                group relative pl-3 pr-7 py-1.5 rounded-xl text-sm transition-colors
                 flex items-center gap-2
                 ${isActive ? "bg-neutral-200 dark:bg-neutral-800" : "hover:bg-neutral-200 dark:hover:bg-neutral-800"}
                 ${progress > 0 && !isComplete ? "text-orange-400" : isComplete ? "text-green-400" : ""}
@@ -50,7 +50,7 @@ export const FileTab: React.FC<FileTabProps> = ({
             <div className="absolute right-1">
                 {(isActive || (hoverToClose && !showDot)) ? (
                     <X
-                        className={`w-6 h-6 p-[4px] rounded-sm text-foreground bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 ${!isActive && 'opacity-0 group-hover:opacity-100'}`}
+                        className={`w-6 h-6 p-[4px] rounded-xl text-foreground bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 ${!isActive && 'opacity-0 group-hover:opacity-100'}`}
                         onClick={onClose}
                     />
                 ) : showDot && (

@@ -51,7 +51,7 @@ export function DevOpsDemo() {
     };
 
     return (
-        <div className="flex flex-col gap-4 p-4 border rounded-lg w-full max-w-md font-mono text-sm">
+        <div className="flex flex-col gap-4 p-4 border rounded-xl w-full max-w-md font-mono text-sm">
             <div className="flex gap-2">
                 {(['backend', 'frontend', 'mobile'] as const).map(service => (
                     <button
@@ -87,7 +87,7 @@ export function DevOpsDemo() {
                 Deploy {activeService.charAt(0).toUpperCase() + activeService.slice(1)}
             </button>
 
-            <div className="bg-black text-green-400 p-4 rounded-lg h-[200px] overflow-y-auto">
+            <div className="bg-black text-green-400 p-4 rounded-xl h-[200px] overflow-y-auto">
                 {logs.map((log, index) => (
                     <div key={index} className="whitespace-pre">
                         $ {log}

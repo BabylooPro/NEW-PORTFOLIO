@@ -68,7 +68,7 @@ const SimpleFolder = ({
         <div className="flex flex-col mb-0">
             <button
                 type="button"
-                className="flex items-center gap-1 text-sm rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 py-1 px-1"
+                className="flex items-center gap-1 text-sm rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-700 py-1 px-1"
                 onClick={() => setIsExpanded(!isExpanded)}
             >
                 {isExpanded
@@ -107,7 +107,7 @@ const FileItem = ({
             type="button"
             onClick={handleSelect}
             className={cn(
-                "flex h-7 w-full items-center text-xs overflow-hidden gap-1 px-2 py-1 rounded-md text-left",
+                "flex h-7 w-full items-center text-xs overflow-hidden gap-1 px-2 py-1 rounded-xl text-left",
                 "font-normal justify-start hover:bg-neutral-100 dark:hover:bg-neutral-800",
                 {
                     "bg-neutral-200 dark:bg-neutral-800": isSelect,
