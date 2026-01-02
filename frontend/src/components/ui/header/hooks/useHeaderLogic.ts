@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 const DEBUG_STORAGE_KEY = "debug_borders_enabled";
+const IS_PROD = process.env.NODE_ENV === "production";
 
 export const useHeaderLogic = () => {
     const router = useRouter();
@@ -9,14 +10,16 @@ export const useHeaderLogic = () => {
     const [isScrolling, setIsScrolling] = useState(false);
     const [isClient, setIsClient] = useState(false);
     const [isCompact, setIsCompact] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-    const [showWIPBadge, setShowWIPBadge] = useState(true);
+    const [isLoading, setIsLoading] = useState(!IS_PROD);
+    const [showWIPBadge, setShowWIPBadge] = useState(!IS_PROD);
+    const [hasScrolledOnce, setHasScrolledOnce] = useState(false);
+
     const [lastCommitInfo, setLastCommitInfo] = useState<{
         date: string;
         message: string;
         hiddenDate: string;
     } | null>(null);
-    const [hasScrolledOnce, setHasScrolledOnce] = useState(false);
+
     const [showDebugButton, setShowDebugButton] = useState(() => {
         if (typeof window !== "undefined") {
             return (
@@ -124,6 +127,12 @@ export const useHeaderLogic = () => {
     }, []);
 
     useEffect(() => {
+        if (IS_PROD) {
+            setShowWIPBadge(false);
+            setIsLoading(false);
+            return;
+        }
+
         setIsLoading(true);
         fetchLastCommitInfo().then((info) => {
             if (info) {

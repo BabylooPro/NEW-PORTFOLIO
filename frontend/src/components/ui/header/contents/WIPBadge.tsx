@@ -6,6 +6,8 @@ import AppleEmoji from "@/components/decoration/apple-emoji";
 import { DevTools } from "@/lib/dev-tools";
 import { useState, useEffect } from "react";
 
+const IS_PROD = process.env.NODE_ENV === "production";
+
 interface WIPBadgeProps {
     showDebugButton: boolean;
     lastCommitInfo: {
@@ -24,7 +26,7 @@ export const WIPBadge = ({ showDebugButton, lastCommitInfo }: WIPBadgeProps) => 
     }, []);
 
     // ONLY RENDER CONTENT CLIENT-SIDE
-    if (!isMounted) return null;
+    if (IS_PROD || !isMounted) return null;
 
     return (
         <div className="fixed top-2 left-2 flex items-center gap-2 z-[9999]">

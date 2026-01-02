@@ -20,6 +20,8 @@ import { useHeaderLogic } from "./hooks/useHeaderLogic";
 import { HeaderSkeleton } from "./contents/HeaderSkeleton";
 import { useHeaderSection } from "./hooks/useHeaderSection";
 
+const IS_PROD = process.env.NODE_ENV === "production";
+
 // HEADER COMPONENT
 export default function Header() {
     const {
@@ -83,7 +85,7 @@ export default function Header() {
     return (
         <>
             {/* WIP BADGE */}
-            {showWIPBadge && (
+            {!IS_PROD && showWIPBadge && (
                 <WIPBadge
                     showDebugButton={showDebugButton}
                     // toggleDebugBorders={toggleDebugBorders}
@@ -140,10 +142,10 @@ export default function Header() {
                             }}
                             transition={{
                                 duration: 0.5,
-								ease: "easeOut" as const,
+                                ease: "easeOut" as const,
                                 layout: {
                                     duration: 0.5,
-									ease: "easeOut" as const,
+                                    ease: "easeOut" as const,
                                 },
                             }}
                             layout="position"
@@ -184,7 +186,7 @@ export default function Header() {
                                         }}
                                         transition={{
                                             duration: 2.5,
-											ease: [0.34, 1.56, 0.64, 1] as const,
+                                            ease: [0.34, 1.56, 0.64, 1] as const,
                                             scale: {
                                                 type: "spring",
                                                 damping: 15,
@@ -203,7 +205,7 @@ export default function Header() {
                                             }}
                                             transition={{
                                                 duration: 2.5,
-												ease: [0.34, 1.56, 0.64, 1] as const,
+                                                ease: [0.34, 1.56, 0.64, 1] as const,
                                                 delay: 0.6,
                                             }}
                                         >
@@ -230,7 +232,7 @@ export default function Header() {
                                     exit={{ width: 0, opacity: 0 }}
                                     transition={{
                                         duration: 1,
-										ease: "easeInOut" as const,
+                                        ease: "easeInOut" as const,
                                     }}
                                     className="mt-2"
                                 >
@@ -265,11 +267,11 @@ export default function Header() {
                                     }}
                                     transition={{
                                         duration: 0.5,
-										ease: "easeOut" as const,
+                                        ease: "easeOut" as const,
                                         opacity: { duration: 0.5 },
                                         y: {
                                             duration: 0.5,
-											ease: "easeOut" as const,
+                                            ease: "easeOut" as const,
                                         },
                                     }}
                                     layout
@@ -280,7 +282,7 @@ export default function Header() {
                                         }}
                                         transition={{
                                             duration: 0.5,
-											ease: "easeOut" as const,
+                                            ease: "easeOut" as const,
                                         }}
                                     >
                                         {mounted ? (
