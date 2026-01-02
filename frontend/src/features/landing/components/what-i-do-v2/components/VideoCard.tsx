@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { Video } from "../types/videos";
 
 interface VideoCardProps {
@@ -10,6 +10,7 @@ interface VideoCardProps {
 
 const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, isSelected }) => {
     const videoRef = useRef<HTMLVideoElement | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     // FORMAT DATE TO A MORE READABLE FORMAT
     const formatDate = (dateString?: string) => {
@@ -28,9 +29,16 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, isSelected }) => 
     useEffect(() => {
         const el = videoRef.current;
         if (!el) return;
+        setIsLoading(true);
         el.pause();
         if (el.currentTime !== 0) el.currentTime = 0;
     }, [video.src]);
+
+    // HANDLE VIDEO LOADING STATE
+    const handleLoadStart = () => setIsLoading(true)
+    const handleCanPlay = () => setIsLoading(false)
+    const handleWaiting = () => setIsLoading(true)
+    const handlePlaying = () => setIsLoading(false)
 
     return (
         <div
@@ -50,18 +58,31 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, isSelected }) => 
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10" />
 
             {/* VIDEO CONTAINER */}
-            <div className="h-full w-full">
+            <div className="h-full w-full relative">
                 {video.src ? (
-                    <video
-                        ref={videoRef}
-                        className="w-full h-full object-cover"
-                        src={video.src}
-                        preload="metadata"
-                        controls={false}
-                        muted
-                        playsInline
-                        disablePictureInPicture
-                    />
+                    <>
+                        <video
+                            ref={videoRef}
+                            className="w-full h-full object-cover"
+                            src={video.src}
+                            preload="metadata"
+                            controls={false}
+                            muted
+                            playsInline
+                            disablePictureInPicture
+                            onLoadStart={handleLoadStart}
+                            onCanPlay={handleCanPlay}
+                            onWaiting={handleWaiting}
+                            onPlaying={handlePlaying}
+                        />
+
+                        {/* LOADER */}
+                        {isLoading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-15">
+                                <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            </div>
+                        )}
+                    </>
                 ) : (
                     <div className="w-full h-full bg-neutral-800 flex items-center justify-center">
                         <span className="text-xs text-white/70">No video available</span>
