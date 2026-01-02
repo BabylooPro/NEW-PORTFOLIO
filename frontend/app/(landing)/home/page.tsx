@@ -26,10 +26,10 @@ export default function Home() {
             <Header />
             <HeroSection />
             <SocialSection />
+            <WhatIDoV2Section />
             <SkillSection />
             <ExperienceSection />
             <SideProjectsSection />
-            <WhatIDoV2Section />
             {/*<Suspense fallback={<Loader className="animate-spin" />}>
                  <ShowCalendarIndex />
             </Suspense>*/}
