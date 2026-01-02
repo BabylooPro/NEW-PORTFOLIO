@@ -404,7 +404,7 @@ const SideProjectsSection = () => {
                                     </div>
                                 )}
                                 <CardHeader className="pb-2 mt-1">
-                                    <CardTitle className="text-lg">{project.name}</CardTitle>
+                                    <CardTitle className="text-lg line-clamp-3">{project.name}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="flex-grow">
                                     <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
