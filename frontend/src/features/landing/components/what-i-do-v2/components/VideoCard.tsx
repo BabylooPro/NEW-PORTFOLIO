@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import type { Video } from "../types/videos";
 
 interface VideoCardProps {
@@ -9,6 +9,8 @@ interface VideoCardProps {
 }
 
 const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, isSelected }) => {
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+
     // FORMAT DATE TO A MORE READABLE FORMAT
     const formatDate = (dateString?: string) => {
         if (!dateString) return null;
@@ -21,6 +23,14 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, isSelected }) => 
     };
 
     const formattedDate = formatDate(video.date);
+
+    // KEEP VIDEO PAUSED AT FIRST FRAME (THUMBNAIL ONLY, NO AUTOPLAY)
+    useEffect(() => {
+        const el = videoRef.current;
+        if (!el) return;
+        el.pause();
+        if (el.currentTime !== 0) el.currentTime = 0;
+    }, [video.src]);
 
     return (
         <div
@@ -43,10 +53,14 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, isSelected }) => 
             <div className="h-full w-full">
                 {video.src ? (
                     <video
+                        ref={videoRef}
                         className="w-full h-full object-cover"
                         src={video.src}
+                        preload="metadata"
+                        controls={false}
                         muted
                         playsInline
+                        disablePictureInPicture
                     />
                 ) : (
                     <div className="w-full h-full bg-neutral-800 flex items-center justify-center">

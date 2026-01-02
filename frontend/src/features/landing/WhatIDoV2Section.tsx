@@ -31,7 +31,6 @@ const WhatIDoV2Section: React.FC = () => {
     const [isMounted, setIsMounted] = useState(false);
     const { data: sectionData, isLoading: isSectionLoading } = useWhatIDoSection();
     const { data: videosData, isLoading: isVideosLoading } = useShowcaseVideos();
-    const sectionRef = useRef<HTMLDivElement>(null);
     const [isInView, setIsInView] = useState(false);
     const [_forceShow, setForceShow] = useState(false);
     const [activeVideo, setActiveVideo] = useState("");
@@ -148,31 +147,11 @@ const WhatIDoV2Section: React.FC = () => {
         }, 500);
     }, []);
 
-    // INTERSECTION OBSERVER
-    useEffect(() => {
-        if (!sectionRef.current || typeof window === 'undefined') return;
-
-        const currentRef = sectionRef.current;
-        const observer = new IntersectionObserver(
-            (entries) => {
-                const [entry] = entries;
-                handleVisibilityChange(entry.isIntersecting);
-            },
-            { threshold: 0.15 }
-        );
-
-        observer.observe(currentRef);
-
-        return () => {
-            observer.unobserve(currentRef);
-        };
-    }, [handleVisibilityChange]);
-
     // PRELIMINARY CHECKS
     if (!resolvedTheme || !isMounted || isSectionLoading || isVideosLoading || !validVideos || validVideos.length === 0) {
         return (
             <Section id="whatido" onVisibilityChange={handleVisibilityChange} disableAnimations={false}>
-                <div ref={sectionRef} className="w-full">
+                <div className="w-full">
                     <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
                         {sectionData?.title || "What I Do"}
                         <ShowInfo
@@ -208,7 +187,7 @@ const WhatIDoV2Section: React.FC = () => {
     return (
         <Section id="whatido" onVisibilityChange={handleVisibilityChange} disableAnimations={false}>
             <style jsx global>{carouselStyles}</style>
-            <div ref={sectionRef} className="w-full">
+            <div className="w-full">
                 {/* TITLE */}
                 <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
                     {sectionData?.title || "What I Do"}

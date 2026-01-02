@@ -24,6 +24,7 @@ const VideoPlayer = React.forwardRef<HTMLVideoElement, VideoPlayerProps>(({ src,
     const [fps, setFps] = useState(0);
     const frameCountRef = useRef(0);
     const lastTimeRef = useRef(0);
+    const lastSrcForWatchdogRef = useRef<string>(src);
 
     // ADVANCED DEBUG STATS
     const [advancedStats, setAdvancedStats] = useState({
@@ -161,6 +162,32 @@ const VideoPlayer = React.forwardRef<HTMLVideoElement, VideoPlayerProps>(({ src,
         }
     }, [isActive, src, initialTime]);
 
+    // AUTOPLAY WATCHDOG (BROWSERS SOMETIMES ABORT AUTOPLAY ON REFRESH/HYDRATION)
+    useEffect(() => {
+        const el = videoRef.current;
+        if (!el) return;
+
+        if (lastSrcForWatchdogRef.current !== src) lastSrcForWatchdogRef.current = src;
+        if (!isActive) return;
+
+        const tryPlay = () => {
+            const video = videoRef.current;
+            if (!video) return;
+            if (!isActive) return;
+            if (hasEndedRef.current || video.ended) return;
+            if (video.readyState < 2) return;
+            if (!video.paused) return;
+
+            video.play().catch((err) => {
+                if (debug || advancedDebug) console.error("Video play error (watchdog):", err);
+            });
+        };
+        tryPlay();
+
+        const intervalId = window.setInterval(tryPlay, 750);
+        return () => window.clearInterval(intervalId);
+    }, [isActive, src, debug, advancedDebug]);
+
     // HANDLE FORWARDING THE REF
     useEffect(() => {
         if (!videoRef.current) return; // IF NO VIDEO, RETURN
@@ -192,6 +219,19 @@ const VideoPlayer = React.forwardRef<HTMLVideoElement, VideoPlayerProps>(({ src,
     const handleLoadedMetadata = () => {
         if (!videoRef.current) return;
         setDuration(videoRef.current.duration);
+
+        // ENSURE INITIAL SEEK IS APPLIED AFTER METADATA IS READY
+        if (typeof initialTime === "number" && initialTime > 0) {
+            videoRef.current.currentTime = initialTime;
+            setCurrentTime(initialTime);
+        }
+
+        // NUDGE AUTOPLAY ONCE METADATA IS AVAILABLE
+        if (isActive) {
+            videoRef.current.play().catch((err) => {
+                if (debug || advancedDebug) console.error("Video play error (loadedmetadata):", err);
+            });
+        }
     };
 
     // HANDLE VIDEO ENDED
@@ -215,6 +255,7 @@ const VideoPlayer = React.forwardRef<HTMLVideoElement, VideoPlayerProps>(({ src,
                 ref={videoRef}
                 className="w-full h-full object-cover rounded-xl"
                 src={src}
+                autoPlay
                 controls={false}
                 playsInline
                 muted={isMuted}
