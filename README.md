@@ -1,6 +1,6 @@
 # MAX REMY DEV - PORTFOLIO
 
-[maxremy.dev](https://maxremy.dev/) built with :
+How [maxremy.dev](https://maxremy.dev/) is built with :
 
 ## FRONTEND
 
@@ -32,6 +32,11 @@
 -   **[CI/CD Workflow](.github/workflows)**: GitHub Actions for containerization, build, and deploy
 -   **Preview Deployments**: A preview branch and environment are used to test code before merging to main website production
 
+
 ## License
 
 This project is licensed under the MIT [LICENSE](LICENSE).
+
+#
+
+> NOTE: This portfolio is primarily a personal playground. I use it to test ideas, experiment with new technologies, and explore UI/UX concepts over time.
