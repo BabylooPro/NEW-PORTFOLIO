@@ -66,7 +66,7 @@ describe("Contact API Integration", () => {
         // VERIFY MOCK WAS CALLED CORRECTLY WITH CONTACTFORM API
         expect(global.fetch).toHaveBeenCalledTimes(1);
         expect(global.fetch).toHaveBeenCalledWith(
-            "https://api.example.com/api/v1/email/1",
+            "https://api.example.com/api/v1/emails/",
             expect.objectContaining({
                 method: "POST",
                 headers: expect.objectContaining({

@@ -1,6 +1,6 @@
 export async function POST(request: Request) {
     const apiUrl = process.env.CONTACTFORM_MINIMALAPI_URL?.replace(/\/$/, '') as string;
-    const endpoint = `${apiUrl}/api/v1/email/1`;
+    const endpoint = `${apiUrl}/api/v1/emails/`;
 
     const response = await fetch(endpoint, {
         method: "POST",

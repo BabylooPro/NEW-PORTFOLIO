@@ -1,11 +1,11 @@
 // MOCK NEXT SERVER BEFORE IMPORT
 jest.mock("next/server", () => ({
-	NextResponse: {
-		json: jest.fn().mockImplementation((body, init) => ({
-			json: () => Promise.resolve(body),
-			status: init?.status || 200,
-		})),
-	},
+    NextResponse: {
+        json: jest.fn().mockImplementation((body, init) => ({
+            json: () => Promise.resolve(body),
+            status: init?.status || 200,
+        })),
+    },
 }));
 
 import { POST } from "../../../app/api/contact/route";
@@ -59,7 +59,7 @@ describe("Contact API", () => {
 
         // VERIFY FETCH WAS CALLED WITH CORRECT PARAMETERS
         expect(global.fetch).toHaveBeenCalledWith(
-            "https://api.example.com/api/v1/email/1",
+            "https://api.example.com/api/v1/emails",
             expect.objectContaining({
                 method: "POST",
                 headers: expect.objectContaining({
