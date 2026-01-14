@@ -23,7 +23,7 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.30.3",
     "styled-components": "^6.1.19",
-    "undici": "^7.16.0",
+    "undici": "^7.18.2",
     "vite": "^7.2.2",
     "zod": "^4.1.12"
   },
