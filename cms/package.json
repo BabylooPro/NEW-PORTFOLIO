@@ -15,7 +15,7 @@
     "@strapi/plugin-users-permissions": "5.31.0",
     "@strapi/provider-upload-aws-s3": "5.31.0",
     "@strapi/strapi": "5.31.0",
-    "axios": "^1.13.2",
+    "axios": "^1.13.5",
     "esbuild": "^0.27.0",
     "koa": "^3.0.3",
     "mysql2": "3.15.3",
