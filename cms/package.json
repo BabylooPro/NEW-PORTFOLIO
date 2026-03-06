@@ -13,7 +13,7 @@
   "dependencies": {
     "@strapi/plugin-cloud": "5.31.0",
     "@strapi/plugin-users-permissions": "5.31.0",
-    "@strapi/provider-upload-aws-s3": "5.31.0",
+    "@strapi/provider-upload-aws-s3": "5.38.0",
     "@strapi/strapi": "5.31.0",
     "axios": "^1.13.2",
     "esbuild": "^0.27.0",
